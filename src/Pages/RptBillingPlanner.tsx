@@ -11,7 +11,7 @@ import { ProjectManagerChart } from "../components/charts/ProjectManagerChart";
 import { SalesManagerChart } from "../components/charts/SalesManagerChart";
 import { baseUrl } from "../const/BaseUrl";
 import axios from "axios";
-//import DesignVsWipChart from "../components/charts/DesignVsWipChart";
+import DesignVsWipChart from "../components/charts/DesignVsWipChart";
 
 interface TotalsRow {
   Layout: number;
@@ -89,7 +89,7 @@ const buildSummaryFromData = (data: BillingData[]) => {
 
       tr.ECO += eco;
       tr.GrandTotal =
-        tr.Layout + tr.Analysis + tr.Library + tr.DFM + tr.VA + tr.NPI + tr.ECO;
+      tr.Layout + tr.Analysis + tr.Library + tr.DFM + tr.VA + tr.NPI + tr.ECO;
     };
 
     addSeg(buckets[key]);
@@ -109,6 +109,8 @@ const RptBillingPlanner: React.FC = () => {
   const [summary, setSummary] = useState<any>(null);
   const [invoiceDict, setInvoiceDict] = useState<Set<string>>(new Set());
   const [showResults, setShowResults] = useState(false); // New state to control rendering
+  const [wipSumData, setWipSumData] = useState(0);
+  const [totalDesignVA, setTotalDesignVA] = useState(0);
 
   const handleGenerate = async () => {
     try {
@@ -127,6 +129,16 @@ const RptBillingPlanner: React.FC = () => {
         invSet.add(key);
       });
       setInvoiceDict(invSet);
+
+      const columnToSum = 'wipAmount'; 
+      const sum = data.reduce((acc, item) => acc + (item[columnToSum] || 0), 0);
+      setWipSumData(sum);
+
+
+      const columnToPSum = 'poAmount'; 
+      const Psum = data.reduce((acc, item) => acc + (item[columnToPSum] || 0), 0);
+      setTotalDesignVA(Psum)
+
     } catch (error) {
       console.error("Error generating report:", error);
       setSummary(null);
@@ -383,7 +395,7 @@ const RptBillingPlanner: React.FC = () => {
           Generate
         </Button>
       </div>
-              <div> {renderSummaryTable()}</div>
+      <div> {renderSummaryTable()}</div>
       {/* Charts Section */}
 
       <div
@@ -396,21 +408,20 @@ const RptBillingPlanner: React.FC = () => {
           gap: "20px",
         }}
       >
-        <div style={{ width: "45%", height: "320px" }}>
+        <div style={{ width: "500px", height: "350px" }}>
           <ProjectionVsTargetChart data={data} />
         </div>
-        <div style={{ width: "45%", height: "320px" }}>
-            {/* <DesignVsWipChart data={data} targetAbs={53900000} /> */}
+        <div style={{ width: "500px", height: "350px" }}>
+          <DesignVsWipChart totalDesignVA={totalDesignVA} totalWip={wipSumData} targetAbs={53900000} />
         </div>
-        <div style={{ width: "45%", height: "320px" }}>
+        <div style={{ width: "500px", height: "300px" }}>
           <ProjectManagerChart data={data} />
         </div>
-        <div style={{ width: "45%", height: "320px" }}>
+        <div style={{ width: "500px", height: "300px" }}>
           <SalesManagerChart data={data} />
         </div>
       </div>
-      {/* )} */}
-      <div style={{ padding: "10px 5px", textAlign: "right" }}>
+      <div style={{ textAlign: "right" }}>
         <button
           style={{ backgroundColor: "#2b7be3", color: "white" }}
           onClick={exportToExcel}>Export to Excel</button>
