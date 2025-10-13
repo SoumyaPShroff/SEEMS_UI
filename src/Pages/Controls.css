@@ -1,0 +1,27 @@
+/* Selector (Dropdown) */
+.selector {
+    width: 300px;
+    font-size: 12px;
+    font-family: Arial, Helvetica, sans-serif
+}
+
+.selector:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* Input Field */
+.input-field {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+.input-field:focus {
+    border-color: #007bff;
+    outline: none;
+}

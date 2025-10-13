@@ -1,0 +1,117 @@
+.AppWrapper {
+  display: flex;
+  flex-direction:column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh; /* Full viewport height */
+  width: 100%; /* Full width */
+   /* background: linear-gradient(to right, #5e99d3, #ffffff);   */
+   background: linear-gradient(to right, #52a9d7, #ffffff); 
+}
+.LoginContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%; /* instead of 60vh */
+  flex: 1;      /* make it expand inside AppWrapper */
+}
+
+/* Login Box - Balanced Width */
+.LoginBox {
+  display: flex;
+  background: white;
+  border-radius: 10px;
+  width:600px; /* Adjusted for better fit */
+  height: 400px;
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+  overflow: hidden; 
+}
+
+/* Left Side - Login Form */
+.LoginForm {
+  flex: 2;
+  padding: 30px; /* Reduced padding to fit */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Right Side - Logo Panel */
+.LogoPanel {  
+  flex: 3;
+  display: flex;
+  justify-content: center; /* Centers logo */
+  padding:4px;
+  flex-direction: column; /* Stack items vertically */
+  align-items: center; /* Center logos horizontally */
+}
+
+/* Logo Image - Adjust for Proper Fit */
+.LogoImage {
+  width: 280px; /* Adjust as needed */
+  height: 250px; /* Keeps aspect ratio */
+}
+
+/* Login Input Fields */
+.InputField {
+  margin-bottom: 15px;
+}
+
+.InputField label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #555;
+}
+
+.InputField input {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  outline: none;
+  width:92%;
+}
+
+.InputField input:focus {
+  border-color: #007bff;
+}
+
+/* Login Button */
+.LoginButton {
+  background: #007bff;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  width:100%;
+}
+
+.LoginButton:hover {
+  background: #0056b3;
+}
+
+/* Links */
+.LinkContainer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: small;
+}
+/* Application Title - Centered and Styled */
+.AppTitle {
+  text-align: center;
+  font-weight: bold;
+  color: #287bc4; /* Slightly lighter color */
+  font-size: 4rem; /* Bigger font for main title */
+  margin-bottom: 2px; /* Small gap between main header and subtitle */
+  margin-top: 1px;
+}
+.SubTitle {
+  font-size: 2rem; /* Smaller than the main header */
+  text-align: center;
+  color: #333; /* Adjust color as needed */
+  margin-top: 2px;
+}
