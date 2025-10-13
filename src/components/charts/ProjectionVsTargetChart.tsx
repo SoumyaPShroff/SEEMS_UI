@@ -1,10 +1,10 @@
 import { Bar } from "react-chartjs-2";
 import { useEffect, useState } from "react";
-import {Chart as ChartJS,CategoryScale,LinearScale,BarElement,PointElement,LineElement,Title,Tooltip, Legend,} from "chart.js";
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend, } from "chart.js";
 import { bucketFor, normCat } from "../utils/billingUtils";
 
 // ✅ Register required components
-ChartJS.register(CategoryScale,LinearScale,BarElement,PointElement,LineElement,Title,Tooltip,Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend);
 
 export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
   const [chartData, setChartData] = useState<any>(null);
@@ -48,7 +48,7 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
 
     // ✅ Convert PO sum to lakhs (rupees ÷ 100000)
     const projectionValues = categories.map(
-        (c) => Math.round((poSum[normCat(c)] || 0) / 100000)
+      (c) => Math.round((poSum[normCat(c)] || 0) / 100000)
     );
     const targetValues = categories.map((c) => targetLakhs[c]);
 
@@ -66,8 +66,9 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
             offset: -5,
             color: "#000",
             font: { weight: "regular", size: 10 },
-            formatter: (val: number) => `${val} L`,
+           // formatter: (val: number) => `${val} L`,   
           },
+          padding: 30,
         },
         {
           //label: "Target (Lakhs)",
@@ -86,6 +87,7 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
             offset: 6, // space between label & cross
             formatter: (val: number) => `${val} L`,
           },
+          padding: 30,
         },
       ],
     });
@@ -106,7 +108,7 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
       datalabels: { display: true },
       tooltip: {
         callbacks: {
-         label: (ctx: any) => `${ctx.dataset.label}: ${ctx.parsed.y} L`,
+          label: (ctx: any) => `${ctx.dataset.label}: ${ctx.parsed.y} L`,
         },
       },
     },

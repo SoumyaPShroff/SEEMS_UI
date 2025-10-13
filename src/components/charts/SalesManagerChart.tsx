@@ -17,8 +17,8 @@ interface ChartProps {
   data: any[];
 }
 
-export const SalesManagerChart: React.FC<ChartProps> = ({ data}) => {
-   if (!data || data.length === 0) {
+export const SalesManagerChart: React.FC<ChartProps> = ({ data }) => {
+  if (!data || data.length === 0) {
     return <p>No sales manager data available.</p>;
   }
 
@@ -55,7 +55,8 @@ export const SalesManagerChart: React.FC<ChartProps> = ({ data}) => {
       title: {
         display: true,
         text: "Sales Manager vs Billing Amount",
-        font: { size: 14, weight: "Bold", color: "#305CDE", fontFamily: "'Segoe UI', Roboto, sans-serif" },
+        padding: 30,
+        font: { size: 16, weight: "bold", color: "#305CDE" }
       },
     },
     scales: {

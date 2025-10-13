@@ -11,6 +11,7 @@ import {
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { RiFontFamily } from "react-icons/ri";
+import { colors } from "@mui/material";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ChartDataLabels);
 
@@ -49,14 +50,15 @@ export const ProjectManagerChart: React.FC<ChartProps> = ({ data }) => {
       datalabels: {
         color: "#000",
         anchor: "end",
-        align: "top",   
+        align: "top",
         formatter: (value: number) => `${(value / 100000).toFixed(1)} L`,
       },
       legend: { display: false },
       title: {
         display: true,
         text: "Project Manager vs Billing Amount",
-        font: { size: 14, weight: "Bold", color: "#305CDE", fontFamily: "'Segoe UI', Roboto, sans-serif" },
+        padding: 30,
+        font: { size: 16, weight: "bold", color: "#305CDE" }
       },
     },
     scales: {
