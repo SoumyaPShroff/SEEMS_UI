@@ -11,6 +11,7 @@ import { ProjectManagerChart } from "../components/charts/ProjectManagerChart";
 import { SalesManagerChart } from "../components/charts/SalesManagerChart";
 import { baseUrl } from "../const/BaseUrl";
 import axios from "axios";
+//import DesignVsWipChart from "../components/charts/DesignVsWipChart";
 
 interface TotalsRow {
   Layout: number;
@@ -399,7 +400,7 @@ const RptBillingPlanner: React.FC = () => {
           <ProjectionVsTargetChart data={data} />
         </div>
         <div style={{ width: "45%", height: "320px" }}>
-
+            {/* <DesignVsWipChart data={data} targetAbs={53900000} /> */}
         </div>
         <div style={{ width: "45%", height: "320px" }}>
           <ProjectManagerChart data={data} />
@@ -437,7 +438,6 @@ const RptBillingPlanner: React.FC = () => {
             </p>
           </div>
         )}
-        {/* <div style={{ height: 500, width: "100%" }}> */}
         {/* Data Grid */}
         <DataGrid
           autoHeight
