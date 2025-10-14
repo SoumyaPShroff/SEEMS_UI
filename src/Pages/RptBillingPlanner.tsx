@@ -447,11 +447,6 @@ const RptBillingPlanner: React.FC = () => {
           </div>
         </div> */}
           {/* === Row 1: 3 charts === */}
-          <div>
-            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px", marginBottom: "30px" }}>
-              <SegmentWiseBillingChart data={data} />
-            </div>
-          </div>
           <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", marginBottom: "30px", }}>
             <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
               <ProjectionVsTargetChart data={data} />
@@ -465,7 +460,6 @@ const RptBillingPlanner: React.FC = () => {
               />
             </div>
           </div>
-
           {/* === Row 2: 2 charts === */}
           <div
             style={{
@@ -484,6 +478,11 @@ const RptBillingPlanner: React.FC = () => {
             </div>
           </div>
 
+          <div >
+            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
+              <SegmentWiseBillingChart data={data} />
+            </div>
+          </div>
 
           <div style={{ textAlign: "right" }}>
             <button
@@ -508,9 +507,7 @@ const RptBillingPlanner: React.FC = () => {
               getRowClassName={getRowClassName} // ✅ works the same
               title="Billing Planner Data"
               loading={loading}
-              headerColor="#1565c0"
-              hoverColor="#f0f8ff"
-              sx={dataGridSx}
+              sx= {dataGridSx}
             />
           </div>
         </>

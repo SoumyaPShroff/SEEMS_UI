@@ -1,5 +1,7 @@
 import React from "react";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { DataGrid } from "@mui/x-data-grid";
+import type { GridColDef } from "@mui/x-data-grid";
+import { FaWeight } from "react-icons/fa";
 
 interface CustomDataGridProps {
   rows: any[];
@@ -7,10 +9,8 @@ interface CustomDataGridProps {
   loading?: boolean;
   title?: string;
   rowHeight?: number;
-  headerColor?: string;
-  hoverColor?: string;
   getRowClassName?: (params: any) => string;
-  sx?: object; // ✅ accept external sx (like dataGridSx)
+  sx?: object;
 }
 
 const CustomDataGrid: React.FC<CustomDataGridProps> = ({
@@ -19,22 +19,21 @@ const CustomDataGrid: React.FC<CustomDataGridProps> = ({
   loading = false,
   title,
   rowHeight = 40,
-  headerColor = "#1976d2",
-  hoverColor = "#f5f5f5",
   getRowClassName,
-  sx = {}, // ✅ allow override
+  sx = {},
 }) => {
-  // Default sx — can be merged with external sx
-  const defaultSx = {
-    "& .MuiDataGrid-columnHeaders": {
-      backgroundColor: headerColor,
-      color: "#fff",
-      fontWeight: "bold",
-      fontSize: "0.9rem",
+const defaultSx = {
+  // Actual text inside each header cell
+  "& .MuiDataGrid-columnHeaderTitle": {
+    color: "SlateGrey",
+    fontWeight: "bold",  
+    fontSize: "14px",
+  },
+    "& .MuiDataGrid-columnSeparator": {
+      display: "none",
     },
-    "& .MuiDataGrid-columnSeparator": { display: "none" },
-    "& .MuiDataGrid-row:hover": { backgroundColor: hoverColor },
-  };
+};
+
 
   return (
     <div
@@ -67,7 +66,7 @@ const CustomDataGrid: React.FC<CustomDataGridProps> = ({
         loading={loading}
         rowHeight={rowHeight}
         getRowClassName={getRowClassName}
-        sx={{ ...defaultSx, ...sx }} // ✅ Merge styles
+        sx={{ ...defaultSx, ...sx }}
       />
     </div>
   );
