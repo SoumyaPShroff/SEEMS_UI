@@ -13,7 +13,7 @@ import { baseUrl } from "../const/BaseUrl";
 import axios from "axios";
 import DesignVsWipChart from "../components/charts/DesignVsWipChart";
 import SegmentWiseBillingChart from "../components/charts/SegmentWiseBillingChart";
-// import { toast } from "react-toastify";
+import { toast } from "react-toastify";
 
 interface TotalsRow {
   Layout: number;
@@ -153,12 +153,6 @@ const RptBillingPlanner: React.FC = () => {
       const columnToPSum = 'poAmount';
       const designSum = data.reduce((acc, item) => acc + (item[columnToPSum] || 0), 0);
       setTotalDesignVA(designSum);
-
-      // setDsDesign(data.design || []);
-      // setDsAnalysis(data.analysis || []);
-      // setDsVA(data.va || []);
-      // setDsNPI(data.npi || []);
-
       setShowResults(true);
 
     } else {
@@ -333,7 +327,7 @@ const RptBillingPlanner: React.FC = () => {
 
   const handleExport = () => {
     exportToExcel(data, "BillingPlanner", "BillingPlanner.xlsx");
-   // toast.success("✅ Export successful!", { position: "bottom-right" });
+    toast.success("✅ Export successful!", { position: "bottom-right" });
   };
 
   return (
