@@ -12,6 +12,8 @@ import { SalesManagerChart } from "../components/charts/SalesManagerChart";
 import { baseUrl } from "../const/BaseUrl";
 import axios from "axios";
 import DesignVsWipChart from "../components/charts/DesignVsWipChart";
+import SegmentWiseBillingChart from "../components/charts/SegmentWiseBillingChart";
+// import { toast } from "react-toastify";
 
 interface TotalsRow {
   Layout: number;
@@ -89,7 +91,7 @@ const buildSummaryFromData = (data: BillingData[]) => {
 
       tr.ECO += eco;
       tr.GrandTotal =
-      tr.Layout + tr.Analysis + tr.Library + tr.DFM + tr.VA + tr.NPI + tr.ECO;
+        tr.Layout + tr.Analysis + tr.Library + tr.DFM + tr.VA + tr.NPI + tr.ECO;
     };
 
     addSeg(buckets[key]);
@@ -98,6 +100,7 @@ const buildSummaryFromData = (data: BillingData[]) => {
 
   return { buckets, total };
 };
+
 
 const RptBillingPlanner: React.FC = () => {
   const { data, loading, fetchBillingData } = useBillingData();
@@ -128,16 +131,8 @@ const RptBillingPlanner: React.FC = () => {
         const key = `${row.jobnumber}_${row.month}_${row.year}`;
         invSet.add(key);
       });
+
       setInvoiceDict(invSet);
-
-      const columnToSum = 'wipAmount'; 
-      const sum = data.reduce((acc, item) => acc + (item[columnToSum] || 0), 0);
-      setWipSumData(sum);
-
-
-      const columnToPSum = 'poAmount'; 
-      const Psum = data.reduce((acc, item) => acc + (item[columnToPSum] || 0), 0);
-      setTotalDesignVA(Psum)
 
     } catch (error) {
       console.error("Error generating report:", error);
@@ -150,14 +145,27 @@ const RptBillingPlanner: React.FC = () => {
     if (data && data.length > 0) {
       const summaryResult = buildSummaryFromData(data);
       setSummary(summaryResult);
+
+      const columnToSum = 'wipAmount';
+      const wipSum = data.reduce((acc, item) => acc + (item[columnToSum] || 0), 0);
+      setWipSumData(wipSum);
+
+      const columnToPSum = 'poAmount';
+      const designSum = data.reduce((acc, item) => acc + (item[columnToPSum] || 0), 0);
+      setTotalDesignVA(designSum);
+
+      // setDsDesign(data.design || []);
+      // setDsAnalysis(data.analysis || []);
+      // setDsVA(data.va || []);
+      // setDsNPI(data.npi || []);
+
       setShowResults(true);
+
     } else {
       setSummary(null);
       setShowResults(false);
     }
   }, [data]);
-
-  exportToExcel(data, "BillingPlanner", "BillingPlanner.xlsx");
 
   const renderSummaryTable = () => {
     if (!summary) return null;
@@ -323,6 +331,11 @@ const RptBillingPlanner: React.FC = () => {
     }
   };
 
+  const handleExport = () => {
+    exportToExcel(data, "BillingPlanner", "BillingPlanner.xlsx");
+   // toast.success("✅ Export successful!", { position: "bottom-right" });
+  };
+
   return (
     <div style={{ padding: "120px", textAlign: "center" }}>
       {/* Manager Selection */}
@@ -395,70 +408,67 @@ const RptBillingPlanner: React.FC = () => {
           Generate
         </Button>
       </div>
-      <div> {renderSummaryTable()}</div>
-      {/* Charts Section */}
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-around",
-          alignItems: "flex-start",
-          flexWrap: "wrap",
-          marginTop: "30px",
-          gap: "20px",
-        }}
-      >
-        <div style={{ width: "500px", height: "350px" }}>
-          <ProjectionVsTargetChart data={data} />
-        </div>
-        <div style={{ width: "500px", height: "350px" }}>
-          <DesignVsWipChart totalDesignVA={totalDesignVA} totalWip={wipSumData} targetAbs={53900000} />
-        </div>
-        <div style={{ width: "500px", height: "300px" }}>
-          <ProjectManagerChart data={data} />
-        </div>
-        <div style={{ width: "500px", height: "300px" }}>
-          <SalesManagerChart data={data} />
-        </div>
-      </div>
-      <div style={{ textAlign: "right" }}>
-        <button
-          style={{ backgroundColor: "#2b7be3", color: "white" }}
-          onClick={exportToExcel}>Export to Excel</button>
-      </div>
-      <div style={{ position: "relative", height: "80vh", width: "100%", marginTop: "20px" }}>
-        {loading && (
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: "rgba(255,255,255,0.75)",
-              zIndex: 1000,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <CircularProgress size={60} />
-            <p style={{ color: "#333", fontWeight: 500, marginTop: "10px" }}>
-              Loading data...
-            </p>
+      {showResults && (
+        <>
+          <div> {renderSummaryTable()}</div>
+          {/* Charts Section */}
+          <div className="dashboard-container">
+            <div className="dashboard-grid">
+              {/* Row 1: 3 charts */}
+              <div className="chart-item"><SegmentWiseBillingChart data={data} /></div>
+              <div className="chart-item"><ProjectionVsTargetChart data={data} /></div>
+              <div className="chart-item">
+                <DesignVsWipChart
+                  totalDesignVA={totalDesignVA}
+                  totalWip={wipSumData}
+                  targetAbs={53900000}
+                />
+              </div>
+              {/* Row 2: 2 charts */}
+              <div className="chart-item"><ProjectManagerChart data={data} /></div>
+              <div className="chart-item"><SalesManagerChart data={data} /></div>
+            </div>
           </div>
-        )}
-        {/* Data Grid */}
-        <DataGrid
-          autoHeight
-          rows={data}
-          columns={columns}
-          getRowClassName={getRowClassName}
-          loading={loading}
-          sx={dataGridSx}
-        />
-      </div>
+          <div style={{ textAlign: "right" }}>
+            <button
+              style={{ backgroundColor: "#2b7be3", color: "white" }}
+              onClick={handleExport}>Export to Excel</button>
+          </div>
+          <div style={{ position: "relative", height: "80vh", width: "100%", marginTop: "20px" }}>
+            {loading && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(255,255,255,0.75)",
+                  zIndex: 1000,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <CircularProgress size={60} />
+                <p style={{ color: "#333", fontWeight: 500, marginTop: "10px" }}>
+                  Loading data...
+                </p>
+              </div>
+            )}
+            {/* Data Grid */}
+            <DataGrid
+              autoHeight
+              rows={data}
+              columns={columns}
+              getRowClassName={getRowClassName}
+              loading={loading}
+              sx={dataGridSx}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 };
