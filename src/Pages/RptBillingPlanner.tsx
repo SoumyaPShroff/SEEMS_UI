@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, CircularProgress, FormControl, InputLabel } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+// import { DataGrid } from "@mui/x-data-grid";
 import { useBillingData } from "../components/hooks/useBillingData";
 import { useManagers } from "../components/hooks/useManagers";
 import { getCurrentMonthDates } from "../components/utils/DateUtils";
@@ -14,6 +14,7 @@ import axios from "axios";
 import DesignVsWipChart from "../components/charts/DesignVsWipChart";
 import SegmentWiseBillingChart from "../components/charts/SegmentWiseBillingChart";
 import { toast } from "react-toastify";
+import CustomDataGrid from "../components/common/CustomerDataGrid";
 
 interface TotalsRow {
   Layout: number;
@@ -114,9 +115,11 @@ const RptBillingPlanner: React.FC = () => {
   const [showResults, setShowResults] = useState(false); // New state to control rendering
   const [wipSumData, setWipSumData] = useState(0);
   const [totalDesignVA, setTotalDesignVA] = useState(0);
+  const [loadingData, setLoadingData] = useState(false);
 
   const handleGenerate = async () => {
     try {
+      setLoadingData(true); // show spinner
       setShowResults(false);
 
       // Fetch billing data
@@ -133,11 +136,17 @@ const RptBillingPlanner: React.FC = () => {
       });
 
       setInvoiceDict(invSet);
+      // ✅ Wait until billing data is populated (React state may lag a bit)
+      setTimeout(() => {
+        setShowResults(true);
+        setLoadingData(false);
+      }, 500); // slight delay ensures React updated `data`
 
     } catch (error) {
       console.error("Error generating report:", error);
       setSummary(null);
       setShowResults(false);
+      setLoadingData(false); // hide spinner
     }
   };
 
@@ -333,35 +342,30 @@ const RptBillingPlanner: React.FC = () => {
   return (
     <div style={{ padding: "120px", textAlign: "center" }}>
       {/* Manager Selection */}
-      <InputLabel style={{ textAlign: "Left" }}>Select Manager</InputLabel>
+      <InputLabel style={{ textAlign: "left" }}>Select Manager</InputLabel>
       <FormControl fullWidth style={{ marginBottom: "20px" }}>
-        {loadingManagers ? (
-          <CircularProgress size={24} />
-        ) : (
-          <select
-            style={{ width: "200px", padding: "10px", fontSize: "12px" }}
-            value={selectedManager?.costcenter ?? "All"}
-            onChange={(e) => {
-              const selectedValue = e.target.value;
-              const manager = managers.find(
-                (m) => m.costcenter === selectedValue
-              );
-              setSelectedManager(manager || { hopc1id: "All", hopc1name: "All", costcenter: "All" });
-            }}
-          >
-            {managers.map((manager) => (
-              <option
-                key={`${manager.hopc1id}-${manager.costcenter || "All"}`}
-                value={manager.costcenter || "All"}
-              >
-                {manager.hopc1name === "All"
-                  ? "All"
-                  : `${manager.hopc1name} (${manager.costcenter})`}
-              </option>
-            ))}
-          </select>
-
-        )}
+        <select
+          style={{ width: "200px", padding: "10px", fontSize: "12px", textAlign: "left" }}
+          value={selectedManager?.costcenter ?? "All"}
+          onChange={(e) => {
+            const selectedValue = e.target.value;
+            const manager = managers.find((m) => m.costcenter === selectedValue);
+            setSelectedManager(
+              manager || { hopc1id: "All", hopc1name: "All", costcenter: "All" }
+            );
+          }}
+        >
+          {managers.map((manager) => (
+            <option
+              key={`${manager.hopc1id}-${manager.costcenter || "All"}`}
+              value={manager.costcenter || "All"}
+            >
+              {manager.hopc1name === "All"
+                ? "All"
+                : `${manager.hopc1name} (${manager.costcenter})`}
+            </option>
+          ))}
+        </select>
       </FormControl>
 
       {/* Date Range + Generate Button */}
@@ -402,62 +406,110 @@ const RptBillingPlanner: React.FC = () => {
           Generate
         </Button>
       </div>
-      {showResults && (
+
+      {/* ✅ Loading Spinner */}
+      {loadingData && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            marginTop: "40px",
+          }}
+        >
+          <CircularProgress size={60} />
+          <p style={{ color: "#333", marginTop: "10px", fontWeight: 500 }}>
+            Loading data...
+          </p>
+        </div>
+      )}
+
+      {/* ✅ Show results only after data is ready */}
+      {!loadingData && showResults && (
         <>
-          <div> {renderSummaryTable()}</div>
+          <div>{renderSummaryTable()}</div>
+
           {/* Charts Section */}
-          <div className="dashboard-container">
-            <div className="dashboard-grid">
-              {/* Row 1: 3 charts */}
-              <div className="chart-item"><SegmentWiseBillingChart data={data} /></div>
-              <div className="chart-item"><ProjectionVsTargetChart data={data} /></div>
-              <div className="chart-item">
-                <DesignVsWipChart
-                  totalDesignVA={totalDesignVA}
-                  totalWip={wipSumData}
-                  targetAbs={53900000}
-                />
-              </div>
-              {/* Row 2: 2 charts */}
-              <div className="chart-item"><ProjectManagerChart data={data} /></div>
-              <div className="chart-item"><SalesManagerChart data={data} /></div>
+          {/* <div className="dashboard-container">
+          <div className="dashboard-grid">
+            <div className="chart-item"><SegmentWiseBillingChart data={data} /></div>
+            <div className="chart-item"><ProjectionVsTargetChart data={data} /></div>
+            <div className="chart-item">
+              <DesignVsWipChart
+                totalDesignVA={totalDesignVA}
+                totalWip={wipSumData}
+                targetAbs={53900000}
+              />
+            </div>
+            <div className="chart-item"><ProjectManagerChart data={data} /></div>
+            <div className="chart-item"><SalesManagerChart data={data} /></div>
+          </div>
+        </div> */}
+          {/* === Row 1: 3 charts === */}
+          <div>
+            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px", marginBottom: "30px" }}>
+              <SegmentWiseBillingChart data={data} />
             </div>
           </div>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", marginBottom: "30px", }}>
+            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
+              <ProjectionVsTargetChart data={data} />
+            </div>
+
+            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
+              <DesignVsWipChart
+                totalDesignVA={totalDesignVA}
+                totalWip={wipSumData}
+                targetAbs={53900000}
+              />
+            </div>
+          </div>
+
+          {/* === Row 2: 2 charts === */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "20px",
+              marginBottom: "40px",
+            }}
+          >
+            <div style={{ flex: 1, maxWidth: "45%", background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
+              <ProjectManagerChart data={data} />
+            </div>
+
+            <div style={{ flex: 1, maxWidth: "45%", background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
+              <SalesManagerChart data={data} />
+            </div>
+          </div>
+
+
           <div style={{ textAlign: "right" }}>
             <button
               style={{ backgroundColor: "#2b7be3", color: "white" }}
-              onClick={handleExport}>Export to Excel</button>
+              onClick={handleExport}
+            >
+              Export to Excel
+            </button>
           </div>
-          <div style={{ position: "relative", height: "80vh", width: "100%", marginTop: "20px" }}>
-            {loading && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: "rgba(255,255,255,0.75)",
-                  zIndex: 1000,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <CircularProgress size={60} />
-                <p style={{ color: "#333", fontWeight: 500, marginTop: "10px" }}>
-                  Loading data...
-                </p>
-              </div>
-            )}
-            {/* Data Grid */}
-            <DataGrid
-              autoHeight
+
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              marginTop: "20px",
+            }}
+          >
+            <CustomDataGrid
+              // autoHeight
               rows={data}
               columns={columns}
-              getRowClassName={getRowClassName}
+              getRowClassName={getRowClassName} // ✅ works the same
+              title="Billing Planner Data"
               loading={loading}
+              headerColor="#1565c0"
+              hoverColor="#f0f8ff"
               sx={dataGridSx}
             />
           </div>
@@ -465,6 +517,6 @@ const RptBillingPlanner: React.FC = () => {
       )}
     </div>
   );
-};
 
+};
 export default RptBillingPlanner;

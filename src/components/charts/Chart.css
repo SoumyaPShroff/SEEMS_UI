@@ -1,66 +1,58 @@
-/* === Container === */
 .dashboard-container {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    padding: 20px;
-    box-sizing: border-box;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
 }
 
-/* === Grid Layout === */
 .dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 25px;
-    width: 100%;
-    max-width: 1600px;
-    margin: 0 auto;
-    align-items: stretch;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 charts per row */
+  grid-template-rows: auto auto; /* 2 rows total */
+  gap: 20px;
+  max-width: 1600px; /* keeps it centered and not too wide */
+  width: 100%;
+  margin: 0 auto;
 }
 
-/* === Chart Cards === */
 .chart-item {
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    padding: 10px;
-    display: flex;
-    align-items: stretch;
-    justify-content: stretch;
-    overflow: hidden;
-    height: auto;
-    aspect-ratio: 4 / 3;
-    /* Keeps shape balanced while resizing */
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  height: 400px; /* ✅ fixed good-looking height */
+  padding: 10px;
 }
 
-.chart-item canvas {
-    width: 100% !important;
-    height: 100% !important;
+/* Second row: center the two charts */
+.dashboard-grid > .chart-item:nth-child(4) {
+  grid-column: 2;
+}
+.dashboard-grid > .chart-item:nth-child(5) {
+  grid-column: 3;
 }
 
-/* === Row 2: center 2 charts === */
-.dashboard-grid>.chart-item:nth-child(4) {
-    grid-column-start: 2;
-}
-
-/* === Tablet (2 charts per row) === */
+/* Tablet: 2 charts per row */
 @media (max-width: 1200px) {
-    .dashboard-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .dashboard-grid>.chart-item:nth-child(4) {
-        grid-column-start: auto;
-    }
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .dashboard-grid > .chart-item:nth-child(4),
+  .dashboard-grid > .chart-item:nth-child(5) {
+    grid-column: auto;
+  }
 }
 
-/* === Mobile (1 chart per row) === */
-@media (max-width: 700px) {
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .chart-item {
-        aspect-ratio: 16 / 9;
-    }
+/* Mobile: 1 chart per row */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  .chart-item {
+    height: 350px;
+  }
 }
