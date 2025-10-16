@@ -1,6 +1,6 @@
 // Filename - components/SubMenu.js
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 
@@ -43,7 +43,8 @@ const DropdownLink = styled(Link)`
     }
 `;
 
-const SubMenu = ({ item }) => {
+// const SubMenu = ({ item }) => {
+const SubMenu = ({ item }: { item: any }) => {
     const [subnav, setSubnav] = useState(false);
 
     const showSubnav = () => setSubnav(!subnav);
@@ -52,7 +53,8 @@ const SubMenu = ({ item }) => {
         <>
             <SidebarLink
                 to={item.path}
-                onClick={item.subNav ? showSubnav : null}
+                // onClick={item.subNav ? showSubnav : null}
+                onClick={item.subNav ? showSubnav : undefined}
             >
                 <div>
                     {item.icon}
@@ -67,7 +69,7 @@ const SubMenu = ({ item }) => {
                 </div>
             </SidebarLink>
             {subnav &&
-                item.subNav.map((subItem, index) => {
+                item.subNav.map((subItem: any, index: number) => {
                     return (
                         <DropdownLink
                             to={subItem.path}

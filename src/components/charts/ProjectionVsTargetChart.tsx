@@ -1,8 +1,9 @@
-import { Bar } from "react-chartjs-2";
+import { Chart } from "react-chartjs-2";
 import { useEffect, useState } from "react";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend, } from "chart.js";
-import { bucketFor, normCat } from "../utils/billingUtils";
-
+import { bucketFor, normCat } from "../utils/billingutils";
+import ChartDataLabels from "chartjs-plugin-datalabels";
+import type { ChartOptions } from 'chart.js';
 // ✅ Register required components
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -57,33 +58,36 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
       labels: categories,
       datasets: [
         {
-          // label: "Projection (Lakhs)",
           data: projectionValues,
           backgroundColor: categories.map((c) => barColors[c] || "#1976d2"),
           datalabels: {
-            anchor: "end",
-            align: "start",
+            anchor: "end" as const,
+            align: "top" as const,
             offset: -5,
             color: "#000",
-            font: { weight: "regular", size: 10 },
-           // formatter: (val: number) => `${val} L`,   
+            font: { size: 12 },
+            formatter: (val: number, ctx: any) => {
+              const target = targetValues[ctx.dataIndex];
+              if (!target) return `${val} L`;
+              const pct = ((val / target) * 100).toFixed(0);
+              return `${val} L\n(${pct}%)`;
+            },
           },
           padding: 30,
         },
         {
-          //label: "Target (Lakhs)",
           data: targetValues,
           type: "scatter",
           pointStyle: "crossRot",
-          pointFont: { weight: "bold" },
+          pointFont: { weight: "bold" as const },
           borderColor: "Red",
           backgroundColor: "Red",
           showLine: false,
           datalabels: {
-            align: "right", // ✅ positions label beside marker
-            anchor: "end",
+            align: "right" as const,
+            anchor: "end" as const,
             color: "brown",
-            font: { weight: "bold", size: 11 },
+            font: { weight: "bold" as const, size: 12 },
             offset: 6, // space between label & cross
             formatter: (val: number) => `${val} L`,
           },
@@ -94,14 +98,14 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
   }, [data]);
 
   // ✅ Chart options (outside useEffect)
-  const chartOptions = {
+  const chartOptions: ChartOptions<'bar'> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       title: {
         display: true,
         text: "Overall Target vs Projection (in Lakhs)",
-        font: { size: 16, weight: "bold" },
+        font: { size: 16, weight: "bold" as const },
         color: "rgb(0,102,204)",
       },
       legend: { display: false },
@@ -116,15 +120,15 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
       x: {
         grid: { display: false },
         ticks: {
-          font: { size: 11 },
-          maxRotation: 45,
+          font: { size: 12 },
+          maxRotation: 0,
         },
       },
       y: {
         beginAtZero: true,
         ticks: {
-          callback: (val: number) => `${val} L`,
-          stepsize: 20,
+          callback: (val: string | number) => `${val} L`,
+          stepSize: 20,
           font: { size: 10 },
         },
         title: { display: true, text: "Amount (Lakhs)" },
@@ -138,7 +142,7 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
 
   return (
     <div style={{ height: "350px", width: "100%" }}>
-      <Bar data={chartData} options={chartOptions} />
+      <Chart type="bar" data={chartData} options={chartOptions} plugins={[ChartDataLabels]} />;
     </div>
   );
 };

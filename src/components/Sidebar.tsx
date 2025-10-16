@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Link, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import * as FaIcons from "react-icons/fa";
 import * as AiIcons from "react-icons/ai";
 import { SidebarData } from "./SidebarData";
@@ -41,9 +41,12 @@ const RightCorner = styled.div`
     margin-left: auto;
 `;
 
+interface SidebarNavProps {
+    sidebar: boolean;
+}
 
 //vertical side bar
-const SidebarNav = styled.nav`
+const SidebarNav = styled.nav<SidebarNavProps>`
  background: #34495E;
     width: 250px;
     height: calc(100vh - 80px);  /* Subtract the height of the Nav (header) */
@@ -61,20 +64,13 @@ const SidebarWrap = styled.div`
     width: 100%;
 `;
 
-const SubMenuWrap = styled.div`
-    position: relative;
-    max-height: calc(100vh - 80px);  /* Prevent it from exceeding viewport height */
-    overflow-y: auto;  /* Make the submenu scrollable */
-    z-index: 998;      /* Ensure the submenu stays under the Nav header */
-`;
-
-const Sidebar = ({ sessionUserID }) => {
+const Sidebar = ({ sessionUserID }: { sessionUserID: string }) => {
     const [sidebar, setSidebar] = useState(false);
     const showSidebar = () => setSidebar(!sidebar);
     const navigate = useNavigate();
-    const [userName, setUserName] = useState('');
+    const [_userName, setUserName] = useState(''); // if unused then prefix with _
 
-    const handleLogout = (e) => {
+    const handleLogout = async (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
         sessionStorage.removeItem('SessionUserID');
         navigate('/');
@@ -83,8 +79,8 @@ const Sidebar = ({ sessionUserID }) => {
     useEffect(() => {
         const fetchUserName = async () => {
             try {
-                const response = await axios.get(`${baseUrl}/getUserName?ploginid=${sessionUserID}`)
-                setUserName(response.data.Name);
+                const response = await axios.get<{ Name: string }[]>(`${baseUrl}/getUserName?ploginid=${sessionUserID}`)
+                setUserName(response.data[0]?.Name ?? '');
             } catch (error) {
                 console.error("Error fetching username:", error);
             }
@@ -120,7 +116,6 @@ const Sidebar = ({ sessionUserID }) => {
                             href={sessionUserID}
                         >
                             {`${"Software Developer"} `}
-                            {/* {`${sessionUserID} :   ${userName} `} */}
                         </a>
                         <span style={{ margin: "0 10px" }}>   </span>
                         <a

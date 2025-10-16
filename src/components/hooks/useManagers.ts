@@ -9,10 +9,11 @@ export const useManagers = () => {
   const fetchManagers = async () => {
     setLoadingManagers(true);
     try {
-      const res = await axios.get(`${baseUrl}/getHOPCManagerList`);
+      const res = await axios.get<any[]>(`${baseUrl}/getHOPCManagerList`);
       const data = res.data || [];
       const allOption = { hopc1id: "All", hopc1name: "All", costcenter: "All" };
-      setManagers([allOption, ...data]);
+      setManagers([allOption, ...(data || [])]);
+
     } catch (err) {
       console.error("Error fetching managers:", err);
     } finally {

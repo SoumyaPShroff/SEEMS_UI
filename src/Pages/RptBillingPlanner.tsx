@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Button, CircularProgress, FormControl, InputLabel } from "@mui/material";
-// import { DataGrid } from "@mui/x-data-grid";
 import { useBillingData } from "../components/hooks/useBillingData";
 import { useManagers } from "../components/hooks/useManagers";
 import { getCurrentMonthDates } from "../components/utils/DateUtils";
 import { ProjectionVsTargetChart } from "../components/charts/ProjectionVsTargetChart";
 import { dataGridSx } from "../components/common/DataGridStyles";
-import { exportToExcel } from "../components/utils/ExportToExcel";
+import { exporttoexcel } from "../components/utils/exporttoexcel";
 import { ProjectManagerChart } from "../components/charts/ProjectManagerChart";
 import { SalesManagerChart } from "../components/charts/SalesManagerChart";
 import { baseUrl } from "../const/BaseUrl";
@@ -15,6 +14,15 @@ import DesignVsWipChart from "../components/charts/DesignVsWipChart";
 import SegmentWiseBillingChart from "../components/charts/SegmentWiseBillingChart";
 import { toast } from "react-toastify";
 import CustomDataGrid from "../components/common/CustomerDataGrid";
+import type { GridColDef } from '@mui/x-data-grid';
+
+// ✅ Types
+interface BillingData {
+  id: number;
+  jobNumber: string;
+  poAmount: number;
+  [key: string]: any;
+}
 
 interface TotalsRow {
   Layout: number;
@@ -29,17 +37,11 @@ interface TotalsRow {
   GrandTotal: number;
 }
 
-interface TotalsRow {
-  Layout: number;
-  Analysis: number;
-  GovtLayout: number;
-  GovtAnalysis: number;
-  Library: number;
-  DFM: number;
-  VA: number;
-  NPI: number;
-  ECO: number;
-  GrandTotal: number;
+interface Manager {
+  hopc1id: string;
+  hopc1name: string;
+  costcenter: string;
+  [key: string]: any;
 }
 
 // ✅ Utility functions
@@ -105,7 +107,7 @@ const buildSummaryFromData = (data: BillingData[]) => {
 
 const RptBillingPlanner: React.FC = () => {
   const { data, loading, fetchBillingData } = useBillingData();
-  const { managers, loadingManagers } = useManagers();
+  const { managers } = useManagers();
   const { startdate: initialStart, enddate: initialEnd } = getCurrentMonthDates();
   const [startdate, setStartdate] = useState(initialStart);
   const [enddate, setEnddate] = useState(initialEnd);
@@ -127,10 +129,10 @@ const RptBillingPlanner: React.FC = () => {
 
       // ✅ Fetch Invoice Dictionary
       const invUrl = `${baseUrl}/getInvoiceDictionary?startdate=${startdate}&enddate=${enddate}`;
-      const invResponse = await axios.get(invUrl);
+      const invResponse = await axios.get<{ jobnumber: string; month: number; year: number }[]>(invUrl);
 
       const invSet = new Set<string>();
-      invResponse.data.forEach((row: any) => {
+      invResponse.data.forEach((row) => {
         const key = `${row.jobnumber}_${row.month}_${row.year}`;
         invSet.add(key);
       });
@@ -170,6 +172,7 @@ const RptBillingPlanner: React.FC = () => {
     }
   }, [data]);
 
+  // ✅ Render Summary Table
   const renderSummaryTable = () => {
     if (!summary) return null;
     const { buckets, total } = summary;
@@ -239,7 +242,7 @@ const RptBillingPlanner: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {Object.entries(buckets).map(([label, row]) => renderRow(label, row))}
+            {Object.entries(buckets).map(([label, row]) => renderRow(label, row as TotalsRow))}
             <tr style={{ backgroundColor: "#e6f0ff", fontWeight: "bold" }}>
               <td
                 style={{
@@ -308,34 +311,45 @@ const RptBillingPlanner: React.FC = () => {
     { field: "projectmanagerid", headerName: "projectmanagerid", flex: 1 },
   ];
 
-  const getRowClassName = (params) => {
-    const jobNo = params.row.jobNumber || "";
-    const poRcvd = params.row.poRcvd || "";
-    const dtStr = params.row.flagRaisedOn || "";
-    let rowColor = "row-black"; // default
+  const getRowClassName = (params: any): string => {
+    const jobNo: string = params.row.jobNumber || "";
+    const poRcvd: string = params.row.poRcvd || "";
+    const dtStr: string = params.row.flagRaisedOn || "";
 
+    // 🟥 Case 1 — PO not received
     if (poRcvd === "NO") {
       return "row-red";
     }
-    else if (dtStr) {
+
+    // 🟦 Case 2 — Flag date present
+    if (dtStr) {
       const flagDate = new Date(dtStr);
       const key = `${jobNo}_${flagDate.getMonth() + 1}_${flagDate.getFullYear()}`;
 
+      // 🟩 Case 2a — Invoice exists
       if (invoiceDict.has(key)) {
         return "row-green";
-      } else if (
-        flagDate.getMonth() === new Date(enddate).getMonth() &&
-        flagDate.getFullYear() === new Date(enddate).getFullYear()
+      }
+
+      // 🟦 Case 2b — Flag raised in current month/year
+      const end = new Date(enddate);
+      if (
+        flagDate.getMonth() === end.getMonth() &&
+        flagDate.getFullYear() === end.getFullYear()
       ) {
         return "row-blue";
       }
-      //flag raise for curr month - blue
-      //invoiced for curr month - green
+
+      // ⚫ Case 2c — None of the above
+      return "row-black";
     }
+
+    // ⚫ Default fallback if no date and PO received
+    return "row-black";
   };
 
   const handleExport = () => {
-    exportToExcel(data, "BillingPlanner", "BillingPlanner.xlsx");
+    exporttoexcel(data, "BillingPlanner", "BillingPlanner.xlsx");
     toast.success("✅ Export successful!", { position: "bottom-right" });
   };
 
@@ -349,13 +363,13 @@ const RptBillingPlanner: React.FC = () => {
           value={selectedManager?.costcenter ?? "All"}
           onChange={(e) => {
             const selectedValue = e.target.value;
-            const manager = managers.find((m) => m.costcenter === selectedValue);
+            const manager = managers.find((m: Manager) => m.costcenter === selectedValue);
             setSelectedManager(
               manager || { hopc1id: "All", hopc1name: "All", costcenter: "All" }
             );
           }}
         >
-          {managers.map((manager) => (
+          {managers.map((manager: Manager) => (
             <option
               key={`${manager.hopc1id}-${manager.costcenter || "All"}`}
               value={manager.costcenter || "All"}
@@ -429,35 +443,13 @@ const RptBillingPlanner: React.FC = () => {
       {!loadingData && showResults && (
         <>
           <div>{renderSummaryTable()}</div>
-
-          {/* Charts Section */}
-          {/* <div className="dashboard-container">
-          <div className="dashboard-grid">
-            <div className="chart-item"><SegmentWiseBillingChart data={data} /></div>
-            <div className="chart-item"><ProjectionVsTargetChart data={data} /></div>
-            <div className="chart-item">
-              <DesignVsWipChart
-                totalDesignVA={totalDesignVA}
-                totalWip={wipSumData}
-                targetAbs={53900000}
-              />
-            </div>
-            <div className="chart-item"><ProjectManagerChart data={data} /></div>
-            <div className="chart-item"><SalesManagerChart data={data} /></div>
-          </div>
-        </div> */}
           {/* === Row 1: 3 charts === */}
-          <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", marginBottom: "30px", }}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", marginBottom: "30px", marginTop: "10px" }}>
             <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
               <ProjectionVsTargetChart data={data} />
             </div>
-
-            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
-              <DesignVsWipChart
-                totalDesignVA={totalDesignVA}
-                totalWip={wipSumData}
-                targetAbs={53900000}
-              />
+            <div style={{ flex: 1, background: "#fff", maxWidth: "35%", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
+              <SegmentWiseBillingChart data={data} />
             </div>
           </div>
           {/* === Row 2: 2 charts === */}
@@ -469,30 +461,64 @@ const RptBillingPlanner: React.FC = () => {
               marginBottom: "40px",
             }}
           >
-            <div style={{ flex: 1, maxWidth: "45%", background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
+            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
               <ProjectManagerChart data={data} />
             </div>
-
-            <div style={{ flex: 1, maxWidth: "45%", background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
+            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
               <SalesManagerChart data={data} />
             </div>
-          </div>
-
-          <div >
-            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
-              <SegmentWiseBillingChart data={data} />
+            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
+              <DesignVsWipChart
+                totalDesignVA={totalDesignVA}
+                totalWip={wipSumData}
+                targetAbs={53900000}
+              />
             </div>
           </div>
-
-          <div style={{ textAlign: "right" }}>
+          <div style={{ textAlign: "right", padding: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "20px" }}>
             <button
               style={{ backgroundColor: "#2b7be3", color: "white" }}
               onClick={handleExport}
             >
               Export to Excel
             </button>
-          </div>
 
+            {/* 🟦🟥🟩 Legends */}
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div
+                style={{
+                  backgroundColor: "blue",
+                  width: "14px",
+                  height: "14px",
+                  borderRadius: "3px",
+                  border: "1px solid #333",
+                }}
+              ></div>
+              <span>Flag raised for current month</span>
+              <div
+                style={{
+                  backgroundColor: "red",
+                  width: "14px",
+                  height: "14px",
+                  borderRadius: "3px",
+                  border: "1px solid #333",
+                  marginLeft: "10px",
+                }}
+              ></div>
+              <span>PO not received</span>
+              <div
+                style={{
+                  backgroundColor: "green",
+                  width: "14px",
+                  height: "14px",
+                  borderRadius: "3px",
+                  border: "1px solid #333",
+                  marginLeft: "10px",
+                }}
+              ></div>
+              <span>Invoiced</span>
+            </div>
+          </div>
           <div
             style={{
               position: "relative",
@@ -501,13 +527,12 @@ const RptBillingPlanner: React.FC = () => {
             }}
           >
             <CustomDataGrid
-              // autoHeight
               rows={data}
               columns={columns}
-              getRowClassName={getRowClassName} // ✅ works the same
+              getRowClassName={(params) => getRowClassName(params) ?? ""}
               title="Billing Planner Data"
               loading={loading}
-              sx= {dataGridSx}
+              sx={dataGridSx}
             />
           </div>
         </>

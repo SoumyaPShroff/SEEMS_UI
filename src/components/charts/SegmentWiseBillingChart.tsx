@@ -10,7 +10,8 @@ import {
   Legend,
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-import { Bar } from "react-chartjs-2";
+import { Chart } from "react-chartjs-2";
+import type { ChartData, ChartOptions } from "chart.js";
 
 ChartJS.register(
   CategoryScale,
@@ -36,7 +37,9 @@ interface SegmentWiseBillingChartProps {
   data: BillingRow[];
 }
 
-const SegmentWiseBillingChart: React.FC<SegmentWiseBillingChartProps> = ({ data }) => {
+const SegmentWiseBillingChart: React.FC<SegmentWiseBillingChartProps> = ({
+  data,
+}) => {
   // === Helpers ===
   const getStr = (r: BillingRow, ...keys: string[]): string => {
     for (const k of keys) {
@@ -45,11 +48,14 @@ const SegmentWiseBillingChart: React.FC<SegmentWiseBillingChartProps> = ({ data 
     }
     return "";
   };
+
   const getDec = (r: BillingRow, key: string): number => {
     const val = parseFloat((r as any)[key]);
     return isNaN(val) ? 0 : val;
   };
-  const nameLike = (who: string, sub: string) => who?.toLowerCase()?.includes(sub.toLowerCase());
+
+  const nameLike = (who: string, sub: string) =>
+    who?.toLowerCase()?.includes(sub.toLowerCase());
 
   const mapPm = (r: BillingRow): string => {
     const who = getStr(r, "projectManager", "reportingToPerson", "reportToPerson");
@@ -103,7 +109,6 @@ const SegmentWiseBillingChart: React.FC<SegmentWiseBillingChartProps> = ({ data 
 
   // === Aggregate per Manager ===
   const cats = ["M S Dhanish", "Umer Zahal C P", "Sam Mathew"];
-  const formatLakhs = (val: number) => (val / 100000).toFixed(1);
 
   const personColors: Record<string, string> = {
     "M S Dhanish": "#FFA500",
@@ -111,12 +116,25 @@ const SegmentWiseBillingChart: React.FC<SegmentWiseBillingChartProps> = ({ data 
     "Sam Mathew": "#20B2AA",
   };
 
+  // ✅ Define Targets (from VB.NET)
+  const designTarget: Record<string, number> = {
+    "M S Dhanish": 18200000,
+    "Umer Zahal C P": 5200000,
+    "Sam Mathew": 15500000,
+  };
+
+  const vaTarget: Record<string, number> = {
+    "M S Dhanish": 3000000,
+    "Umer Zahal C P": 2000000,
+    "Sam Mathew": 10000000,
+  };
+
   const { designValues, vaValues, npiValues } = useMemo(() => {
     const designTotals: Record<string, number> = {};
     const vaTotals: Record<string, number> = {};
     const npiTotals: Record<string, number> = {};
 
-    const add = (dict: any, key: string, amount: number) => {
+    const add = (dict: Record<string, number>, key: string, amount: number) => {
       dict[key] = (dict[key] || 0) + (isNaN(amount) ? 0 : amount);
     };
 
@@ -133,65 +151,105 @@ const SegmentWiseBillingChart: React.FC<SegmentWiseBillingChartProps> = ({ data 
   }, [dsDesign, dsAnalysis, dsVA, dsNPI]);
 
   // === Chart Data ===
-  const chartData = {
-  labels: cats,
-  datasets: [
-    {
-      label: "Design",
-      type: "bar" as const,
-      data: designValues.map((v) => v / 100000),
-      backgroundColor: cats.map((n) => personColors[n]),
-      borderWidth: 1,
-      categoryPercentage: 0.5, // narrower cluster group width
-      barPercentage: 0.9,      // fatter bars inside group
-      datalabels: {
-        anchor: "end",
-        align: "start",
-        offset: -5,
-        color: "#000",
-        font: { weight: "bold", size: 11 },
-        formatter: (val: number) => `${val.toFixed(1)} L`,
-      },
-    },
-    {
-      label: "VA",
-      type: "bar" as const,
-      data: vaValues.map((v) => v / 100000),
-      backgroundColor: "#9ACD32",
-      borderWidth: 1,
-      categoryPercentage: 0.5,
-      barPercentage: 0.9,
-      datalabels: {
-        anchor: "end",
-        align: "start",
-        offset: -5,
-        color: "#000",
-        font: { weight: "bold", size: 11 },
-        formatter: (val: number) => `${val.toFixed(1)} L`,
-      },
-    },
-    {
-      label: "NPI",
-      type: "bar" as const,
-      data: npiValues.map((v) => v / 100000),
-      backgroundColor: "#6495ED",
-      borderWidth: 1,
-      categoryPercentage: 0.5,
-      barPercentage: 0.9,
-      datalabels: {
-        anchor: "end",
-        align: "start",
-        offset: -5,
-        color: "#000",
-        font: { weight: "bold", size: 11 },
-        formatter: (val: number) => `${val.toFixed(1)} L`,
-      },
-    },
-  ],
-};
+  const chartData: ChartData<"bar" | "scatter"> = {
+    labels: cats,
+    datasets: [
+      {
+        label: "Design",
+        type: "bar",
+        data: designValues.map((v) => v / 100000),
+        backgroundColor: cats.map((n) => personColors[n]),
+        borderWidth: 1,
+        categoryPercentage: 0.5,
+        barPercentage: 0.9,
+        datalabels: {
+          anchor: "end" as const,
+          align: "top" as const,
+          offset: -5,
+          color: "#000",
+          font: { weight: "bold" as const, size: 11 },
+          formatter: (val: number) => (val > 0 ? `${val.toFixed(1)} L` : ""),
 
+        },
+      },
+      // Design Target (Cross markers)
+      {
+        label: "Design Target",
+        type: "scatter",
+        data: cats.map((n) => designTarget[n] / 100000),
+        pointStyle: "crossRot",
+        borderColor: "red",
+        backgroundColor: "red",
+        showLine: false,
+        datalabels: {
+          align: "right" as const,
+          anchor: "end" as const,
+          color: "red",
+          font: { weight: "bold" as const, size: 11 },
+          offset: 6,
+          formatter: (val: number) => `${val} L`,
+        },
+      },
 
-  const chartOptions = {
+      // Actual VA Billing
+      {
+        label: "VA",
+        type: "bar",
+        data: vaValues.map((v) => v / 100000),
+        backgroundColor: "#9ACD32",
+        borderWidth: 1,
+        categoryPercentage: 0.5,
+        barPercentage: 0.9,
+        datalabels: {
+          anchor: "end" as const,
+          align: "top" as const,
+          offset: -5,
+          color: "#000",
+          font: { weight: "bold" as const, size: 11 },
+          formatter: (val: number) => (val > 0 ? `${val.toFixed(1)} L` : ""),
+
+        },
+      },
+      // VA Target (Cross markers)
+      {
+        label: "VA Target",
+        type: "scatter",
+        data: cats.map((n) => vaTarget[n] / 100000),
+        pointStyle: "crossRot",
+        borderColor: "red",
+        backgroundColor: "red",
+        showLine: false,
+        datalabels: {
+          align: "right" as const,
+          anchor: "end" as const,
+          color: "red",
+          font: { weight: "bold" as const, size: 11 },
+          offset: 6,
+          formatter: (val: number) => `${val} L`,
+        },
+      },
+      {
+        label: "NPI",
+        type: "bar",
+        data: npiValues.map((v) => v / 100000),
+        backgroundColor: "#6495ED",
+        borderWidth: 1,
+        categoryPercentage: 0.5,
+        barPercentage: 0.9,
+        datalabels: {
+          anchor: "end" as const,
+          align: "top" as const,
+          offset: -5,
+          color: "#000",
+          font: { weight: "bold" as const, size: 11 },
+          formatter: (val: number) => (val > 0 ? `${val.toFixed(1)} L` : ""),
+
+        },
+      },
+    ],
+  };
+
+  const chartOptions: ChartOptions<"bar"> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -199,12 +257,12 @@ const SegmentWiseBillingChart: React.FC<SegmentWiseBillingChartProps> = ({ data 
         display: true,
         text: "Segment Wise Billing (in Lakhs)",
         color: "#0066CC",
-        font: { size: 16, weight: "bold" },
+        font: { size: 16, weight: "bold" as const },
       },
-      legend: { display: true, position: "bottom" as const },
+      legend: { display: true, position: "bottom" },
       tooltip: {
         callbacks: {
-          label: (ctx: any) => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)} L`,
+          label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y} L`,
         },
       },
       datalabels: { display: true },
@@ -215,7 +273,7 @@ const SegmentWiseBillingChart: React.FC<SegmentWiseBillingChartProps> = ({ data 
         suggestedMax: 250,
         ticks: {
           stepSize: 50,
-          callback: (v: any) => `${v} L`,
+          callback: (v) => `${v} L`,
         },
         title: { display: true, text: "Amount (Lakhs)" },
       },
@@ -228,7 +286,12 @@ const SegmentWiseBillingChart: React.FC<SegmentWiseBillingChartProps> = ({ data 
 
   return (
     <div style={{ width: "100%", height: "100%", padding: "10px" }}>
-      <Bar data={chartData} options={chartOptions} />
+      <Chart
+        type="bar"
+        data={chartData}
+        options={chartOptions as ChartOptions<"bar" | "scatter">}
+        plugins={[ChartDataLabels]}
+      />
     </div>
   );
 };

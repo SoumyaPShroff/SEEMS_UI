@@ -115,3 +115,18 @@
   color: #333; /* Adjust color as needed */
   margin-top: 2px;
 }
+.error-message {
+  color: red;
+  font-weight: bold;
+}
+
+.warning-message {
+  color: orange;
+}
+
+.info-message {
+  color: blue;
+}
+.success-message {
+  color: green;
+}

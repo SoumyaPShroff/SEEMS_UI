@@ -7,7 +7,7 @@ import * as XLSX from "xlsx";
  * @param sheetName - The name of the sheet inside Excel.
  * @param fileName - The name of the file to save (default: export.xlsx).
  */
-export const exportToExcel = (
+export const exporttoexcel = (
   data: any[],
   sheetName: string = "Sheet1",
   fileName: string = "export.xlsx"

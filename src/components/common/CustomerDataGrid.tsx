@@ -1,7 +1,6 @@
 import React from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import type { GridColDef } from "@mui/x-data-grid";
-import { FaWeight } from "react-icons/fa";
 
 interface CustomDataGridProps {
   rows: any[];
@@ -65,7 +64,7 @@ const defaultSx = {
         columns={columns}
         loading={loading}
         rowHeight={rowHeight}
-        getRowClassName={getRowClassName}
+        getRowClassName={(params) => (getRowClassName?.(params) ?? '')}
         sx={{ ...defaultSx, ...sx }}
       />
     </div>

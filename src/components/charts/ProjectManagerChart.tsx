@@ -1,5 +1,5 @@
 import React from "react";
-import { Bar } from "react-chartjs-2";
+import { Chart } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,8 +10,6 @@ import {
   Legend,
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-import { RiFontFamily } from "react-icons/ri";
-import { colors } from "@mui/material";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ChartDataLabels);
 
@@ -49,25 +47,28 @@ export const ProjectManagerChart: React.FC<ChartProps> = ({ data }) => {
     plugins: {
       datalabels: {
         color: "#000",
-        anchor: "end",
-        align: "top",
-        formatter: (value: number) => `${(value / 100000).toFixed(1)} L`,
+        anchor: "end" as const,
+        align: "top" as const,
+        formatter: (value: string | number) => `${(Number(value) / 100000).toFixed(1)} L`,
       },
       legend: { display: false },
       title: {
         display: true,
         text: "Project Manager vs Billing Amount",
         padding: 30,
-        font: { size: 16, weight: "bold", color: "#305CDE" }
+        font: { size: 16, weight: "bold" as const, color: "#305CDE" }
       },
     },
     scales: {
       y: {
         beginAtZero: true,
-        ticks: { callback: (v: number) => `${v / 100000} L` },
+        ticks: { callback: (v: string | number) => `${Number(v) / 100000} L` },
       },
     },
   };
-
-  return <Bar data={chartData} options={chartOptions} />;
+  return (
+    <div style={{ height: "350px", width: "100%" }}>
+      <Chart type="bar" data={chartData} options={chartOptions} plugins={[ChartDataLabels]} />;
+    </div>
+  );
 };
