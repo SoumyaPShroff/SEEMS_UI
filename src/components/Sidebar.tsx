@@ -39,6 +39,7 @@ const RightCorner = styled.div`
     display: flex;
     align-items: center;
     margin-left: auto;
+    padding: 20px;
 `;
 
 interface SidebarNavProps {
@@ -117,9 +118,9 @@ const Sidebar = ({ sessionUserID }: { sessionUserID: string }) => {
                         >
                             {`${"Software Developer"} `}
                         </a>
-                        <span style={{ margin: "0 10px" }}>   </span>
-                        <a
-                            href="http://localhost:3000"
+                        <span style={{ margin: "0 8px" }}>   </span>
+                        <a    
+                            href="http://localhost:5173"
                             onClick={handleLogout}
                         >
                             Log Out
@@ -148,4 +149,6 @@ const Sidebar = ({ sessionUserID }: { sessionUserID: string }) => {
     );
 };
 
+
 export default Sidebar;
+
