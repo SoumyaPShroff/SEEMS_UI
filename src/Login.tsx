@@ -179,7 +179,14 @@ const LoginPage: React.FC<ILogin> = ({ setUserId }) => {
                   }
                 }}
               >Reset Password</Link>
-              <a href="#">Forgot Password</a>
+              <Link to="/ForgotPassword"
+                state={{ loginId }}
+                onClick={(e) => {
+                  if (!loginId.trim()) {
+                    e.preventDefault(); //block navigation
+                    setLoginError(<span className="error-message">Please enter your Login ID to reset password.</span>);
+                  }
+                }}>Forgot Password</Link>
             </div>
           </div>
 

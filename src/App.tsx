@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ResetPassword from './ResetPassword';
+import ForgotPassword from './ForgotPassword';
 
 const App: React.FC = () => {
   const [userId, setUserId] = useState(sessionStorage.getItem('SessionUserID'));
@@ -22,8 +23,11 @@ const App: React.FC = () => {
         {/* Home Route */}
         <Route path="/Home/*" element={userId ? <Home /> : <Navigate to="/Login" replace />} />
 
-        <Route path="/ResetPassword" element={<ResetPassword loginId={userId  ?? ""} />} />
+        {/* <Route path="/ResetPassword" element={<ResetPassword loginId={userId  ?? ""} />} /> */}
+        {/* <Route path="/ForgotPassword" element={<ForgotPassword loginId={userId  ?? ""} />} />   */}
 
+         <Route path="/ResetPassword" element={<ResetPassword/>} />
+         <Route path="/ForgotPassword" element={<ForgotPassword/>} />
       </Routes>
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
     </Router>

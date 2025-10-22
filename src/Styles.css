@@ -1,0 +1,83 @@
+.container {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+.card {
+    width: 100%;
+    max-width: 400px;
+    background-color: #fff;
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.title {
+    color: #1565c0;
+    font-size: 1.6rem;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    color: #555;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.inputGroup {
+    text-align: left;
+}
+
+.label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 6px;
+}
+
+.input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    outline: none;
+    font-size: 0.9rem;
+}
+
+.button {
+    background-color: #2b7be3;
+    color: #fff;
+    padding: 10px 0;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.button:disabled {
+    background-color: #5c91e6;
+    cursor: not-allowed;
+}
+
+.backButton {
+    background-color: transparent;
+    color: #2b7be3;
+    border: none;
+    padding: 8px 0;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: underline;
+}

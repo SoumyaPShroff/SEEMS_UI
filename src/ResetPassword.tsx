@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { baseUrl } from "./const/BaseUrl";
+import './Styles.css';
 
-interface ResetPasswordProps {
-  loginId: string | null; // 👈 received as a prop from parent
-}
+// interface ResetPasswordProps {
+//   loginId: string | null; // 👈 received as a prop from parent
+// }
 
-const ResetPassword: React.FC<ResetPasswordProps> = ({ loginId }) => {
+// const ResetPassword: React.FC<ResetPasswordProps> = ({ loginId }) => {
+const ResetPassword: React.FC = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -15,6 +18,11 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ loginId }) => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [strength, setStrength] = useState({ level: 0, text: "", color: "" });
+
+ // Read from navigation state (from Link)
+  const loginIdFromState = (location.state as { loginId?: string })?.loginId ?? "";
+
+  const [loginId, setLoginId] = useState<string>(loginIdFromState || "");
 
   // 🔹 Password validation rules
   const rules = [
@@ -51,6 +59,19 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ loginId }) => {
         .join(", ")}`,
     };
   };
+
+    useEffect(() => {
+    // If not from navigation, try to get from sessionStorage
+    if (!loginIdFromState) {
+      const sessionId = sessionStorage.getItem("SessionUserID");
+      if (sessionId) setLoginId(sessionId);
+    }
+
+    // Optional: store loginId back into session storage
+    if (loginIdFromState) {
+      sessionStorage.setItem("SessionUserID", loginIdFromState);
+    }
+  }, [loginIdFromState]);
 
   useEffect(() => {
     setStrength(evaluateStrength(newPassword));
@@ -91,7 +112,6 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ loginId }) => {
       );
 
       if (response.status === 200) {
-        //setMessage(response.data.message || "Password reset successfully!");
         setMessage((response.data as any).message || "Password reset successfully!");
         setNewPassword("");
         setConfirmPassword("");
@@ -108,54 +128,67 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ loginId }) => {
     }
   };
 
-  return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h2 style={styles.title}>🔒 Reset Password</h2>
-        <p style={styles.subtitle}>Please enter your login ID and new password below.</p>
+   return (
+    <div className="container">
+      <div className="card">
+        <h2 className="title">🔒 Reset Password</h2>
+        <p className="subtitle">
+          Please enter your login ID and new password below.
+        </p>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Login ID</label>
+        <form onSubmit={handleSubmit} className="form">
+          {/* Login ID */}
+          <div className="inputGroup">
+            <label className="label">Login ID</label>
             <input
               type="text"
-              value={loginId ?? ""}
+              value={loginId}
+              readOnly={!!loginId}
               required
+              className="input"
               style={{
-                ...styles.input,
                 backgroundColor: loginId ? "#f3f3f3" : "white",
                 color: loginId ? "#666" : "black",
               }}
-              readOnly={!!loginId}
             />
           </div>
 
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Old Password</label>
+          {/* Old Password */}
+          <div className="inputGroup">
+            <label className="label">Old Password</label>
             <input
               type="password"
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
               required
-              style={styles.input}
+              className="input"
+              placeholder="Enter old password"
             />
           </div>
 
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>New Password</label>
+          {/* New Password */}
+          <div className="inputGroup">
+            <label className="label">New Password</label>
             <input
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
-              style={styles.input}
               placeholder="Enter new password"
+              className="input"
             />
 
-            {/* 🔹 Strength Meter */}
+            {/* Strength Meter */}
             {newPassword && (
               <div style={{ marginTop: "6px" }}>
-                <div style={{ width: "100%", height: "6px", backgroundColor: "#ddd", borderRadius: "4px" }}>
+                <div
+                  style={{
+                    width: "100%",
+                    height: "6px",
+                    backgroundColor: "#ddd",
+                    borderRadius: "4px",
+                  }}
+                >
                   <div
                     style={{
                       width: `${strength.level}%`,
@@ -165,28 +198,35 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ loginId }) => {
                         strength.text === "Strong"
                           ? "green"
                           : strength.text === "Medium"
-                            ? "orange"
-                            : "red",
+                          ? "orange"
+                          : "red",
                       transition: "width 0.3s ease",
                     }}
                   ></div>
                 </div>
-                <p style={{ fontSize: "0.8rem", color: "#333", marginTop: "4px" }}>
+                <p
+                  style={{
+                    fontSize: "0.8rem",
+                    color: "#333",
+                    marginTop: "4px",
+                  }}
+                >
                   Strength: <strong>{strength.text}</strong>
                 </p>
               </div>
             )}
           </div>
 
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Confirm Password</label>
+          {/* Confirm Password */}
+          <div className="inputGroup">
+            <label className="label">Confirm Password</label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              style={styles.input}
               placeholder="Confirm new password"
+              className="input"
             />
           </div>
 
@@ -203,22 +243,14 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ loginId }) => {
             </p>
           )}
 
-          <button
-            type="submit"
-            style={{
-              ...styles.button,
-              backgroundColor: loading ? "#5c91e6" : "#2b7be3",
-              cursor: loading ? "not-allowed" : "pointer",
-            }}
-            disabled={loading}
-          >
+          <button type="submit" className="button" disabled={loading}>
             {loading ? "Resetting..." : "Reset Password"}
           </button>
 
           <button
             type="button"
+            className="backButton"
             onClick={() => navigate("/Login")}
-            style={styles.backButton}
           >
             ← Back to Login
           </button>
@@ -227,64 +259,4 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ loginId }) => {
     </div>
   );
 };
-
-// 🎨 Styles
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    height: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    background: "linear-gradient(135deg, #e3f2fd, #bbdefb)",
-    fontFamily: "'Segoe UI', Roboto, sans-serif",
-  },
-  card: {
-    width: "100%",
-    maxWidth: "400px",
-    backgroundColor: "#fff",
-    padding: "40px 30px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-    textAlign: "center",
-  },
-  title: { color: "#1565c0", fontSize: "1.6rem", marginBottom: "5px" },
-  subtitle: { color: "#555", fontSize: "0.9rem", marginBottom: "20px" },
-  form: { display: "flex", flexDirection: "column", gap: "15px" },
-  inputGroup: { textAlign: "left" },
-  label: {
-    display: "block",
-    fontSize: "0.85rem",
-    fontWeight: 500,
-    color: "#333",
-    marginBottom: "6px",
-  },
-  input: {
-    width: "100%",
-    padding: "10px",
-    border: "1px solid #ccc",
-    borderRadius: "6px",
-    outline: "none",
-    fontSize: "0.9rem",
-  },
-  button: {
-    backgroundColor: "#2b7be3",
-    color: "#fff",
-    padding: "10px 0",
-    border: "none",
-    borderRadius: "6px",
-    fontWeight: "bold",
-    fontSize: "1rem",
-    transition: "background-color 0.3s ease",
-  },
-  backButton: {
-    backgroundColor: "transparent",
-    color: "#2b7be3",
-    border: "none",
-    padding: "8px 0",
-    fontSize: "0.9rem",
-    cursor: "pointer",
-    textDecoration: "underline",
-  },
-};
-
 export default ResetPassword;
