@@ -56,7 +56,8 @@ export const SalesManagerChart: React.FC<ChartProps> = ({ data }) => {
         display: true,
         text: "Sales Manager vs Billing Amount",
         padding: 30,
-        font: { size: 16, weight: "bold" as const, color: "#305CDE" }
+          font: { size: 16, weight: "bold" as const },
+        color: "rgb(0,102,204)",
       },
     },
     scales: {

@@ -106,7 +106,7 @@ const Sidebar = ({ sessionUserID }: { sessionUserID: string }) => {
                     <h1
                         style={{
                             textAlign: "center",
-                            marginLeft: "400px",
+                            marginLeft: "300px",
                             color: "#5D6D7E",
                         }}
                     >

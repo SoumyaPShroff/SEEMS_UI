@@ -6,6 +6,7 @@ import SeemsHomeSubMenu from './Pages/SeemsHomeSubMenu';
 import ManagerDashboardSubMenu from './Pages/ManagerDashboardSubMenu';
 import Blank from './Pages/Blank';
 import RptBillingPlanner from './Pages/RptBillingPlanner';
+import SalesDashboard from './Pages/SalesDashboard';
 
 const Home = () => {
     const sessionUserID = sessionStorage.getItem('SessionUserID');
@@ -25,6 +26,7 @@ const Home = () => {
                 <Route path="/" element={<Blank />} />
                 <Route path="/SeemsHomeSubMenu" element={<SeemsHomeSubMenu />} />
                 <Route path="/RptBillingPlanner" element={<RptBillingPlanner />} />
+                <Route path="/SalesDashboard" element={<SalesDashboard />} />
                 <Route path="/ManagerDashboardSubMenu" element={<ManagerDashboardSubMenu />} />
                 <Route path="/support" element={<Support />} />
                 <Route path="*" element={<Blank />} />

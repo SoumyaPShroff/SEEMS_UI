@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { baseUrl } from "./const/BaseUrl";
-import './Styles.css';
+import "./Styles/ResetForgotPswd.css"
 
 // interface ResetPasswordProps {
 //   loginId: string | null; // 👈 received as a prop from parent

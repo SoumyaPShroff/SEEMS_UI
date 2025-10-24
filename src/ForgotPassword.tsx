@@ -1,7 +1,7 @@
 import React, { useState , useEffect} from "react";
 import axios from "axios";
 import { baseUrl } from "./const/BaseUrl";
-import "./styles.css";
+import "./Styles/ResetForgotPswd.css"
 import { useNavigate , useLocation} from "react-router-dom";
 
 const ForgotPassword: React.FC = () => {

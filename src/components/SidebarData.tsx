@@ -28,6 +28,11 @@ export const SidebarData = [
                 icon: <IoIcons.IoIosPaper />,
             },
             {
+                title: "Sales Management Dashboard",
+                path: "/Home/SalesDashboard",
+                icon: <IoIcons.IoIosPaper />,
+            },
+            {
                 title: "Timesheet",
                 path: "/Home/DailyTimesheet",
                 icon: <IoIcons.IoIosPaper />,

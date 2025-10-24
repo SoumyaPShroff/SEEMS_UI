@@ -440,7 +440,7 @@ const RptBillingPlanner: React.FC = () => {
       )}
 
       {/* ✅ Show results only after data is ready */}
-      {!loadingData && showResults && (
+      {!loadingData && showResults && ( 
         <>
           <div>{renderSummaryTable()}</div>
           {/* === Row 1: 3 charts === */}
@@ -461,13 +461,13 @@ const RptBillingPlanner: React.FC = () => {
               marginBottom: "40px",
             }}
           >
-            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
+            <div style={{ flex: 1, background: "#fff", borderRadius: "8px",   boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px"  }}>
               <ProjectManagerChart data={data} />
             </div>
-            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
+            <div style={{ flex: 1, background: "#fff", borderRadius: "8px",   boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
               <SalesManagerChart data={data} />
             </div>
-            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
+            <div style={{ flex: 1, background: "#fff", borderRadius: "8px",  boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
               <DesignVsWipChart
                 totalDesignVA={totalDesignVA}
                 totalWip={wipSumData}
