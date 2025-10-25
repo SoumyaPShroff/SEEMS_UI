@@ -22,36 +22,38 @@
 /* Filter bar */
 .filters-container {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 12px;
-  background-color: rgba(255, 255, 255, 0.8);
+  gap: 8px;
+  /* background-color: rgba(255, 255, 255, 0.8);
   border: 1px solid #e0e7ff;
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 12px; */
+  padding:40px 15px;
 }
 
+/* Label and input inline */
 .filters-container label {
   display: flex;
   flex-direction: column;
-  font-size: 0.9rem;
   font-weight: 500;
+  font-size: 0.9rem;
   color: #333;
 }
 
 .filters-container input[type="date"] {
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
   margin-top: 4px;
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
 }
 
-/* Button spacing */
+/* Align button perfectly */
 .filters-container button {
-  margin-top: 1.4rem;
+  align-self: flex-end;
+  margin-top: 0; /* remove previous top margin */
+  height: 38px;
 }
-
 /* Loading & empty states */
 .empty-message,
 .loading-message {
