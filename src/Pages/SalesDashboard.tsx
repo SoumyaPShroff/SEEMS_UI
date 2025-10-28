@@ -77,185 +77,185 @@ const SalesDashboard: React.FC = () => {
   const formatCurrency = (val: number) =>
     val ? `₹${val.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "₹0";
 
-   // === Unified Filtering Logic (Final Optimized Version) ===
-const filterOrders = (orders, catKey) => {
-  if (!orders || !catKey) return [];
+  // === Unified Filtering Logic (Final Optimized Version) ===
+  const filterOrders = (orders, catKey) => {
+    if (!orders || !catKey) return [];
 
-  // Split type (Domestic/Export) and category (Layout/Analysis/VA/NPI/Onsite)
-  const parts = catKey.trim().split(" ");
-  let typeFilter, designCatFilter;
+    // Split type (Domestic/Export) and category (Layout/Analysis/VA/NPI/Onsite)
+    const parts = catKey.trim().split(" ");
+    let typeFilter, designCatFilter;
 
-  // Auto-detect order of words
-  if (["Domestic", "Export"].includes(parts[0])) {
-    [typeFilter, designCatFilter] = parts;
-  } else {
-    [designCatFilter, typeFilter] = parts;
-  }
-
-  const category = designCatFilter?.trim()?.toLowerCase();
-
-  return orders.filter((x) => {
-    const type = x.type?.trim();
-    const enquiry = x.enquirytype?.trim()?.toUpperCase();
-    const layout = x.layout?.trim()?.toLowerCase();
-    const designCat = x.designcategory?.trim()?.toLowerCase();
-
-    // === 1️⃣ Handle ONSITE ===
-    if (catKey.toUpperCase() === "ONSITE") {
-      return enquiry === "ONSITE" || designCat === "onsite";
+    // Auto-detect order of words
+    if (["Domestic", "Export"].includes(parts[0])) {
+      [typeFilter, designCatFilter] = parts;
+    } else {
+      [designCatFilter, typeFilter] = parts;
     }
 
-    // === 2️⃣ CONFIRMED ORDERS ===
-    if (x.TotalValue !== undefined && "designcategory" in x) {
-      return (
-        designCat === category &&
-        type === typeFilter
-      );
-    }
+    const category = designCatFilter?.trim()?.toLowerCase();
 
-    // === 3️⃣ OPEN ORDERS ===
-    if ("playout" in x) {
-      switch (category) {
-        case "layout": return type === typeFilter && x.playout > 0;
-        case "analysis": return type === typeFilter && x.panalysis > 0;
-        case "va": return type === typeFilter && x.pVA > 0;
-        case "npi": return type === typeFilter && x.pNPI > 0;
-        default: return false;
+    return orders.filter((x) => {
+      const type = x.type?.trim();
+      const enquiry = x.enquirytype?.trim()?.toUpperCase();
+      const layout = x.layout?.trim()?.toLowerCase();
+      const designCat = x.designcategory?.trim()?.toLowerCase();
+
+      // === 1️⃣ Handle ONSITE ===
+      if (catKey.toUpperCase() === "ONSITE") {
+        return enquiry === "ONSITE" || designCat === "onsite";
       }
-    }
 
-    // === 4️⃣ TENTATIVE / QUOTED ORDERS ===
-    const hasQuoted = x.QuotedValue > 0;
-    const hasTentative = x.TentativeValue > 0;
-
-    if (hasQuoted || hasTentative) {
-      const {
-        design,
-        layout_others,
-        dfm,
-        dfa,
-        library,
-        si,
-        pi,
-        emi_net_level,
-        emi_system_level,
-        thermal_board_level,
-        thermal_system_level,
-        asmb,
-        hardware,
-        software,
-        fpg,
-        hardware_testing,
-        hardware_others,
-        DesignOutSource,
-        NPINew_BOMProc,
-        NPINew_Fab,
-        NPINew_Assbly,
-        NPINew_JobWork,
-        NPINew_Testing,
-        qacam,
-      } = x;
-
-      // --- Layout ---
-      const isLayout =
-        (
-          // Export Layout
-          (type === "Export" &&
-            (
-              design === "YES" ||
-              layout_others === "YES" ||
-              dfm === "YES" ||
-              dfa === "YES" ||
-              qacam === "YES" ||
-              library === "YES"
-            ) &&
-            !(
-              layout?.includes("analysis") ||
-              layout?.includes("fabrication") ||
-              layout?.includes("hardware") ||
-              layout?.includes("assembly") ||
-              layout?.includes("pcba")
-            ) &&
-            x.currency_id !== 1 &&
-            enquiry === "OFFSHORE") ||
-
-          // Domestic Layout
-          (type !== "Export" &&
-            (
-              dfm === "YES" ||
-              dfa === "YES" ||
-              library === "YES" ||
-              design === "YES" ||
-              layout_others === "YES" ||
-              qacam === "YES" ||
-              layout?.includes("layout")
-            ) &&
-            x.currency_id === 1 &&
-            enquiry === "OFFSHORE" &&
-            !(
-              layout?.includes("analysis") ||
-              layout?.includes("fabrication") ||
-              layout?.includes("hardware") ||
-              layout?.includes("assembly") ||
-              layout?.includes("pcba")
-            ))
+      // === 2️⃣ CONFIRMED ORDERS ===
+      if (x.TotalValue !== undefined && "designcategory" in x) {
+        return (
+          designCat === category &&
+          type === typeFilter
         );
+      }
 
-      // --- Analysis ---
-      const isAnalysis =
-        (si === "YES" ||
-          pi === "YES" ||
-          emi_net_level === "YES" ||
-          emi_system_level === "YES" ||
-          thermal_board_level === "YES" ||
-          thermal_system_level === "YES" ||
-          layout?.includes("analysis")) &&
-        enquiry === "OFFSHORE";
+      // === 3️⃣ OPEN ORDERS ===
+      if ("playout" in x) {
+        switch (category) {
+          case "layout": return type === typeFilter && x.playout > 0;
+          case "analysis": return type === typeFilter && x.panalysis > 0;
+          case "va": return type === typeFilter && x.pVA > 0;
+          case "npi": return type === typeFilter && x.pNPI > 0;
+          default: return false;
+        }
+      }
 
-      // --- VA ---
-      const isVA =
-        (
-          asmb === "YES" ||
-          hardware === "YES" ||
-          software === "YES" ||
-          fpg === "YES" ||
-          hardware_testing === "YES" ||
-          hardware_others === "YES" ||
-          DesignOutSource === "YES"
-        ) &&
-        enquiry === "OFFSHORE" &&
-        (
-          layout?.includes("fabrication") ||
-          layout?.includes("hardware")
-        );
+      // === 4️⃣ TENTATIVE / QUOTED ORDERS ===
+      const hasQuoted = x.QuotedValue > 0;
+      const hasTentative = x.TentativeValue > 0;
 
-      // --- NPI ---
-      const isNPI =
-        (
-          NPINew_BOMProc === "YES" ||
-          NPINew_Fab === "YES" ||
-          NPINew_Assbly === "YES" ||
-          NPINew_JobWork === "YES" ||
-          NPINew_Testing === "YES" ||
-          hardware_testing === "YES" ||
-          hardware_others === "YES" ||
-          DesignOutSource === "YES"
-        ) &&
-        enquiry === "OFFSHORE" &&
-        (
-          layout?.includes("assembly") ||
-          layout?.includes("pcba")
-        );
+      if (hasQuoted || hasTentative) {
+        const {
+          design,
+          layout_others,
+          dfm,
+          dfa,
+          library,
+          si,
+          pi,
+          emi_net_level,
+          emi_system_level,
+          thermal_board_level,
+          thermal_system_level,
+          asmb,
+          hardware,
+          software,
+          fpg,
+          hardware_testing,
+          hardware_others,
+          DesignOutSource,
+          NPINew_BOMProc,
+          NPINew_Fab,
+          NPINew_Assbly,
+          NPINew_JobWork,
+          NPINew_Testing,
+          qacam,
+        } = x;
 
-      if (category === "layout" && isLayout && type === typeFilter) return true;
-      if (category === "analysis" && isAnalysis && type === typeFilter) return true;
-      if (category === "va" && isVA && type === typeFilter) return true;
-      if (category === "npi" && isNPI && type === typeFilter) return true;
-    }
+        // --- Layout ---
+        const isLayout =
+          (
+            // Export Layout
+            (type === "Export" &&
+              (
+                design === "YES" ||
+                layout_others === "YES" ||
+                dfm === "YES" ||
+                dfa === "YES" ||
+                qacam === "YES" ||
+                library === "YES"
+              ) &&
+              !(
+                layout?.includes("analysis") ||
+                layout?.includes("fabrication") ||
+                layout?.includes("hardware") ||
+                layout?.includes("assembly") ||
+                layout?.includes("pcba")
+              ) &&
+              x.currency_id !== 1 &&
+              enquiry === "OFFSHORE") ||
 
-    return false;
-  });
-};
+            // Domestic Layout
+            (type !== "Export" &&
+              (
+                dfm === "YES" ||
+                dfa === "YES" ||
+                library === "YES" ||
+                design === "YES" ||
+                layout_others === "YES" ||
+                qacam === "YES" ||
+                layout?.includes("layout")
+              ) &&
+              x.currency_id === 1 &&
+              enquiry === "OFFSHORE" &&
+              !(
+                layout?.includes("analysis") ||
+                layout?.includes("fabrication") ||
+                layout?.includes("hardware") ||
+                layout?.includes("assembly") ||
+                layout?.includes("pcba")
+              ))
+          );
+
+        // --- Analysis ---
+        const isAnalysis =
+          (si === "YES" ||
+            pi === "YES" ||
+            emi_net_level === "YES" ||
+            emi_system_level === "YES" ||
+            thermal_board_level === "YES" ||
+            thermal_system_level === "YES" ||
+            layout?.includes("analysis")) &&
+          enquiry === "OFFSHORE";
+
+        // --- VA ---
+        const isVA =
+          (
+            asmb === "YES" ||
+            hardware === "YES" ||
+            software === "YES" ||
+            fpg === "YES" ||
+            hardware_testing === "YES" ||
+            hardware_others === "YES" ||
+            DesignOutSource === "YES"
+          ) &&
+          enquiry === "OFFSHORE" &&
+          (
+            layout?.includes("fabrication") ||
+            layout?.includes("hardware")
+          );
+
+        // --- NPI ---
+        const isNPI =
+          (
+            NPINew_BOMProc === "YES" ||
+            NPINew_Fab === "YES" ||
+            NPINew_Assbly === "YES" ||
+            NPINew_JobWork === "YES" ||
+            NPINew_Testing === "YES" ||
+            hardware_testing === "YES" ||
+            hardware_others === "YES" ||
+            DesignOutSource === "YES"
+          ) &&
+          enquiry === "OFFSHORE" &&
+          (
+            layout?.includes("assembly") ||
+            layout?.includes("pcba")
+          );
+
+        if (category === "layout" && isLayout && type === typeFilter) return true;
+        if (category === "analysis" && isAnalysis && type === typeFilter) return true;
+        if (category === "va" && isVA && type === typeFilter) return true;
+        if (category === "npi" && isNPI && type === typeFilter) return true;
+      }
+
+      return false;
+    });
+  };
 
 
   return (
@@ -310,140 +310,140 @@ const filterOrders = (orders, catKey) => {
           transition={{ duration: 0.4 }}
           className="dashboard-section charts-grid"
         >
-                {/* <h3 className="chart-title">Confirmed Orders (Last 3 Months)</h3> */}
-        <p className="note-text">Note: All the values are in Lakhs</p>
+          {/* <h3 className="chart-title">Confirmed Orders (Last 3 Months)</h3> */}
+          <p className="note-text">Note: All the values are in Lakhs</p>
 
-        <div className="summary-grid">
-          <table className="summary-table enhanced three-month">
-            <thead>
-              <tr>
-                <th>Confirmed Orders (Last Three months)</th>
-                {Array.from(
-                  new Set(chartData.map((d) => monthNames[d.monthNo]))
-                ).map((month, i) => (
-                  <th key={i}>{month}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-{["Export Layout", "Domestic Layout", "Onsite", "Analysis"].map((cat) => {
-  const isLayout = cat.includes("Layout");
-  const isExport = cat.startsWith("Export");
-  const isDomestic = cat.startsWith("Domestic");
+          <div className="summary-grid">
+            <table className="summary-table enhanced three-month">
+              <thead>
+                <tr>
+                  <th>Confirmed Orders (Last Three months)</th>
+                  {Array.from(
+                    new Set(chartData.map((d) => monthNames[d.monthNo]))
+                  ).map((month, i) => (
+                    <th key={i}>{month}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {["Export Layout", "Domestic Layout", "Onsite", "Analysis"].map((cat) => {
+                  const isLayout = cat.includes("Layout");
+                  const isExport = cat.startsWith("Export");
+                  const isDomestic = cat.startsWith("Domestic");
 
-  const monthTotals = Array.from(new Set(chartData.map((d) => d.monthNo))).map((m) => {
-    const filtered = chartData.filter((d) => {
-      const design = d.designcategory?.toLowerCase();
-      const monthMatch = d.monthNo === m;
+                  const monthTotals = Array.from(new Set(chartData.map((d) => d.monthNo))).map((m) => {
+                    const filtered = chartData.filter((d) => {
+                      const design = d.designcategory?.toLowerCase();
+                      const monthMatch = d.monthNo === m;
 
-      if (isLayout) {
-        // Layout split by currency
-        if (isExport) return monthMatch && design === "layout" && d.currency_id !== 1;
-        if (isDomestic) return monthMatch && design === "layout" && d.currency_id === 1;
-      }
+                      if (isLayout) {
+                        // Layout split by currency
+                        if (isExport) return monthMatch && design === "layout" && d.currency_id !== 1;
+                        if (isDomestic) return monthMatch && design === "layout" && d.currency_id === 1;
+                      }
 
-      // Other categories (Onsite, Analysis, etc.)
-      return monthMatch && design === cat.toLowerCase();
-    });
+                      // Other categories (Onsite, Analysis, etc.)
+                      return monthMatch && design === cat.toLowerCase();
+                    });
 
-    const total = filtered.reduce((a, b) => a + (b.totalValue || 0), 0);
-    return total;
-  });
+                    const total = filtered.reduce((a, b) => a + (b.totalValue || 0), 0);
+                    return total;
+                  });
 
-  return (
-    <tr key={cat}>
-      <td>{cat}</td>
-      {monthTotals.map((val, j) => (
-        <td key={j} className="num">{formatCurrency(val)}</td>
-      ))}
-    </tr>
-  );
-})}
-
-
-              {/* --- Design Total --- */}
-              <tr className="subtotal-row">
-                <td>Design Total</td>
-                {Array.from(new Set(chartData.map((d) => d.monthNo))).map((m, j) => {
-                  const total = chartData
-                    .filter((d) =>
-                      ["Export Layout", "Domestic Layout", "Onsite", "Analysis"].includes(
-                        d.designcategory
-                      ) && d.monthNo === m
-                    )
-                    .reduce((a, b) => a + b.totalValue, 0);
                   return (
-                    <td key={j} className="num total">
-                      {formatCurrency(total)}
-                    </td>
+                    <tr key={cat}>
+                      <td>{cat}</td>
+                      {monthTotals.map((val, j) => (
+                        <td key={j} className="num">{formatCurrency(val)}</td>
+                      ))}
+                    </tr>
                   );
                 })}
-              </tr>
 
-              {/* --- VA & NPI --- */}
-              {["VA", "NPI"].map((cat) => {
-                const row = chartData.filter((d) => d.designcategory === cat);
-                const monthTotals = Array.from(
-                  new Set(chartData.map((d) => d.monthNo))
-                ).map((m) => {
-                  const found = row.find((r) => r.monthNo === m);
-                  return found ? found.totalValue : 0;
-                });
-                return (
-                  <tr key={cat}>
-                    <td>{cat}</td>
-                    {monthTotals.map((val, j) => (
-                      <td key={j} className="num">{formatCurrency(val)}</td>
-                    ))}
-                  </tr>
-                );
-              })}
 
-              {/* --- VA Total --- */}
-              <tr className="subtotal-row">
-                <td>VA Total</td>
-                {Array.from(new Set(chartData.map((d) => d.monthNo))).map((m, j) => {
-                  const total = chartData
-                    .filter(
-                      (d) =>
-                        ["VA", "NPI"].includes(d.designcategory) && d.monthNo === m
-                    )
-                    .reduce((a, b) => a + b.totalValue, 0);
+                {/* --- Design Total --- */}
+                <tr className="subtotal-row">
+                  <td>Design Total</td>
+                  {Array.from(new Set(chartData.map((d) => d.monthNo))).map((m, j) => {
+                    const total = chartData
+                      .filter((d) =>
+                        ["Export Layout", "Domestic Layout", "Onsite", "Analysis"].includes(
+                          d.designcategory
+                        ) && d.monthNo === m
+                      )
+                      .reduce((a, b) => a + b.totalValue, 0);
+                    return (
+                      <td key={j} className="num total">
+                        {formatCurrency(total)}
+                      </td>
+                    );
+                  })}
+                </tr>
+
+                {/* --- VA & NPI --- */}
+                {["VA", "NPI"].map((cat) => {
+                  const row = chartData.filter((d) => d.designcategory === cat);
+                  const monthTotals = Array.from(
+                    new Set(chartData.map((d) => d.monthNo))
+                  ).map((m) => {
+                    const found = row.find((r) => r.monthNo === m);
+                    return found ? found.totalValue : 0;
+                  });
                   return (
-                    <td key={j} className="num total">
-                      {formatCurrency(total)}
-                    </td>
+                    <tr key={cat}>
+                      <td>{cat}</td>
+                      {monthTotals.map((val, j) => (
+                        <td key={j} className="num">{formatCurrency(val)}</td>
+                      ))}
+                    </tr>
                   );
                 })}
-              </tr>
 
-              {/* --- Grand Total --- */}
-              <tr className="subtotal-row">
-                <td>Grand Total</td>
-                {Array.from(new Set(chartData.map((d) => d.monthNo))).map((m, j) => {
-                  const total = chartData
-                    .filter((d) => d.monthNo === m)
-                    .reduce((a, b) => a + b.totalValue, 0);
-                  return (
-                    <td key={j} className="num total">
-                      {formatCurrency(total)}
-                    </td>
-                  );
-                })}
-              </tr>
-            </tbody>
+                {/* --- VA Total --- */}
+                <tr className="subtotal-row">
+                  <td>VA Total</td>
+                  {Array.from(new Set(chartData.map((d) => d.monthNo))).map((m, j) => {
+                    const total = chartData
+                      .filter(
+                        (d) =>
+                          ["VA", "NPI"].includes(d.designcategory) && d.monthNo === m
+                      )
+                      .reduce((a, b) => a + b.totalValue, 0);
+                    return (
+                      <td key={j} className="num total">
+                        {formatCurrency(total)}
+                      </td>
+                    );
+                  })}
+                </tr>
 
-            {/* --- 3-Month Total --- */}
-            <tfoot>
-              <tr className="grand-total-row">
-                <td>Total Orders (3 months)</td>
-                <td colSpan={3} className="num highlight">
-                  {formatCurrency(chartData.reduce((a, b) => a + b.totalValue, 0))}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+                {/* --- Grand Total --- */}
+                <tr className="subtotal-row">
+                  <td>Grand Total</td>
+                  {Array.from(new Set(chartData.map((d) => d.monthNo))).map((m, j) => {
+                    const total = chartData
+                      .filter((d) => d.monthNo === m)
+                      .reduce((a, b) => a + b.totalValue, 0);
+                    return (
+                      <td key={j} className="num total">
+                        {formatCurrency(total)}
+                      </td>
+                    );
+                  })}
+                </tr>
+              </tbody>
+
+              {/* --- 3-Month Total --- */}
+              <tfoot>
+                <tr className="grand-total-row">
+                  <td>Total Orders (3 months)</td>
+                  <td colSpan={3} className="num highlight">
+                    {formatCurrency(chartData.reduce((a, b) => a + b.totalValue, 0))}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
 
           <div className="chart-card">
             <h3 className="chart-title">Category Contribution (Last 3 Months Confirmed Orders)</h3>
