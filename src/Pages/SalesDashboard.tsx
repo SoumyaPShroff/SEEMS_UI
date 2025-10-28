@@ -1,29 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { getCurrentMonthDates } from "../components/utils/DateUtils";
 import { baseUrl } from "../const/BaseUrl";
-import { Button } from "@mui/material";
+import { LoadingButton } from "@mui/lab";
 import { motion } from "framer-motion";
 import {
   ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  CartesianGrid,
   PieChart,
   Pie,
   Cell,
+  Tooltip,
+  Legend,
 } from "recharts";
 import "../styles/SalesDashboard.css";
-import { LoadingButton } from "@mui/lab";
 
 const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#00C49F", "#FFBB28"];
 
 const SalesDashboard: React.FC = () => {
   const { startdate: initialStart, enddate: initialEnd } = getCurrentMonthDates();
-
   const [startdate, setStartdate] = useState(initialStart);
   const [enddate, setEnddate] = useState(initialEnd);
   const [chartData, setChartData] = useState<any[]>([]);
@@ -35,32 +28,34 @@ const SalesDashboard: React.FC = () => {
   const [error, setError] = useState("");
   const [showData, setShowData] = useState(false);
 
-  // === Fetch chart data ===
+  // === Fetch chart + order data ===
   const handleGenerate = async () => {
     setLoading(true);
     setError("");
-    setShowData(false); // hide data while loading
+    setShowData(false);
+
     try {
-      const [chartRes, orderRes] = await Promise.all([
+      const [chartRes, tentquorderRes, openconfmorderRes] = await Promise.all([
         fetch(
           `${baseUrl}/api/Sales/GetThreeMonthConfirmedOrders?startdate=${startdate}&enddate=${enddate}`
         ),
-        fetch(`${baseUrl}/api/Sales/TentativeQuotedOpenConfirmedOrders`),
+        fetch(`${baseUrl}/api/Sales/TentativeQuotedOrders`),
+        fetch(`${baseUrl}/api/Sales/OpenConfirmedOrders`),
       ]);
 
-      if (!chartRes.ok || !orderRes.ok)
+      if (!chartRes.ok || !tentquorderRes.ok || !openconfmorderRes.ok)
         throw new Error("Failed to load dashboard data.");
 
       const chartDataJson = await chartRes.json();
-      const orderDataJson = await orderRes.json();
+      const tentqorderDataJson = await tentquorderRes.json();
+      const openconforderDataJson = await openconfmorderRes.json();
 
       setChartData(chartDataJson || []);
-      setTentativeOrders(orderDataJson?.tentativeOrders || []);
-      setOpenOrders(orderDataJson?.openOrders || []);
-      setQuotedOrders(orderDataJson?.quotedOrders || []);
-      setConfirmedOrders(orderDataJson?.confirmedOrders || []);
-
-      setShowData(true); // ✅ show data after successful load
+      setTentativeOrders(tentqorderDataJson?.tentativeOrders || []);
+      setQuotedOrders(tentqorderDataJson?.quotedOrders || []);
+      setOpenOrders(openconforderDataJson?.openOrders || []);
+      setConfirmedOrders(openconforderDataJson?.confirmedOrders || []);
+      setShowData(true);
     } catch (error: any) {
       console.error("Dashboard fetch error:", error);
       setError("Error loading dashboard data.");
@@ -69,7 +64,7 @@ const SalesDashboard: React.FC = () => {
     }
   };
 
-  // === Derived data ===
+  // === Pie data aggregation ===
   const aggregatedByCategory = chartData.reduce((acc: any[], cur: any) => {
     const existing = acc.find((a) => a.designcategory === cur.designcategory);
     if (existing) existing.totalValue += cur.totalValue;
@@ -78,14 +73,190 @@ const SalesDashboard: React.FC = () => {
   }, []);
 
   const monthNames = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const monthlyData = chartData.map((d) => ({
-    month: monthNames[d.monthNo],
-    category: d.designcategory,
-    totalValue: d.totalValue,
-  }));
 
-  // === Utility: format currency ===
-  const formatCurrency = (val: number) => (val ? `₹${val.toLocaleString()}` : "₹0");
+  const formatCurrency = (val: number) =>
+    val ? `₹${val.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "₹0";
+
+   // === Unified Filtering Logic (Final Optimized Version) ===
+const filterOrders = (orders, catKey) => {
+  if (!orders || !catKey) return [];
+
+  // Split type (Domestic/Export) and category (Layout/Analysis/VA/NPI/Onsite)
+  const parts = catKey.trim().split(" ");
+  let typeFilter, designCatFilter;
+
+  // Auto-detect order of words
+  if (["Domestic", "Export"].includes(parts[0])) {
+    [typeFilter, designCatFilter] = parts;
+  } else {
+    [designCatFilter, typeFilter] = parts;
+  }
+
+  const category = designCatFilter?.trim()?.toLowerCase();
+
+  return orders.filter((x) => {
+    const type = x.type?.trim();
+    const enquiry = x.enquirytype?.trim()?.toUpperCase();
+    const layout = x.layout?.trim()?.toLowerCase();
+    const designCat = x.designcategory?.trim()?.toLowerCase();
+
+    // === 1️⃣ Handle ONSITE ===
+    if (catKey.toUpperCase() === "ONSITE") {
+      return enquiry === "ONSITE" || designCat === "onsite";
+    }
+
+    // === 2️⃣ CONFIRMED ORDERS ===
+    if (x.TotalValue !== undefined && "designcategory" in x) {
+      return (
+        designCat === category &&
+        type === typeFilter
+      );
+    }
+
+    // === 3️⃣ OPEN ORDERS ===
+    if ("playout" in x) {
+      switch (category) {
+        case "layout": return type === typeFilter && x.playout > 0;
+        case "analysis": return type === typeFilter && x.panalysis > 0;
+        case "va": return type === typeFilter && x.pVA > 0;
+        case "npi": return type === typeFilter && x.pNPI > 0;
+        default: return false;
+      }
+    }
+
+    // === 4️⃣ TENTATIVE / QUOTED ORDERS ===
+    const hasQuoted = x.QuotedValue > 0;
+    const hasTentative = x.TentativeValue > 0;
+
+    if (hasQuoted || hasTentative) {
+      const {
+        design,
+        layout_others,
+        dfm,
+        dfa,
+        library,
+        si,
+        pi,
+        emi_net_level,
+        emi_system_level,
+        thermal_board_level,
+        thermal_system_level,
+        asmb,
+        hardware,
+        software,
+        fpg,
+        hardware_testing,
+        hardware_others,
+        DesignOutSource,
+        NPINew_BOMProc,
+        NPINew_Fab,
+        NPINew_Assbly,
+        NPINew_JobWork,
+        NPINew_Testing,
+        qacam,
+      } = x;
+
+      // --- Layout ---
+      const isLayout =
+        (
+          // Export Layout
+          (type === "Export" &&
+            (
+              design === "YES" ||
+              layout_others === "YES" ||
+              dfm === "YES" ||
+              dfa === "YES" ||
+              qacam === "YES" ||
+              library === "YES"
+            ) &&
+            !(
+              layout?.includes("analysis") ||
+              layout?.includes("fabrication") ||
+              layout?.includes("hardware") ||
+              layout?.includes("assembly") ||
+              layout?.includes("pcba")
+            ) &&
+            x.currency_id !== 1 &&
+            enquiry === "OFFSHORE") ||
+
+          // Domestic Layout
+          (type !== "Export" &&
+            (
+              dfm === "YES" ||
+              dfa === "YES" ||
+              library === "YES" ||
+              design === "YES" ||
+              layout_others === "YES" ||
+              qacam === "YES" ||
+              layout?.includes("layout")
+            ) &&
+            x.currency_id === 1 &&
+            enquiry === "OFFSHORE" &&
+            !(
+              layout?.includes("analysis") ||
+              layout?.includes("fabrication") ||
+              layout?.includes("hardware") ||
+              layout?.includes("assembly") ||
+              layout?.includes("pcba")
+            ))
+        );
+
+      // --- Analysis ---
+      const isAnalysis =
+        (si === "YES" ||
+          pi === "YES" ||
+          emi_net_level === "YES" ||
+          emi_system_level === "YES" ||
+          thermal_board_level === "YES" ||
+          thermal_system_level === "YES" ||
+          layout?.includes("analysis")) &&
+        enquiry === "OFFSHORE";
+
+      // --- VA ---
+      const isVA =
+        (
+          asmb === "YES" ||
+          hardware === "YES" ||
+          software === "YES" ||
+          fpg === "YES" ||
+          hardware_testing === "YES" ||
+          hardware_others === "YES" ||
+          DesignOutSource === "YES"
+        ) &&
+        enquiry === "OFFSHORE" &&
+        (
+          layout?.includes("fabrication") ||
+          layout?.includes("hardware")
+        );
+
+      // --- NPI ---
+      const isNPI =
+        (
+          NPINew_BOMProc === "YES" ||
+          NPINew_Fab === "YES" ||
+          NPINew_Assbly === "YES" ||
+          NPINew_JobWork === "YES" ||
+          NPINew_Testing === "YES" ||
+          hardware_testing === "YES" ||
+          hardware_others === "YES" ||
+          DesignOutSource === "YES"
+        ) &&
+        enquiry === "OFFSHORE" &&
+        (
+          layout?.includes("assembly") ||
+          layout?.includes("pcba")
+        );
+
+      if (category === "layout" && isLayout && type === typeFilter) return true;
+      if (category === "analysis" && isAnalysis && type === typeFilter) return true;
+      if (category === "va" && isVA && type === typeFilter) return true;
+      if (category === "npi" && isNPI && type === typeFilter) return true;
+    }
+
+    return false;
+  });
+};
+
 
   return (
     <div className="dashboard-container">
@@ -105,7 +276,6 @@ const SalesDashboard: React.FC = () => {
               onChange={(e) => setStartdate(e.target.value)}
             />
           </label>
-
           <label>
             End Date
             <input
@@ -114,16 +284,13 @@ const SalesDashboard: React.FC = () => {
               onChange={(e) => setEnddate(e.target.value)}
             />
           </label>
-          {/* 
-          <Button variant="contained" color="primary" onClick={handleGenerate}>
-            Generate
-          </Button> */}
+
           <LoadingButton
             variant="contained"
             color="primary"
             onClick={handleGenerate}
-            loading={loading}           // ✅ shows spinner when loading
-            loadingPosition="start"     // spinner position
+            loading={loading}
+            loadingPosition="start"
           >
             {loading ? "Generating..." : "Generate"}
           </LoadingButton>
@@ -133,7 +300,7 @@ const SalesDashboard: React.FC = () => {
       {/* === Error === */}
       {error && <p className="error-message">{error}</p>}
 
-      {/* === Charts Section === */}
+      {/* === Charts === */}
       {loading ? (
         <p className="loading-message">Loading dashboard data...</p>
       ) : !loading && showData && chartData.length > 0 ? (
@@ -143,43 +310,7 @@ const SalesDashboard: React.FC = () => {
           transition={{ duration: 0.4 }}
           className="dashboard-section charts-grid"
         >
-          {/* --- Pie Chart (By Category) --- */}
-          <div className="chart-card">
-            <h3 className="chart-title">Category Contribution (Last 3 months Confirmed Orders)</h3>
-            <ResponsiveContainer width="100%" height={350}>
-              <PieChart>
-                <Pie
-                  data={aggregatedByCategory}
-                  dataKey="totalValue"
-                  nameKey="designcategory"
-                  outerRadius={100}
-                  label={({ name, percent }) =>
-                    `${name} ${(percent * 100).toFixed(1)}%`
-                  }
-                >
-                  {aggregatedByCategory.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </motion.div>
-      ) : (
-        <p className="empty-message">No chart data to display.</p>
-      )}
-
-      {/* === Order Summary (Three-Month Table + Category Totals) === */}
-      {/* === Three-Month Confirmed Orders Table === */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.2 }}
-        className="dashboard-section"
-      >
-        {/* <h3 className="chart-title">Confirmed Orders (Last 3 Months)</h3> */}
+                {/* <h3 className="chart-title">Confirmed Orders (Last 3 Months)</h3> */}
         <p className="note-text">Note: All the values are in Lakhs</p>
 
         <div className="summary-grid">
@@ -195,23 +326,40 @@ const SalesDashboard: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {["Export Layout", "Domestic Layout", "Onsite", "Analysis"].map((cat) => {
-                const row = chartData.filter((d) => d.designcategory === cat);
-                const monthTotals = Array.from(
-                  new Set(chartData.map((d) => d.monthNo))
-                ).map((m) => {
-                  const found = row.find((r) => r.monthNo === m);
-                  return found ? found.totalValue : 0;
-                });
-                return (
-                  <tr key={cat}>
-                    <td>{cat}</td>
-                    {monthTotals.map((val, j) => (
-                      <td key={j} className="num">{formatCurrency(val)}</td>
-                    ))}
-                  </tr>
-                );
-              })}
+{["Export Layout", "Domestic Layout", "Onsite", "Analysis"].map((cat) => {
+  const isLayout = cat.includes("Layout");
+  const isExport = cat.startsWith("Export");
+  const isDomestic = cat.startsWith("Domestic");
+
+  const monthTotals = Array.from(new Set(chartData.map((d) => d.monthNo))).map((m) => {
+    const filtered = chartData.filter((d) => {
+      const design = d.designcategory?.toLowerCase();
+      const monthMatch = d.monthNo === m;
+
+      if (isLayout) {
+        // Layout split by currency
+        if (isExport) return monthMatch && design === "layout" && d.currency_id !== 1;
+        if (isDomestic) return monthMatch && design === "layout" && d.currency_id === 1;
+      }
+
+      // Other categories (Onsite, Analysis, etc.)
+      return monthMatch && design === cat.toLowerCase();
+    });
+
+    const total = filtered.reduce((a, b) => a + (b.totalValue || 0), 0);
+    return total;
+  });
+
+  return (
+    <tr key={cat}>
+      <td>{cat}</td>
+      {monthTotals.map((val, j) => (
+        <td key={j} className="num">{formatCurrency(val)}</td>
+      ))}
+    </tr>
+  );
+})}
+
 
               {/* --- Design Total --- */}
               <tr className="subtotal-row">
@@ -297,10 +445,41 @@ const SalesDashboard: React.FC = () => {
           </table>
         </div>
 
-        {/* === Category Summary (Tentative / Quoted / Confirmed) with Expand/Collapse === */}
-        <div className="summary-grid">
-          <h3 className="chart-title">Category-wise Orders</h3>
+          <div className="chart-card">
+            <h3 className="chart-title">Category Contribution (Last 3 Months Confirmed Orders)</h3>
+            <ResponsiveContainer width="100%" height={350}>
+              <PieChart>
+                <Pie
+                  data={aggregatedByCategory}
+                  dataKey="totalValue"
+                  nameKey="designcategory"
+                  outerRadius={100}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(1)}%`}
+                >
+                  {aggregatedByCategory.map((_, i) => (
+                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </motion.div>
+      ) : (
+        <p className="empty-message">No chart data to display.</p>
+      )}
 
+
+      {/* === Category Summary === */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+        className="dashboard-section"
+      >
+        <h3 className="chart-title">Category-wise Orders</h3>
+        <div className="summary-grid">
           <table className="summary-table enhanced">
             <thead>
               <tr>
@@ -312,144 +491,87 @@ const SalesDashboard: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-  {[
-    "Domestic Layout",
-    "Export Layout",
-    "Onsite",
-    "Analysis",
-    "VA",
-    "NPI",
-  ].map((catKey, i) => {
-    const [expanded, setExpanded] = useState(false);
+              {[
+                "Domestic Layout",
+                "Export Layout",
+                "ONSITE",
+                "Analysis",
+                "VA",
+                "NPI",
+              ].map((catKey, i) => {
+                const [typeFilter, designCatFilter] = catKey.split(" ");
+                const [expanded, setExpanded] = useState(false);
 
-    // Split into type and category parts
-    const [typeFilter, designCatFilter] = catKey.split(" ");
+                const openSubs = filterOrders(openOrders, catKey);
+                const quotedSubs = filterOrders(quotedOrders, catKey);
+                const tentativeSubs = filterOrders(tentativeOrders, catKey);
+                const confirmedSubs = filterOrders(confirmedOrders, catKey);
 
-    // === OPEN ORDERS ===
-    const openSubs = openOrders.filter((x) => {
-      const matchType = !typeFilter || x.type?.toLowerCase() === typeFilter.toLowerCase();
-      if (designCatFilter?.toLowerCase() === "layout") return matchType && x.playout > 0;
-      if (designCatFilter?.toLowerCase() === "analysis") return matchType && x.panalysis > 0;
-      if (designCatFilter?.toLowerCase() === "va") return matchType && x.pVA > 0;
-      if (designCatFilter?.toLowerCase() === "npi") return matchType && x.pNPI > 0;
-      if (catKey.toLowerCase() === "onsite") return x.onsite > 0;
-      return false;
-    });
+                const openTotal = openSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
+                const quotedTotal = quotedSubs.reduce((a, b) => a + (b.QuotedValue || 0), 0);
+                const tentativeTotal = tentativeSubs.reduce((a, b) => a + (b.TentativeValue || 0), 0);
+                const confirmedTotal = confirmedSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
 
-    // === QUOTED ORDERS ===
-    const quotedSubs = quotedOrders.filter((x) => {
-      const matchType = !typeFilter || x.type?.toLowerCase() === typeFilter.toLowerCase();
-      const matchDesign = !designCatFilter || x.designcategory?.toLowerCase().includes(designCatFilter.toLowerCase());
-      return matchType && matchDesign;
-    });
+                return (
+                  <React.Fragment key={i}>
+                    <tr
+                      className="expandable-row"
+                      onClick={() => setExpanded(!expanded)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <td>
+                        {/* <span className="expand-icon">{expanded ? "▼" : "▶"}</span> */}
+                        {catKey}
+                      </td>
+                      <td className="num">{formatCurrency(openTotal)}</td>
+                      <td className="num">{formatCurrency(quotedTotal)}</td>
+                      <td className="num">{formatCurrency(tentativeTotal)}</td>
+                      <td className="num">{formatCurrency(confirmedTotal)}</td>
+                    </tr>
 
-    // === TENTATIVE ORDERS ===
-    const tentativeSubs = tentativeOrders.filter((x) => {
-      const matchType = !typeFilter || x.type?.toLowerCase() === typeFilter.toLowerCase();
-      const layoutText = x.layout?.toLowerCase() || "";
-      if (designCatFilter?.toLowerCase() === "layout") return matchType && layoutText.includes("layout");
-      if (designCatFilter?.toLowerCase() === "analysis") return matchType && layoutText.includes("analysis");
-      if (designCatFilter?.toLowerCase() === "va") return matchType && layoutText.includes("va");
-      if (designCatFilter?.toLowerCase() === "npi") return matchType && layoutText.includes("npi");
-      if (catKey.toLowerCase() === "onsite") return matchType && layoutText.includes("onsite");
-      return false;
-    });
-
-        // === Confirmed ORDERS ===
-    const confirmedSubs = confirmedOrders.filter((x) => {
-      const matchType = !typeFilter || x.type?.toLowerCase() === typeFilter.toLowerCase();
-      const layoutText = x.layout?.toLowerCase() || "";
-      if (designCatFilter?.toLowerCase() === "layout") return matchType && layoutText.includes("layout");
-      if (designCatFilter?.toLowerCase() === "analysis") return matchType && layoutText.includes("analysis");
-      if (designCatFilter?.toLowerCase() === "va") return matchType && layoutText.includes("va");
-      if (designCatFilter?.toLowerCase() === "npi") return matchType && layoutText.includes("npi");
-      if (catKey.toLowerCase() === "onsite") return matchType && layoutText.includes("onsite");
-      return false;
-    });
-
-    // === Aggregate totals ===
-    const openTotal = openSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
-    const quotedTotal = quotedSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
-    const tentativeTotal = tentativeSubs.reduce((a, b) => a + (b.QuotedValue || 0), 0);
-    const confirmedTotal = confirmedSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
-    
-
-    return (
-      <React.Fragment key={i}>
-        <tr
-          className="expandable-row"
-          onClick={() => setExpanded(!expanded)}
-          style={{ cursor: "pointer" }}
-        >
-          <td>
-            <span className="expand-icon">{expanded ? "▼" : "▶"}</span> {catKey}
-          </td>
-          <td className="num">{formatCurrency(openTotal)}</td>
-          <td className="num">{formatCurrency(quotedTotal)}</td>
-          <td className="num">{formatCurrency(tentativeTotal)}</td>
-           <td className="num">{formatCurrency(confirmedTotal)}</td>
-        </tr>
-
-        {expanded && (
-          <>
-            {["Open", "Quoted", "Tentative","Confirmed"].map((type) => {
-              const subs =
-                type === "Open"
-                  ? openSubs
-                  : type === "Quoted"
-                    ? quotedSubs
-                    : tentativeSubs;
-
-              return subs.map((s, idx) => (
-                <tr key={`${catKey}-${type}-${idx}`} className="sub-row">
-                  <td className="sub-cat">
-                    {s.subcategory ||
-                      s.layout ||
-                      s.designcategory ||
-                      s.enquirytype ||
-                      "—"}
-                  </td>
-                  <td className="num">
-                    {type === "Open" ? formatCurrency(s.TotalValue) : ""}
-                  </td>
-                  <td className="num">
-                    {type === "Quoted" ? formatCurrency(s.QuotedValue) : ""}
-                  </td>
-                  <td className="num">
-                    {type === "Tentative" ? formatCurrency(s.QuotedValue) : ""}
-                  </td>
-                   <td className="num">
-                    {type === "Confirmed" ? formatCurrency(s.TotalValue) : ""}
-                  </td>
-                </tr>
-              ));
-            })}
-          </>
-        )}
-      </React.Fragment>
-    );
-  })}
-</tbody>
-
-
-      <tfoot>
-  <tr className="total-row">
-    <td>Total Orders</td>
-    <td className="num">
-      {formatCurrency(openOrders.reduce((a, b) => a + (b.TotalValue || 0), 0))}
-    </td>
-    <td className="num">
-      {formatCurrency(quotedOrders.reduce((a, b) => a + (b.QuotedValue || 0), 0))}
-    </td>
-    <td className="num">
-      {formatCurrency(tentativeOrders.reduce((a, b) => a + (b.QuotedValue || 0), 0))}
-    </td>
-        <td className="num">
-      {formatCurrency(confirmedOrders.reduce((a, b) => a + (b.TotalValue || 0), 0))}
-    </td>
-  </tr>
-</tfoot>
-
+                    {expanded && (
+                      <>
+                        {[
+                          { type: "Open", data: openSubs },
+                          { type: "Quoted", data: quotedSubs },
+                          { type: "Tentative", data: tentativeSubs },
+                          { type: "Confirmed", data: confirmedSubs },
+                        ].map(({ type, data }) =>
+                          data.map((s, idx) => (
+                            <tr key={`${catKey}-${type}-${idx}`} className="sub-row">
+                              <td className="sub-cat">
+                                {s.subcategory || s.designcategory || s.enquirytype || "—"}
+                              </td>
+                              <td className="num">{type === "Open" ? formatCurrency(s.TotalValue) : ""}</td>
+                              <td className="num">{type === "Quoted" ? formatCurrency(s.QuotedValue) : ""}</td>
+                              <td className="num">{type === "Tentative" ? formatCurrency(s.TentativeValue) : ""}</td>
+                              <td className="num">{type === "Confirmed" ? formatCurrency(s.TotalValue) : ""}</td>
+                            </tr>
+                          ))
+                        )}
+                      </>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+            <tfoot>
+              <tr className="total-row">
+                <td>Total Orders</td>
+                <td className="num">
+                  {formatCurrency(openOrders.reduce((a, b) => a + (b.TotalValue || 0), 0))}
+                </td>
+                <td className="num">
+                  {formatCurrency(quotedOrders.reduce((a, b) => a + (b.QuotedValue || 0), 0))}
+                </td>
+                <td className="num">
+                  {formatCurrency(tentativeOrders.reduce((a, b) => a + (b.TentativeValue || 0), 0))}
+                </td>
+                <td className="num">
+                  {formatCurrency(confirmedOrders.reduce((a, b) => a + (b.TotalValue || 0), 0))}
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </motion.div>
