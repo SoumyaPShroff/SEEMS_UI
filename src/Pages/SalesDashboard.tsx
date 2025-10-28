@@ -64,6 +64,22 @@ const SalesDashboard: React.FC = () => {
     }
   };
 
+  // console.log("quotedordeer:", quotedOrders);
+  // console.log("tentativeOrdersOrders:", tentativeOrders);
+  // console.log("confirmedOrders:", confirmedOrders);
+
+  // ✅ merge once before looping over categories
+  const mergedQuoted = quotedOrders.map((q) => {
+    const tent = tentativeOrders.find((t) => t.subcategory === q.subcategory);
+    const conf = confirmedOrders.find((c) => c.subcategory === q.subcategory);
+
+    return {
+      ...q,
+      TentativeValue: tent?.TentativeValue || 0,
+      ConfirmedValue: conf?.TotalValue || 0,
+    };
+  });
+
   // === Pie data aggregation ===
   const aggregatedByCategory = chartData.reduce((acc: any[], cur: any) => {
     const existing = acc.find((a) => a.designcategory === cur.designcategory);
@@ -94,7 +110,7 @@ const SalesDashboard: React.FC = () => {
 
     const category = designCatFilter?.trim()?.toLowerCase();
 
-    return  orders.filter((x) => {
+    return orders.filter((x) => {
       const type = x.type?.trim();
       const enquiry = x.enquirytype?.trim()?.toUpperCase();
       const layout = x.layout?.trim()?.toLowerCase();
@@ -261,11 +277,6 @@ const SalesDashboard: React.FC = () => {
         if (category === "va" && isVA) return true;
         if (category === "npi" && isNPI) return true;
       }
-
-  //     return false;
-  //   });
-  //   return result;
-  // };
       return false;
     });
   };
@@ -483,7 +494,6 @@ const SalesDashboard: React.FC = () => {
         <p className="empty-message">No chart data to display.</p>
       )}
 
-
       {/* === Category Summary === */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
@@ -498,9 +508,9 @@ const SalesDashboard: React.FC = () => {
               <tr>
                 <th>Category</th>
                 <th>Open Orders</th>
-                <th>Quoted Orders</th>
                 <th>Tentative Orders</th>
                 <th>Confirmed Orders</th>
+                <th>Quoted Orders</th>
               </tr>
             </thead>
             <tbody>
@@ -516,15 +526,16 @@ const SalesDashboard: React.FC = () => {
                 const [expanded, setExpanded] = useState(false);
 
                 const openSubs = filterOrders(openOrders, catKey);
-                const quotedSubs = filterOrders(quotedOrders, catKey);
                 const tentativeSubs = filterOrders(tentativeOrders, catKey);
                 const confirmedSubs = filterOrders(confirmedOrders, catKey);
+                const quotedSubs = filterOrders(quotedOrders, catKey);
 
                 const openTotal = openSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
-                const quotedTotal = quotedSubs.reduce((a, b) => a + (b.QuotedValue || 0), 0);
+                // const quotedTotal = quotedSubs.reduce((a, b) => a + (b.QuotedValue || 0), 0);
                 const tentativeTotal = tentativeSubs.reduce((a, b) => a + (b.TentativeValue || 0), 0);
+                // TentativeGrandTotal += tentativeTotal; // accumulate per category total
                 const confirmedTotal = confirmedSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
-
+                const quotedTotal = quotedSubs.reduce((a, b) => a + (b.QuotedValue || 0), 0) + tentativeTotal + confirmedTotal;
                 return (
                   <React.Fragment key={i}>
                     <tr
@@ -533,22 +544,22 @@ const SalesDashboard: React.FC = () => {
                       style={{ cursor: "pointer" }}
                     >
                       <td>
-                        {/* <span className="expand-icon">{expanded ? "▼" : "▶"}</span> */}
                         {catKey}
                       </td>
                       <td className="num">{formatCurrency(openTotal)}</td>
-                      <td className="num">{formatCurrency(quotedTotal)}</td>
                       <td className="num">{formatCurrency(tentativeTotal)}</td>
                       <td className="num">{formatCurrency(confirmedTotal)}</td>
+                      <td className="num">{formatCurrency(quotedTotal)}</td>
                     </tr>
 
                     {expanded && (
                       <>
                         {[
                           { type: "Open", data: openSubs },
-                          { type: "Quoted", data: quotedSubs },
                           { type: "Tentative", data: tentativeSubs },
                           { type: "Confirmed", data: confirmedSubs },
+                          { type: "Quoted", data: mergedQuoted },
+                          // { type: "Quoted", data: quotedSubs  },
                         ].map(({ type, data }) =>
                           data.map((s, idx) => (
                             <tr key={`${catKey}-${type}-${idx}`} className="sub-row">
@@ -556,9 +567,14 @@ const SalesDashboard: React.FC = () => {
                                 {s.subcategory || s.designcategory || s.enquirytype || "—"}
                               </td>
                               <td className="num">{type === "Open" ? formatCurrency(s.TotalValue) : ""}</td>
-                              <td className="num">{type === "Quoted" ? formatCurrency(s.QuotedValue) : ""}</td>
                               <td className="num">{type === "Tentative" ? formatCurrency(s.TentativeValue) : ""}</td>
                               <td className="num">{type === "Confirmed" ? formatCurrency(s.TotalValue) : ""}</td>
+                              {/* <td className="num">{type === "Quoted" ? formatCurrency(s.QuotedValue)  : ""}</td>  */}
+                              <td className="num">
+                                {type === "Quoted"
+                                  ? formatCurrency((s.QuotedValue || 0) + (s.TentativeValue || 0) + (s.TotalValue || 0))
+                                  : ""}
+                              </td>
                             </tr>
                           ))
                         )}
@@ -570,21 +586,56 @@ const SalesDashboard: React.FC = () => {
             </tbody>
             <tfoot>
               <tr className="total-row">
+
                 <td>Total Orders</td>
+                {/* 🟢 OPEN TOTAL */}
                 <td className="num">
                   {formatCurrency(openOrders.reduce((a, b) => a + (b.TotalValue || 0), 0))}
                 </td>
+
+                {/* 🔵 TENTATIVE TOTAL */}
                 <td className="num">
-                  {formatCurrency(quotedOrders.reduce((a, b) => a + (b.QuotedValue || 0), 0))}
+                  {(() => {
+                    const totalTentativeAllCats = [
+                      "Domestic Layout",
+                      "Export Layout",
+                      "ONSITE",
+                      "Analysis",
+                      "VA",
+                      "NPI",
+                    ].reduce((total, catKey) => {
+                      const tentativeSubs = filterOrders(tentativeOrders, catKey);
+                      const tentativeTotal = tentativeSubs.reduce((a, b) => a + (b.TentativeValue || 0), 0);
+                      return total + tentativeTotal;
+                    }, 0);
+                    return formatCurrency(totalTentativeAllCats);
+                  })()}
                 </td>
-                <td className="num">
-                  {formatCurrency(tentativeOrders.reduce((a, b) => a + (b.TentativeValue || 0), 0))}
-                </td>
+
+                {/* 🔴 CONFIRMED TOTAL */}
                 <td className="num">
                   {formatCurrency(confirmedOrders.reduce((a, b) => a + (b.TotalValue || 0), 0))}
                 </td>
+
+
+                {/* 🟠 QUOTED */}
+                <td className="num">
+                  {(() => {
+                    const total = mergedQuoted.reduce(
+                      (sum, x) =>
+                        sum +
+                        (x.QuotedValue || 0) +
+                        (x.TentativeValue || 0) +
+                        (x.ConfirmedValue || 0),
+                      0
+                    );
+                    return formatCurrency(total);
+                  })()}
+                </td>
+
               </tr>
             </tfoot>
+
           </table>
         </div>
       </motion.div>
