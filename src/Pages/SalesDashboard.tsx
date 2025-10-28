@@ -94,7 +94,7 @@ const SalesDashboard: React.FC = () => {
 
     const category = designCatFilter?.trim()?.toLowerCase();
 
-    return orders.filter((x) => {
+    return  orders.filter((x) => {
       const type = x.type?.trim();
       const enquiry = x.enquirytype?.trim()?.toUpperCase();
       const layout = x.layout?.trim()?.toLowerCase();
@@ -107,19 +107,31 @@ const SalesDashboard: React.FC = () => {
 
       // === 2️⃣ CONFIRMED ORDERS ===
       if (x.TotalValue !== undefined && "designcategory" in x) {
-        return (
-          designCat === category &&
-          type === typeFilter
-        );
+        // normalize fields
+        const designCat = x.designcategory?.toString().trim().toLowerCase() || "";
+        const category = designCatFilter?.toString().trim().toLowerCase() || "";
+        const type = x.type?.toString().trim() || "";
+
+        // categories that should ignore type filter
+        const ignoreTypeFor = ["analysis", "va", "npi"];
+
+        // ✅ skip typeFilter for Analysis, VA, NPI
+        if (ignoreTypeFor.includes(category)) {
+          return designCat === category;
+        }
+
+        // ✅ apply typeFilter for Layout, Onsite, etc.
+        return designCat === category && type === typeFilter;
       }
+
 
       // === 3️⃣ OPEN ORDERS ===
       if ("playout" in x) {
         switch (category) {
           case "layout": return type === typeFilter && x.playout > 0;
-          case "analysis": return type === typeFilter && x.panalysis > 0;
-          case "va": return type === typeFilter && x.pVA > 0;
-          case "npi": return type === typeFilter && x.pNPI > 0;
+          case "analysis": return type === x.panalysis > 0;
+          case "va": return type === x.pVA > 0;
+          case "npi": return type === x.pNPI > 0;
           default: return false;
         }
       }
@@ -209,8 +221,7 @@ const SalesDashboard: React.FC = () => {
             emi_system_level === "YES" ||
             thermal_board_level === "YES" ||
             thermal_system_level === "YES" ||
-            layout?.includes("analysis")) &&
-          enquiry === "OFFSHORE";
+            layout?.includes("analysis"));
 
         // --- VA ---
         const isVA =
@@ -223,7 +234,6 @@ const SalesDashboard: React.FC = () => {
             hardware_others === "YES" ||
             DesignOutSource === "YES"
           ) &&
-          enquiry === "OFFSHORE" &&
           (
             layout?.includes("fabrication") ||
             layout?.includes("hardware")
@@ -241,18 +251,21 @@ const SalesDashboard: React.FC = () => {
             hardware_others === "YES" ||
             DesignOutSource === "YES"
           ) &&
-          enquiry === "OFFSHORE" &&
           (
             layout?.includes("assembly") ||
             layout?.includes("pcba")
           );
 
-        if (category === "layout" && isLayout && type === typeFilter) return true;
-        if (category === "analysis" && isAnalysis && type === typeFilter) return true;
-        if (category === "va" && isVA && type === typeFilter) return true;
-        if (category === "npi" && isNPI && type === typeFilter) return true;
+        if (category === "layout" && (isLayout || isAnalysis || isVA || isNPI) && type === typeFilter) return true;
+        if (category === "analysis" && isAnalysis) return true;
+        if (category === "va" && isVA) return true;
+        if (category === "npi" && isNPI) return true;
       }
 
+  //     return false;
+  //   });
+  //   return result;
+  // };
       return false;
     });
   };
