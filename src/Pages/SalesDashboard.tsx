@@ -68,17 +68,17 @@ const SalesDashboard: React.FC = () => {
   // console.log("tentativeOrdersOrders:", tentativeOrders);
   // console.log("confirmedOrders:", confirmedOrders);
 
-  // ✅ merge once before looping over categories
-  const mergedQuoted = quotedOrders.map((q) => {
-    const tent = tentativeOrders.find((t) => t.subcategory === q.subcategory);
-    const conf = confirmedOrders.find((c) => c.subcategory === q.subcategory);
+  // // ✅ merge once before looping over categories
+  // const mergedQuoted = quotedOrders.map((q) => {
+  //   const tent = tentativeOrders.find((t) => t.subcategory === q.subcategory);
+  //   const conf = confirmedOrders.find((c) => c.subcategory === q.subcategory);
 
-    return {
-      ...q,
-      TentativeValue: tent?.TentativeValue || 0,
-      ConfirmedValue: conf?.TotalValue || 0,
-    };
-  });
+  //   return {
+  //     ...q,
+  //     TentativeValue: tent?.TentativeValue || 0,
+  //     ConfirmedValue: conf?.TotalValue || 0,
+  //   };
+  // });
 
   // === Pie data aggregation ===
   const aggregatedByCategory = chartData.reduce((acc: any[], cur: any) => {
@@ -531,12 +531,12 @@ const SalesDashboard: React.FC = () => {
                 const quotedSubs = filterOrders(quotedOrders, catKey);
 
                 const openTotal = openSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
-                // const quotedTotal = quotedSubs.reduce((a, b) => a + (b.QuotedValue || 0), 0);
                 const tentativeTotal = tentativeSubs.reduce((a, b) => a + (b.TentativeValue || 0), 0);
                 // TentativeGrandTotal += tentativeTotal; // accumulate per category total
                 const confirmedTotal = confirmedSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
-                const quotedTotal = quotedSubs.reduce((a, b) => a + (b.QuotedValue || 0), 0) + tentativeTotal + confirmedTotal;
-                return (
+               // const quotedTotal = quotedSubs.reduce((a, b) => a + (b.QuotedValue || 0), 0) + tentativeTotal + confirmedTotal;
+                 const quotedTotal = quotedSubs.reduce((a, b) => a + (b.QuotedValue || 0), 0);
+               return (
                   <React.Fragment key={i}>
                     <tr
                       className="expandable-row"
@@ -558,8 +558,8 @@ const SalesDashboard: React.FC = () => {
                           { type: "Open", data: openSubs },
                           { type: "Tentative", data: tentativeSubs },
                           { type: "Confirmed", data: confirmedSubs },
-                          { type: "Quoted", data: mergedQuoted },
-                          // { type: "Quoted", data: quotedSubs  },
+                          // { type: "Quoted", data: mergedQuoted },
+                          { type: "Quoted", data: quotedSubs  },
                         ].map(({ type, data }) =>
                           data.map((s, idx) => (
                             <tr key={`${catKey}-${type}-${idx}`} className="sub-row">
@@ -569,12 +569,12 @@ const SalesDashboard: React.FC = () => {
                               <td className="num">{type === "Open" ? formatCurrency(s.TotalValue) : ""}</td>
                               <td className="num">{type === "Tentative" ? formatCurrency(s.TentativeValue) : ""}</td>
                               <td className="num">{type === "Confirmed" ? formatCurrency(s.TotalValue) : ""}</td>
-                              {/* <td className="num">{type === "Quoted" ? formatCurrency(s.QuotedValue)  : ""}</td>  */}
-                              <td className="num">
+                               <td className="num">{type === "Quoted" ? formatCurrency(s.QuotedValue)  : ""}</td> 
+                              {/* <td className="num">
                                 {type === "Quoted"
                                   ? formatCurrency((s.QuotedValue || 0) + (s.TentativeValue || 0) + (s.TotalValue || 0))
                                   : ""}
-                              </td>
+                              </td> */}
                             </tr>
                           ))
                         )}
@@ -620,19 +620,22 @@ const SalesDashboard: React.FC = () => {
 
                 {/* 🟠 QUOTED */}
                 <td className="num">
-                  {(() => {
-                    const total = mergedQuoted.reduce(
-                      (sum, x) =>
-                        sum +
-                        (x.QuotedValue || 0) +
-                        (x.TentativeValue || 0) +
-                        (x.ConfirmedValue || 0),
-                      0
-                    );
-                    return formatCurrency(total);
+                    {(() => {
+                    const totalQuotedAllCats = [
+                      "Domestic Layout",
+                      "Export Layout",
+                      "ONSITE",
+                      "Analysis",
+                      "VA",
+                      "NPI",
+                    ].reduce((total, catKey) => {
+                      const quotedSubs = filterOrders(quotedOrders, catKey);
+                      const quotedTotal = quotedSubs.reduce((a, b) => a + (b.QuotedValue || 0), 0);
+                      return total + quotedTotal;
+                    }, 0);
+                    return formatCurrency(totalQuotedAllCats);
                   })()}
                 </td>
-
               </tr>
             </tfoot>
 
