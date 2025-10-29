@@ -64,22 +64,6 @@ const SalesDashboard: React.FC = () => {
     }
   };
 
-  // console.log("quotedordeer:", quotedOrders);
-  // console.log("tentativeOrdersOrders:", tentativeOrders);
-  // console.log("confirmedOrders:", confirmedOrders);
-
-  // // ✅ merge once before looping over categories
-  // const mergedQuoted = quotedOrders.map((q) => {
-  //   const tent = tentativeOrders.find((t) => t.subcategory === q.subcategory);
-  //   const conf = confirmedOrders.find((c) => c.subcategory === q.subcategory);
-
-  //   return {
-  //     ...q,
-  //     TentativeValue: tent?.TentativeValue || 0,
-  //     ConfirmedValue: conf?.TotalValue || 0,
-  //   };
-  // });
-
   // === Pie data aggregation ===
   const aggregatedByCategory = chartData.reduce((acc: any[], cur: any) => {
     const existing = acc.find((a) => a.designcategory === cur.designcategory);
@@ -491,10 +475,11 @@ const SalesDashboard: React.FC = () => {
           </div>
         </motion.div>
       ) : (
-        <p className="empty-message">No chart data to display.</p>
+        <p></p>
       )}
 
       {/* === Category Summary === */}
+      {/* {showData   && ( */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
@@ -532,11 +517,13 @@ const SalesDashboard: React.FC = () => {
 
                 const openTotal = openSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
                 const tentativeTotal = tentativeSubs.reduce((a, b) => a + (b.TentativeValue || 0), 0);
-                // TentativeGrandTotal += tentativeTotal; // accumulate per category total
                 const confirmedTotal = confirmedSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
-               // const quotedTotal = quotedSubs.reduce((a, b) => a + (b.QuotedValue || 0), 0) + tentativeTotal + confirmedTotal;
-                 const quotedTotal = quotedSubs.reduce((a, b) => a + (b.QuotedValue || 0), 0);
-               return (
+                // Combine all values per category (Quoted + Tentative + Confirmed)
+                const quotedTotal = quotedSubs.reduce((a, b) => a + (b.QuotedValue || 0), 0) +
+                  tentativeSubs.reduce((a, b) => a + (b.TentativeValue || 0), 0) +
+                  confirmedSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
+
+                return (
                   <React.Fragment key={i}>
                     <tr
                       className="expandable-row"
@@ -559,7 +546,7 @@ const SalesDashboard: React.FC = () => {
                           { type: "Tentative", data: tentativeSubs },
                           { type: "Confirmed", data: confirmedSubs },
                           // { type: "Quoted", data: mergedQuoted },
-                          { type: "Quoted", data: quotedSubs  },
+                          { type: "Quoted", data: quotedSubs },
                         ].map(({ type, data }) =>
                           data.map((s, idx) => (
                             <tr key={`${catKey}-${type}-${idx}`} className="sub-row">
@@ -569,12 +556,7 @@ const SalesDashboard: React.FC = () => {
                               <td className="num">{type === "Open" ? formatCurrency(s.TotalValue) : ""}</td>
                               <td className="num">{type === "Tentative" ? formatCurrency(s.TentativeValue) : ""}</td>
                               <td className="num">{type === "Confirmed" ? formatCurrency(s.TotalValue) : ""}</td>
-                               <td className="num">{type === "Quoted" ? formatCurrency(s.QuotedValue)  : ""}</td> 
-                              {/* <td className="num">
-                                {type === "Quoted"
-                                  ? formatCurrency((s.QuotedValue || 0) + (s.TentativeValue || 0) + (s.TotalValue || 0))
-                                  : ""}
-                              </td> */}
+                              <td className="num">{type === "Quoted" ? formatCurrency(s.QuotedValue) : ""}</td>
                             </tr>
                           ))
                         )}
@@ -617,10 +599,9 @@ const SalesDashboard: React.FC = () => {
                   {formatCurrency(confirmedOrders.reduce((a, b) => a + (b.TotalValue || 0), 0))}
                 </td>
 
-
-                {/* 🟠 QUOTED */}
+                {/* 🟠 QUOTED TOTAL (includes Quoted + Tentative + Confirmed) */}
                 <td className="num">
-                    {(() => {
+                  {(() => {
                     const totalQuotedAllCats = [
                       "Domestic Layout",
                       "Export Layout",
@@ -630,9 +611,25 @@ const SalesDashboard: React.FC = () => {
                       "NPI",
                     ].reduce((total, catKey) => {
                       const quotedSubs = filterOrders(quotedOrders, catKey);
-                      const quotedTotal = quotedSubs.reduce((a, b) => a + (b.QuotedValue || 0), 0);
-                      return total + quotedTotal;
+                      const tentativeSubs = filterOrders(tentativeOrders, catKey);
+                      const confirmedSubs = filterOrders(confirmedOrders, catKey);
+
+                      const quotedTotal = quotedSubs.reduce(
+                        (a, b) => a + (b.QuotedValue || 0),
+                        0
+                      );
+                      const tentativeTotal = tentativeSubs.reduce(
+                        (a, b) => a + (b.TentativeValue || 0),
+                        0
+                      );
+                      const confirmedTotal = confirmedSubs.reduce(
+                        (a, b) => a + (b.TotalValue || 0),
+                        0
+                      );
+
+                      return total + quotedTotal + tentativeTotal + confirmedTotal;
                     }, 0);
+
                     return formatCurrency(totalQuotedAllCats);
                   })()}
                 </td>
@@ -642,6 +639,7 @@ const SalesDashboard: React.FC = () => {
           </table>
         </div>
       </motion.div>
+      {/* )} */}
     </div>
   );
 };
