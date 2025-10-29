@@ -1,11 +1,12 @@
 /* Dashboard main container */
 .dashboard-container {
   min-height: 100vh;
-  padding: 2rem;
+  /* padding: 2rem; */
+    padding: 6rem 2rem 2rem; /* 👈 top padding for navbar (80px ≈ 5rem) */
   background: linear-gradient(to bottom right, #e0e7ff, #c7d2fe);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  /* gap: 1.5rem; */
   font-family: 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -25,10 +26,7 @@
   justify-content: center;
   align-items: center;
   gap: 8px;
-  /* background-color: rgba(255, 255, 255, 0.8);
-  border: 1px solid #e0e7ff;
-  border-radius: 12px; */
-  padding:40px 15px;
+  padding:8px 8px;
 }
 
 /* Label and input inline */

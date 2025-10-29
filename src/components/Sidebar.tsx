@@ -1,87 +1,78 @@
+// Sidebar.js
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import * as FaIcons from "react-icons/fa";
 import * as AiIcons from "react-icons/ai";
 import { SidebarData } from "./SidebarData";
 import SubMenu from "./SubMenu";
 import { IconContext } from "react-icons/lib";
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for React Router v6
-import { baseUrl } from '../const/BaseUrl';
-import axios from 'axios';
+import axios from "axios";
+import { baseUrl } from "../const/BaseUrl";
+import { motion, AnimatePresence } from "framer-motion"; // ✅ Added
 
-// Welcome horizontal  bar
-const Nav = styled.div`    
-    background: #85C1E9 ;
-    height: 80px;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width:100%;
-    margin-left:0px;
-    margin-right:0px;
-    position: fixed;  
-    top: 0;           /* Stick it to the top */
-    z-index: 1000;    /* Ensure it's above other elements */
+// === Top Navbar ===
+const Nav = styled.div`
+  background: #85c1e9;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
 `;
 
 const NavIcon = styled(Link)`
-    margin-left: 2rem;
-    font-size: 2rem;
-    height: 80px;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-`;
-
-// Wrapper for the right corner elements
-const RightCorner = styled.div`
-    display: flex;
-    align-items: center;
-    margin-left: auto;
-    padding: 20px;
-`;
-
-interface SidebarNavProps {
-    sidebar: boolean;
-}
-
-//vertical side bar
-const SidebarNav = styled.nav<SidebarNavProps>`
- background: #34495E;
-    width: 250px;
-    height: calc(100vh - 80px);  /* Subtract the height of the Nav (header) */
-    display: flex;
-    justify-content: center;
-    position: fixed;
-    top: 80px; /* Align with the bottom of the fixed Nav */
-    left: ${({ sidebar }) => (sidebar ? "0" : "-100%")};
-    transition: 350ms;
-    z-index: 999; /* Ensure it's under the Nav header */
-    overflow-y: auto;  /* Allow scrolling in the sidebar */
+  margin-left: 2rem;
+  font-size: 2rem;
+  height: 80px;
+  display: flex;
+  align-items: center;
 `;
 
 const SidebarWrap = styled.div`
-    width: 100%;
+  width: 100%;
 `;
 
-const Sidebar = ({ sessionUserID }: { sessionUserID: string }) => {
-    const [sidebar, setSidebar] = useState(false);
-    const showSidebar = () => setSidebar(!sidebar);
-    const navigate = useNavigate();
-    const [_userName, setUserName] = useState(''); // if unused then prefix with _
+const RightCorner = styled.div`
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  padding: 20px;
+  color: #2c3e50;
 
-    const handleLogout = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+  a {
+    text-decoration: none;
+    color: #2c3e50;
+    font-weight: 500;
+
+    &:hover {
+      color: #1b2631;
+    }
+  }
+`;
+
+const Sidebar = ({ sessionUserID }) => {
+    const [sidebar, setSidebar] = useState(false);
+    const [activeMenu, setActiveMenu] = useState(null);
+    const [userName, setUserName] = useState("");
+    const navigate = useNavigate();
+    const location = useLocation();
+    const showSidebar = () => setSidebar(!sidebar);
+
+    const handleLogout = (e) => {
         e.preventDefault();
-        sessionStorage.removeItem('SessionUserID');
-        navigate('/');
+        sessionStorage.removeItem("SessionUserID");
+        navigate("/");
     };
 
     useEffect(() => {
         const fetchUserName = async () => {
             try {
-                const response = await axios.get<{ Name: string }[]>(`${baseUrl}/getUserName?ploginid=${sessionUserID}`)
-                setUserName(response.data[0]?.Name ?? '');
+                const response = await axios.get<{ Name: string }[]>(`${baseUrl}/getUserName?pLoginId=${sessionUserID}`)
+                setUserName(response.data || '');
             } catch (error) {
                 console.error("Error fetching username:", error);
             }
@@ -94,61 +85,87 @@ const Sidebar = ({ sessionUserID }: { sessionUserID: string }) => {
         }
     }, [sessionUserID, navigate]);
 
+    // Optional: watch userName state
+    useEffect(() => {
+        if (userName) {
+            console.log("✅ userName updated in state:", userName);
+        }
+    }, [userName]);
+
+      // ✅ Automatically close sidebar when route changes
+  useEffect(() => {
+    setSidebar(false);
+  }, [location.pathname]);
+  
     return (
         <>
-            <IconContext.Provider value={{ color: "#5D6D7E" }}> {/* three line symbol */}
+            <IconContext.Provider value={{ color: "#5D6D7E" }}>
+                {/* === Top Nav === */}
                 <Nav>
                     <NavIcon to="#">
-                        <FaIcons.FaBars
-                            onClick={showSidebar}
-                        />
+                        <FaIcons.FaBars onClick={showSidebar} />
                     </NavIcon>
                     <h1
                         style={{
                             textAlign: "center",
                             marginLeft: "300px",
                             color: "#5D6D7E",
+                            fontSize: "30px",
                         }}
                     >
                         Welcome to Sienna ECAD Enterprise Management System
                     </h1>
                     <RightCorner>
-                        <a
-                            href={sessionUserID}
-                        >
-                            {`${"Software Developer"} `}
-                        </a>
-                        <span style={{ margin: "0 8px" }}>   </span>
-                        <a    
-                            href="http://localhost:5173"
-                            onClick={handleLogout}
-                        >
+                        <span>{userName || "User"}</span>
+                        <span style={{ margin: "0 8px" }}>|</span>
+                        <a href="/" onClick={handleLogout}>
                             Log Out
                         </a>
                     </RightCorner>
                 </Nav>
-                <SidebarNav sidebar={sidebar}> {/* on click of three line button sidebar is set to true , if true call SidebarNav which in turn calls SidebarData and loop items in it and display */}
-                    <SidebarWrap>
-                        <NavIcon to="#">
-                            <AiIcons.AiOutlineClose
-                                onClick={showSidebar}
-                            />
-                        </NavIcon>
-                        {SidebarData.map((item, index) => {
-                            return (
-                                <SubMenu
-                                    item={item}
-                                    key={index}
-                                />
-                            );
-                        })}
-                    </SidebarWrap>
-                </SidebarNav>
+
+                {/* === Animated Sidebar === */}
+                <AnimatePresence>
+                    {sidebar && (
+                        <motion.nav
+                            key="sidebar"
+                            initial={{ x: "-100%" }}
+                            animate={{ x: 0 }}
+                            exit={{ x: "-100%" }}
+                            transition={{ duration: 0.35, ease: "easeInOut" }}
+                            style={{
+                                background: "#34495e",
+                                width: "250px",
+                                height: "calc(100vh - 80px)",
+                                position: "fixed",
+                                top: "80px",
+                                left: 0,
+                                zIndex: 999,
+                                overflowY: "auto",
+                                boxShadow: "3px 0px 10px rgba(0,0,0,0.3)",
+                            }}
+                        >
+                            <SidebarWrap>
+                                <NavIcon to="#">
+                                    <AiIcons.AiOutlineClose onClick={showSidebar} />
+                                </NavIcon>
+
+                                {SidebarData.map((item, index) => (
+                                    <SubMenu
+                                        key={index}
+                                        item={item}
+                                        activeMenu={activeMenu}
+                                        setActiveMenu={setActiveMenu}
+                                        closeSidebar={() => setSidebar(false)}
+                                    />
+                                ))}
+                            </SidebarWrap>
+                        </motion.nav>
+                    )}
+                </AnimatePresence>
             </IconContext.Provider>
         </>
     );
 };
 
-
 export default Sidebar;
-

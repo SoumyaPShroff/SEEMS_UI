@@ -17,7 +17,11 @@ const Home = () => {
         }
     }, [sessionUserID]);
 
-    if (!sessionUserID) return null; // Prevent rendering if not logged in
+    // if (!sessionUserID) return null; // Prevent rendering if not logged in
+    if (!sessionUserID) {
+        console.log("No session found — redirecting to login...");
+        return null;
+    }
 
     return (
         <>
@@ -27,7 +31,6 @@ const Home = () => {
                 <Route path="/SeemsHomeSubMenu" element={<SeemsHomeSubMenu />} />
                 <Route path="/RptBillingPlanner" element={<RptBillingPlanner />} />
                 <Route path="/SalesDashboard" element={<SalesDashboard />} />
-                <Route path="/ManagerDashboardSubMenu" element={<ManagerDashboardSubMenu />} />
                 <Route path="/support" element={<Support />} />
                 <Route path="*" element={<Blank />} />
             </Routes>

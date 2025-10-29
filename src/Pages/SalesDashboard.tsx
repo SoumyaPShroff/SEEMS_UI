@@ -268,6 +268,19 @@ const SalesDashboard: React.FC = () => {
 
   return (
     <div className="dashboard-container">
+      <div
+        style={{
+          padding: "15px 25px",
+          color: "#216fbdff",
+          fontWeight: "bold",
+          fontSize: "20px",
+          textAlign: "center",   // ✅ centers text
+          width: "100%",          // ✅ ensures it stretches across container
+        }}
+      >
+        Sales Management Dashboard
+      </div>
+
       {/* === Filters === */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

@@ -1,7 +1,7 @@
-import * as FaIcons from "react-icons/fa";
-//import * as AiIcons from "react-icons/ai";
+// SidebarData.js
 import * as IoIcons from "react-icons/io";
 import * as RiIcons from "react-icons/ri";
+import * as FaIcons from "react-icons/fa";
 
 export const SidebarData = [
     {
@@ -10,7 +10,6 @@ export const SidebarData = [
         icon: <FaIcons.FaEnvelopeOpenText />,
         iconClosed: <RiIcons.RiArrowDownSFill />,
         iconOpened: <RiIcons.RiArrowUpSFill />,
-
         subNav: [
             {
                 title: "Home",
@@ -18,30 +17,40 @@ export const SidebarData = [
                 icon: <IoIcons.IoIosPaper />,
             },
             {
-                title: "Schedule Tracker",
-                path: "/Home/ScheduleTrackerSubMenu",
+                title: "Sales Design",
                 icon: <IoIcons.IoIosPaper />,
+                iconClosed: <RiIcons.RiArrowDownSFill />,
+                iconOpened: <RiIcons.RiArrowUpSFill />,
+                subNav: [
+                    {
+                        title: "Management",
+                        icon: <IoIcons.IoIosPaper />,
+                        iconClosed: <RiIcons.RiArrowDownSFill />,
+                        iconOpened: <RiIcons.RiArrowUpSFill />,
+                        subNav: [
+                            {
+                                title: "Sales Management Dashboard",
+                                path: "/Home/SalesDashboard",
+                                icon: <IoIcons.IoIosPaper />,
+                            },
+                        ],
+                    },
+                ],
             },
             {
-                title: "Billing Planner",
-                path: "/Home/RptBillingPlanner",
-                icon: <IoIcons.IoIosPaper />,
+                title: "Reports",
+                icon: <FaIcons.FaFileAlt />,
+                iconClosed: <RiIcons.RiArrowDownSFill />,
+                iconOpened: <RiIcons.RiArrowUpSFill />,
+                subNav: [
+                    {
+                        title: "Billing Planner",
+                        path: "/Home/RptBillingPlanner",
+                        icon: <IoIcons.IoIosPaper />,
+                    },
+                ],
             },
-            {
-                title: "Sales Management Dashboard",
-                path: "/Home/SalesDashboard",
-                icon: <IoIcons.IoIosPaper />,
-            },
-            {
-                title: "Timesheet",
-                path: "/Home/DailyTimesheet",
-                icon: <IoIcons.IoIosPaper />,
-            },
-            {
-                title: "Manager Dashboard",
-                path: "/Home/ManagerDashboardSubMenu",
-                icon: <IoIcons.IoIosPaper />,
-            }
+
         ],
     },
     {

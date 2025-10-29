@@ -22,12 +22,8 @@ const App: React.FC = () => {
 
         {/* Home Route */}
         <Route path="/Home/*" element={userId ? <Home /> : <Navigate to="/Login" replace />} />
-
-        {/* <Route path="/ResetPassword" element={<ResetPassword loginId={userId  ?? ""} />} /> */}
-        {/* <Route path="/ForgotPassword" element={<ForgotPassword loginId={userId  ?? ""} />} />   */}
-
-         <Route path="/ResetPassword" element={<ResetPassword/>} />
-         <Route path="/ForgotPassword" element={<ForgotPassword/>} />
+        <Route path="/ResetPassword" element={<ResetPassword />} />
+        <Route path="/ForgotPassword" element={<ForgotPassword />} />
       </Routes>
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
     </Router>
