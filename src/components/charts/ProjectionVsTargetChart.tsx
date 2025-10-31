@@ -1,9 +1,10 @@
-import { Chart } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 import { useEffect, useState } from "react";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend, } from "chart.js";
 import { bucketFor, normCat } from "../utils/billingutils";
-import ChartDataLabels from "chartjs-plugin-datalabels";
+// import ChartDataLabels from "chartjs-plugin-datalabels";
 import type { ChartOptions } from 'chart.js';
+
 // ✅ Register required components
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -142,7 +143,7 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
 
   return (
     <div style={{ height: "350px", width: "100%" }}>
-      <Chart type="bar" data={chartData} options={chartOptions} plugins={[ChartDataLabels]} />;
+      <Bar data={chartData} options={chartOptions} />;
     </div>
   );
 };

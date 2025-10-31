@@ -1,19 +1,23 @@
-import React, { useState , useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { baseUrl } from "./const/BaseUrl";
 import "./Styles/ResetForgotPswd.css"
-import { useNavigate , useLocation} from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+
+interface ForgotPasswordResponse {
+  message: string;
+}
 
 const ForgotPassword: React.FC = () => {
   const [message, setMessage] = useState<string>("");
   const [loading, setLoading] = useState(false);
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   const location = useLocation();
-    // Try to read loginId from router state or sessionStorage
+  // Try to read loginId from router state or sessionStorage
   const loginIdFromState = (location.state as { loginId?: string })?.loginId ?? "";
   const [loginId, setLoginId] = useState<string>(loginIdFromState || "");
 
-    // Load from sessionStorage if not in state
+  // Load from sessionStorage if not in state
   useEffect(() => {
     if (!loginIdFromState) {
       const sessionId = sessionStorage.getItem("SessionUserID");
@@ -35,8 +39,8 @@ const ForgotPassword: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await axios.get(`${baseUrl}/forgotpassword?ploginid=${loginId}`)
-
+      //const response = await axios.get(`${baseUrl}/forgotpassword?ploginid=${loginId}`)
+      const response = await axios.get<ForgotPasswordResponse>(`${baseUrl}/forgotpassword?ploginid=${loginId}`);
       if (response.status === 200) {
         setMessage(
           response.data.message ||

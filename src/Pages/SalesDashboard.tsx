@@ -12,6 +12,7 @@ import {
   Legend,
 } from "recharts";
 import "../styles/SalesDashboard.css";
+import type { PieLabelRenderProps } from "recharts";
 
 const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#00C49F", "#FFBB28"];
 
@@ -77,8 +78,23 @@ const SalesDashboard: React.FC = () => {
   const formatCurrency = (val: number) =>
     val ? `₹${val.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "₹0";
 
+  type OrderItem = {
+    type?: string;
+    enquirytype?: string;
+    layout?: string;
+    designcategory?: string;
+    monthNo?: number;
+    totalValue?: number;
+    TotalValue?: number;
+    TentativeValue?: number;
+    QuotedValue?: number;
+    currency_id?: number;
+    [key: string]: any;
+  };
+
   // === Unified Filtering Logic (Final Optimized Version) ===
-  const filterOrders = (orders, catKey) => {
+  // const filterOrders = (orders, catKey) => {
+  const filterOrders = (orders: OrderItem[], catKey: string): OrderItem[] => {
     if (!orders || !catKey) return [];
 
     // Split type (Domestic/Export) and category (Layout/Analysis/VA/NPI/Onsite)
@@ -129,16 +145,21 @@ const SalesDashboard: React.FC = () => {
       if ("playout" in x) {
         switch (category) {
           case "layout": return type === typeFilter && x.playout > 0;
-          case "analysis": return type === x.panalysis > 0;
-          case "va": return type === x.pVA > 0;
-          case "npi": return type === x.pNPI > 0;
+          // case "analysis": return type === x.panalysis > 0;
+          case "analysis": return type === "analysis" && (x.panalysis ?? 0) > 0;
+          // case "va": return type === x.pVA > 0;
+          case "va": return type === "va" && (x.pVA ?? 0) > 0;
+          // case "npi": return type === x.pNPI > 0;
+          case "npi": return type === "npi" && (x.pNPI ?? 0) > 0;
           default: return false;
         }
       }
 
       // === 4️⃣ TENTATIVE / QUOTED ORDERS ===
-      const hasQuoted = x.QuotedValue > 0;
-      const hasTentative = x.TentativeValue > 0;
+      // const hasQuoted = x.QuotedValue > 0;
+      // const hasTentative = x.TentativeValue > 0;
+      const hasQuoted = (x.QuotedValue ?? 0) > 0;
+      const hasTentative = (x.TentativeValue ?? 0) > 0;
 
       if (hasQuoted || hasTentative) {
         const {
@@ -475,8 +496,12 @@ const SalesDashboard: React.FC = () => {
                   dataKey="totalValue"
                   nameKey="designcategory"
                   outerRadius={100}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(1)}%`}
-                >
+                  // label={({ name, percent }) => `${name} ${(percent * 100).toFixed(1)}%`}
+                  //  label={({ name, percent }: { name: string; percent: number }) => `${name} ${(percent * 100).toFixed(1)}%`}   
+                  label={(props: PieLabelRenderProps) => {
+                    if (!props || typeof props.percent !== "number" || typeof props.name !== "string") return null;
+                    return `${props.name} ${(props.percent * 100).toFixed(1)}%`;
+                  }}             >
                   {aggregatedByCategory.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
@@ -520,7 +545,7 @@ const SalesDashboard: React.FC = () => {
                 "VA",
                 "NPI",
               ].map((catKey, i) => {
-                const [typeFilter, designCatFilter] = catKey.split(" ");
+                // const [typeFilter, designCatFilter] = catKey.split(" ");
                 const [expanded, setExpanded] = useState(false);
 
                 const openSubs = filterOrders(openOrders, catKey);
@@ -528,14 +553,22 @@ const SalesDashboard: React.FC = () => {
                 const confirmedSubs = filterOrders(confirmedOrders, catKey);
                 const quotedSubs = filterOrders(quotedOrders, catKey);
 
-                const openTotal = openSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
-                const tentativeTotal = tentativeSubs.reduce((a, b) => a + (b.TentativeValue || 0), 0);
-                const confirmedTotal = confirmedSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
-                // Combine all values per category (Quoted + Tentative + Confirmed)
-                const quotedTotal = quotedSubs.reduce((a, b) => a + (b.QuotedValue || 0), 0) +
-                  tentativeSubs.reduce((a, b) => a + (b.TentativeValue || 0), 0) +
-                  confirmedSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
+                // const openTotal = openSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
+                // const tentativeTotal = tentativeSubs.reduce((a, b) => a + (b.TentativeValue || 0), 0);
+                // const confirmedTotal = confirmedSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
+                // // Combine all values per category (Quoted + Tentative + Confirmed)
+                // const quotedTotal = quotedSubs.reduce((a, b) => a + (b.QuotedValue || 0), 0) +
+                //   tentativeSubs.reduce((a, b) => a + (b.TentativeValue || 0), 0) +
+                //   confirmedSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
 
+
+                const openTotal = openSubs.reduce((a: number, b: OrderItem) => a + (b.TotalValue || 0), 0);
+                const tentativeTotal = tentativeSubs.reduce((a: number, b: OrderItem) => a + (b.TentativeValue || 0), 0);
+                const confirmedTotal = confirmedSubs.reduce((a: number, b: OrderItem) => a + (b.TotalValue || 0), 0);
+                const quotedTotal =
+                  quotedSubs.reduce((a: number, b: OrderItem) => a + (b.QuotedValue || 0), 0) +
+                  tentativeSubs.reduce((a: number, b: OrderItem) => a + (b.TentativeValue || 0), 0) +
+                  confirmedSubs.reduce((a: number, b: OrderItem) => a + (b.TotalValue || 0), 0);
                 return (
                   <React.Fragment key={i}>
                     <tr
@@ -566,10 +599,10 @@ const SalesDashboard: React.FC = () => {
                               <td className="sub-cat">
                                 {s.subcategory || s.designcategory || s.enquirytype || "—"}
                               </td>
-                              <td className="num">{type === "Open" ? formatCurrency(s.TotalValue) : ""}</td>
-                              <td className="num">{type === "Tentative" ? formatCurrency(s.TentativeValue) : ""}</td>
-                              <td className="num">{type === "Confirmed" ? formatCurrency(s.TotalValue) : ""}</td>
-                              <td className="num">{type === "Quoted" ? formatCurrency(s.QuotedValue) : ""}</td>
+                              <td className="num">{type === "Open" ? formatCurrency(s.TotalValue ?? 0) : ""}</td>
+                              <td className="num">{type === "Tentative" ? formatCurrency(s.TentativeValue ?? 0) : ""}</td>
+                              <td className="num">{type === "Confirmed" ? formatCurrency(s.TotalValue ?? 0) : ""}</td>
+                              <td className="num">{type === "Quoted" ? formatCurrency(s.QuotedValue ?? 0) : ""}</td>
                             </tr>
                           ))
                         )}

@@ -11,6 +11,10 @@ import axios from "axios";
 import { baseUrl } from "../const/BaseUrl";
 import { motion, AnimatePresence } from "framer-motion"; // ✅ Added
 
+interface SidebarProps {
+    sessionUserID: string;
+}
+
 // === Top Navbar ===
 const Nav = styled.div`
   background: #85c1e9;
@@ -54,15 +58,15 @@ const RightCorner = styled.div`
   }
 `;
 
-const Sidebar = ({ sessionUserID }) => {
+const Sidebar: React.FC<SidebarProps> = ({ sessionUserID }) => {
     const [sidebar, setSidebar] = useState(false);
-    const [activeMenu, setActiveMenu] = useState(null);
+    const [activeMenu, setActiveMenu] = useState<string | null>(null);
     const [userName, setUserName] = useState("");
     const navigate = useNavigate();
     const location = useLocation();
     const showSidebar = () => setSidebar(!sidebar);
 
-    const handleLogout = (e) => {
+    const handleLogout = (e: React.MouseEvent<HTMLElement>) => {
         e.preventDefault();
         sessionStorage.removeItem("SessionUserID");
         navigate("/");
@@ -71,8 +75,14 @@ const Sidebar = ({ sessionUserID }) => {
     useEffect(() => {
         const fetchUserName = async () => {
             try {
-                const response = await axios.get<{ Name: string }[]>(`${baseUrl}/getUserName?pLoginId=${sessionUserID}`)
-                setUserName(response.data || '');
+               // const response = await axios.get<UserResponse | UserResponse[]>(`${baseUrl}/getUserName?pLoginId=${sessionUserID}`);
+               const response = await axios.get<string>(`${baseUrl}/getUserName?pLoginId=${sessionUserID}`);
+               console.log(response);
+            setUserName(response.data || "");
+
+               // setUserName(response.data || "");
+               //setUserName(response.data[0] || ""); // if response returns object
+                console.log(name);
             } catch (error) {
                 console.error("Error fetching username:", error);
             }
@@ -92,11 +102,11 @@ const Sidebar = ({ sessionUserID }) => {
         }
     }, [userName]);
 
-      // ✅ Automatically close sidebar when route changes
-  useEffect(() => {
-    setSidebar(false);
-  }, [location.pathname]);
-  
+    // ✅ Automatically close sidebar when route changes
+    useEffect(() => {
+        setSidebar(false);
+    }, [location.pathname]);
+
     return (
         <>
             <IconContext.Provider value={{ color: "#5D6D7E" }}>
@@ -116,7 +126,7 @@ const Sidebar = ({ sessionUserID }) => {
                         Welcome to Sienna ECAD Enterprise Management System
                     </h1>
                     <RightCorner>
-                        <span>{userName || "User"}</span>
+                        <span>{userName ? userName : "User"}</span>
                         <span style={{ margin: "0 8px" }}>|</span>
                         <a href="/" onClick={handleLogout}>
                             Log Out

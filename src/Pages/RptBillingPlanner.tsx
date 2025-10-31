@@ -58,14 +58,22 @@ const initTotalsRow = (): TotalsRow => ({
   GrandTotal: 0,
 });
 
-const bucketFor = (job: string, enqType: string, typ: string): string | null => {
+const bucketFor = (job: string, enqType: string, typ: string, govtTender?: string): string | null => {
   if (!job) return null;
+  const isGovt = govtTender === "YES";
   if (job.endsWith("_VA")) return "VA";
   if (job.endsWith("_NPI")) return "NPI";
-  if (job.endsWith("_Analysis")) return "Analysis";
+  if (job.endsWith("_DFM")) return "DFM";
+  if (job.endsWith("_Lib")) return "Library";
+
+  //if (job.endsWith("_Analysis")) return "Analysis";
+  if (job.endsWith("_Analysis")) return isGovt ? "GovtAnalysis" : "Analysis";
+  if (isGovt) return "GovtLayout";
+
   if (enqType === "OFFSHORE" && typ === "Export") return "At Office Export";
   if (enqType === "OFFSHORE" && typ === "Domestic") return "At Office Domestic";
   if (enqType === "ONSITE" && typ === "Domestic") return "Onsite Domestic";
+
   return "Layout";
 };
 
@@ -80,17 +88,21 @@ const buildSummaryFromData = (data: BillingData[]) => {
     const typ = (r as any).type || "";
     const po = parseFloat(r.poAmount?.toString() || "0");
     const eco = parseFloat((r as any).eco || "0");
-
-    const key = bucketFor(job, enqType, typ);
+    const govtTender = (r as any).govt_tender || "";
+    const key = bucketFor(job, enqType, typ, govtTender);
     if (!key) return;
 
     if (!buckets[key]) buckets[key] = initTotalsRow();
 
     const addSeg = (tr: TotalsRow) => {
       if (key === "Analysis") tr.Analysis += po;
+      else if (key === "GovtAnalysis") tr.GovtAnalysis += po;
+      else if (key === "Layout") tr.Layout += po;
+      else if (key === "GovtLayout") tr.GovtLayout += po;
       else if (key === "VA") tr.VA += po;
       else if (key === "NPI") tr.NPI += po;
-      else tr.Layout += po;
+      else if (key === "Library") tr.Library += po;
+      else if (key === "DFM") tr.DFM += po;
 
       tr.ECO += eco;
       tr.GrandTotal =
@@ -289,6 +301,7 @@ const RptBillingPlanner: React.FC = () => {
     { field: "wipAmount", headerName: "WIPAmount", flex: 1 },
     { field: "enqType", headerName: "EnqType", flex: 1 },
     { field: "enquiryno", headerName: "Enquiry no", flex: 1 },
+    { field: "govt_tender", headerName: "govt_tender", flex: 1 },
     { field: "estimatedHours", headerName: "Estimated Hours", flex: 1 },
     { field: "poNumber", headerName: "PO Number", flex: 1 },
     { field: "hourlyRate", headerName: "HourlyRate", flex: 1 },
@@ -440,7 +453,7 @@ const RptBillingPlanner: React.FC = () => {
       )}
 
       {/* ✅ Show results only after data is ready */}
-      {!loadingData && showResults && ( 
+      {!loadingData && showResults && (
         <>
           <div>{renderSummaryTable()}</div>
           {/* === Row 1: 3 charts === */}
@@ -461,13 +474,13 @@ const RptBillingPlanner: React.FC = () => {
               marginBottom: "40px",
             }}
           >
-            <div style={{ flex: 1, background: "#fff", borderRadius: "8px",   boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px"  }}>
+            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
               <ProjectManagerChart data={data} />
             </div>
-            <div style={{ flex: 1, background: "#fff", borderRadius: "8px",   boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
+            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
               <SalesManagerChart data={data} />
             </div>
-            <div style={{ flex: 1, background: "#fff", borderRadius: "8px",  boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
+            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
               <DesignVsWipChart
                 totalDesignVA={totalDesignVA}
                 totalWip={wipSumData}

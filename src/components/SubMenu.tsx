@@ -1,10 +1,30 @@
-// SubMenu.js
+// SubMenu.tsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 
-const SidebarLink = styled(Link)`
+interface SubMenuItem {
+  title: string;
+  path?: string;
+  icon?: React.ReactNode;
+  iconOpened?: React.ReactNode;
+  iconClosed?: React.ReactNode;
+  subNav?: SubMenuItem[];
+}
+
+interface SubMenuProps {
+  item: SubMenuItem;
+  activeMenu?: string | null;
+  setActiveMenu?: React.Dispatch<React.SetStateAction<string | null>>;
+  closeSidebar?: () => void; // ✅ optional callback
+}
+
+interface SidebarLinkProps {
+  active?: boolean;
+}
+
+const SidebarLink = styled(Link) <SidebarLinkProps>`
   display: flex;
   color: #e1e9fc;
   justify-content: space-between;
@@ -18,7 +38,7 @@ const SidebarLink = styled(Link)`
   transition: all 0.3s ease;
 
   &:hover {
-    background: #5D6D7E;
+    background: #5d6d7e;
     border-left: 4px solid #27ae60;
     cursor: pointer;
   }
@@ -33,7 +53,7 @@ const DropdownContainer = styled(motion.div)`
 `;
 
 const DropdownLink = styled(Link)`
-  background: #5d86abff;;
+  background: #5d86abff;
   height: 45px;
   padding-left: 3rem;
   display: flex;
@@ -51,51 +71,65 @@ const DropdownLink = styled(Link)`
   }
 `;
 
-const SubMenu = ({ item }) => {
-    const [subnav, setSubnav] = useState(false);
-    const toggleSubnav = () => setSubnav((prev) => !prev);
+const SubMenu: React.FC<SubMenuProps> = ({
+  item,
+  activeMenu,
+  setActiveMenu,
+  closeSidebar,
+}) => {
+  const [subnav, setSubnav] = useState(false);
 
-    return (
-        <>
-            <SidebarLink
-                to={item.path || "#"}
-                onClick={item.subNav ? toggleSubnav : undefined}
-            >
-                <div>
-                    {item.icon}
-                    <SidebarLabel>{item.title}</SidebarLabel>
-                </div>
-                <div>
-                    {item.subNav &&
-                        (subnav ? item.iconOpened : item.iconClosed)}
-                </div>
-            </SidebarLink>
+  const toggleSubnav = () => setSubnav((prev) => !prev);
 
-            <AnimatePresence initial={false}>
-                {subnav && item.subNav && (
-                    <DropdownContainer
-                        key="submenu"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: "easeInOut" }}
-                    >
-                        {item.subNav.map((subItem, index) =>
-                            subItem.subNav ? (
-                                // 🔁 Recursive rendering for deeper submenus
-                                <SubMenu item={subItem} key={index} />
-                            ) : (
-                                <DropdownLink to={subItem.path} key={index}>
-                                    {subItem.icon}
-                                    <SidebarLabel>{subItem.title}</SidebarLabel>
-                                </DropdownLink>
-                            )
-                        )}
-                    </DropdownContainer>
-                )}
-            </AnimatePresence>
-        </>
-    );
+  return (
+    <>
+      <SidebarLink
+        to={item.path || "#"}
+        onClick={() => {
+          if (item.subNav) toggleSubnav();
+          else closeSidebar?.(); // ✅ call only if provided
+        }}
+      >
+        <div>
+          {item.icon}
+          <SidebarLabel>{item.title}</SidebarLabel>
+        </div>
+        <div>
+          {item.subNav && (subnav ? item.iconOpened : item.iconClosed)}
+        </div>
+      </SidebarLink>
+
+      <AnimatePresence initial={false}>
+        {subnav && item.subNav && (
+          <DropdownContainer
+            key="submenu"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            {item.subNav.map((subItem: SubMenuItem, index: number) =>
+              subItem.subNav ? (
+                // ✅ Recursive rendering
+                <SubMenu
+                  key={index}
+                  item={subItem}
+                  activeMenu={activeMenu}
+                  setActiveMenu={setActiveMenu}
+                  closeSidebar={closeSidebar}
+                />
+              ) : (
+                <DropdownLink to={subItem.path ?? "#"} key={index}>
+                  {subItem.icon}
+                  <SidebarLabel>{subItem.title}</SidebarLabel>
+                </DropdownLink>
+              )
+            )}
+          </DropdownContainer>
+        )}
+      </AnimatePresence>
+    </>
+  );
 };
 
 export default SubMenu;
