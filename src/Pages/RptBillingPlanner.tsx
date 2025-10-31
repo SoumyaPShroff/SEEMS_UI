@@ -453,18 +453,20 @@ const RptBillingPlanner: React.FC = () => {
       )}
 
       {/* ✅ Show results only after data is ready */}
-      {!loadingData && showResults && (
         <>
           <div>{renderSummaryTable()}</div>
           {/* === Row 1: 3 charts === */}
+           {!loadingData && showResults && data?.length > 0 && (
           <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", marginBottom: "30px", marginTop: "10px" }}>
             <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
               <ProjectionVsTargetChart data={data} />
             </div>
+           
             <div style={{ flex: 1, background: "#fff", maxWidth: "35%", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
               <SegmentWiseBillingChart data={data} />
             </div>
           </div>
+           )}
           {/* === Row 2: 2 charts === */}
           <div
             style={{
@@ -474,12 +476,17 @@ const RptBillingPlanner: React.FC = () => {
               marginBottom: "40px",
             }}
           >
+             {!loadingData && showResults && data?.length > 0 && (
             <div style={{ flex: 1, background: "#fff", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
               <ProjectManagerChart data={data} />
             </div>
+            )}
+             {!loadingData && showResults && data?.length > 0 && (
             <div style={{ flex: 1, background: "#fff", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
               <SalesManagerChart data={data} />
             </div>
+             )}
+              {!loadingData && showResults && data?.length > 0 && (
             <div style={{ flex: 1, background: "#fff", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
               <DesignVsWipChart
                 totalDesignVA={totalDesignVA}
@@ -487,7 +494,9 @@ const RptBillingPlanner: React.FC = () => {
                 targetAbs={53900000}
               />
             </div>
+              )}
           </div>
+            {!loadingData && showResults && data?.length > 0 && (
           <div style={{ textAlign: "right", padding: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "20px" }}>
             <button
               style={{ backgroundColor: "#2b7be3", color: "white" }}
@@ -532,6 +541,8 @@ const RptBillingPlanner: React.FC = () => {
               <span>Invoiced</span>
             </div>
           </div>
+            )}
+              {!loadingData && showResults && data?.length > 0 && (
           <div
             style={{
               position: "relative",
@@ -548,8 +559,8 @@ const RptBillingPlanner: React.FC = () => {
               sx={dataGridSx}
             />
           </div>
+              )}
         </>
-      )}
     </div>
   );
 
