@@ -131,10 +131,12 @@ const RptBillingPlanner: React.FC = () => {
   const [totalDesignVA, setTotalDesignVA] = useState(0);
   const [loadingData, setLoadingData] = useState(false);
 
+
   const handleGenerate = async () => {
     try {
       setLoadingData(true); // show spinner
       setShowResults(false);
+      setInvoiceDict(new Set()); // reset old data
 
       // Fetch billing data
       await fetchBillingData(startdate, enddate, selectedManager.costcenter);
@@ -150,11 +152,14 @@ const RptBillingPlanner: React.FC = () => {
       });
 
       setInvoiceDict(invSet);
+
       // ✅ Wait until billing data is populated (React state may lag a bit)
       setTimeout(() => {
         setShowResults(true);
         setLoadingData(false);
       }, 500); // slight delay ensures React updated `data`
+
+      console.log("▶️ Generating report...");
 
     } catch (error) {
       console.error("Error generating report:", error);
@@ -178,11 +183,17 @@ const RptBillingPlanner: React.FC = () => {
       setTotalDesignVA(designSum);
       setShowResults(true);
 
-    } else {
-      setSummary(null);
-      setShowResults(false);
     }
+    // else {
+    //   setSummary(null);
+    //   setShowResults(false);
+    // }
   }, [data]);
+
+  useEffect(() => {
+  console.log("Data changed:", data?.length);
+  console.log("ShowResults:", showResults);
+}, [data, showResults]);
 
   // ✅ Render Summary Table
   const renderSummaryTable = () => {
@@ -453,40 +464,40 @@ const RptBillingPlanner: React.FC = () => {
       )}
 
       {/* ✅ Show results only after data is ready */}
-        <>
-          <div>{renderSummaryTable()}</div>
-          {/* === Row 1: 3 charts === */}
-           {!loadingData && showResults && data?.length > 0 && (
+      <>
+        <div>{renderSummaryTable()}</div>
+        {/* === Row 1: 3 charts === */}
+        {!loadingData && showResults && data?.length > 0 && (
           <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", marginBottom: "30px", marginTop: "10px" }}>
             <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
               <ProjectionVsTargetChart data={data} />
             </div>
-           
+
             <div style={{ flex: 1, background: "#fff", maxWidth: "35%", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
               <SegmentWiseBillingChart data={data} />
             </div>
           </div>
-           )}
-          {/* === Row 2: 2 charts === */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "20px",
-              marginBottom: "40px",
-            }}
-          >
-             {!loadingData && showResults && data?.length > 0 && (
+      )} 
+        {/* === Row 2: 2 charts === */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "20px",
+            marginBottom: "40px",
+          }}
+        >
+          {!loadingData && showResults && data?.length > 0 && (
             <div style={{ flex: 1, background: "#fff", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
               <ProjectManagerChart data={data} />
             </div>
-            )}
-             {!loadingData && showResults && data?.length > 0 && (
+           )} 
+          {!loadingData && showResults && data?.length > 0 && (  
             <div style={{ flex: 1, background: "#fff", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
               <SalesManagerChart data={data} />
             </div>
-             )}
-              {!loadingData && showResults && data?.length > 0 && (
+            )} 
+            {!loadingData && showResults && data?.length > 0 && (  
             <div style={{ flex: 1, background: "#fff", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
               <DesignVsWipChart
                 totalDesignVA={totalDesignVA}
@@ -494,9 +505,9 @@ const RptBillingPlanner: React.FC = () => {
                 targetAbs={53900000}
               />
             </div>
-              )}
-          </div>
-            {!loadingData && showResults && data?.length > 0 && (
+          )}  
+        </div>
+         {!loadingData && showResults && data?.length > 0 && ( 
           <div style={{ textAlign: "right", padding: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "20px" }}>
             <button
               style={{ backgroundColor: "#2b7be3", color: "white" }}
@@ -541,8 +552,8 @@ const RptBillingPlanner: React.FC = () => {
               <span>Invoiced</span>
             </div>
           </div>
-            )}
-              {!loadingData && showResults && data?.length > 0 && (
+      )}  
+        {!loadingData && showResults && data?.length > 0 && (  
           <div
             style={{
               position: "relative",
@@ -559,8 +570,8 @@ const RptBillingPlanner: React.FC = () => {
               sx={dataGridSx}
             />
           </div>
-              )}
-        </>
+      )} 
+      </>
     </div>
   );
 

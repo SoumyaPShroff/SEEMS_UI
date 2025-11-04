@@ -1,2 +1,2 @@
-export const baseUrl = "https://localhost:7117";
-//export const baseUrl = "https://10.60.2.29:7117";
+//export const baseUrl = "https://localhost:7117";  // prod server https
+export const baseUrl = "http://10.60.2.141:7117"; //test server http

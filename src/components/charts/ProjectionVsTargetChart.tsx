@@ -1,12 +1,42 @@
 import { Bar } from "react-chartjs-2";
 import { useEffect, useState } from "react";
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend, } from "chart.js";
+//import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend, } from "chart.js";
 import { bucketFor, normCat } from "../utils/billingutils";
 // import ChartDataLabels from "chartjs-plugin-datalabels";
 import type { ChartOptions } from 'chart.js';
 
 // ✅ Register required components
-ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend);
+//ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend);
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  BarController,
+  LineController,
+  ScatterController,
+} from "chart.js";
+
+// ✅ Register required elements AND controllers
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  BarController,
+  LineController,
+  ScatterController
+);
+
 
 export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
   const [chartData, setChartData] = useState<any>(null);
