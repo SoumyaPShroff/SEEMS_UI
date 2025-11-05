@@ -140,6 +140,8 @@ const RptBillingPlanner: React.FC = () => {
   const [wipSumData, setWipSumData] = useState(0);
   const [totalDesignVA, setTotalDesignVA] = useState(0);
   const [loadingData, setLoadingData] = useState(false);
+  const [invoicePendingData, setInvoicePendingData] = useState<BillingData[]>([]);
+  const [pendingSummary, setPendingSummary] = useState<any>(null); 
 
   const handleGenerate = async () => {
     try {
@@ -162,6 +164,18 @@ const RptBillingPlanner: React.FC = () => {
 
       setInvoiceDict(invSet);
 
+      const invPendingUrl = `${baseUrl}/api/sales/PendingInvoices/${selectedManager.costcenter}`;
+      const pendingResponse = await axios.get<BillingData[]>(invPendingUrl);
+      setInvoicePendingData(pendingResponse.data);
+
+
+      // if (pendingResponse.data && pendingResponse.data.length > 0) {
+      //   const summary = buildPendingSummary(pendingResponse.data);
+      //   setPendingSummary(summary);
+      // }
+  
+       setShowResults(true);
+       setLoadingData(false);
       // ✅ Wait until billing data is populated (React state may lag a bit)
       setTimeout(() => {
         setShowResults(true);
@@ -284,6 +298,14 @@ const RptBillingPlanner: React.FC = () => {
             {/* ✅ Only show your defined main rows */}
             {mainCategories.map((label) => {
               const row = buckets[label] || initTotalsRow();
+
+              // ✅ Inject pending invoice totals into "Not Invoiced"
+              if (label === "Not Invoiced" && pendingSummary) {
+                const pendingTotalRow = pendingSummary.total;
+                row = { ...pendingTotalRow };
+              }
+
+
               return renderRow(label, row);
             })}
 
@@ -318,7 +340,7 @@ const RptBillingPlanner: React.FC = () => {
   };
 
   const columns: GridColDef[] = [
-    { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 220, },
+    { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 350, },
     { field: "customer", headerName: "Customer", flex: 1, minWidth: 180 },
     { field: "startDate", headerName: "Start Date", flex: 1, minWidth: 100 },
     { field: "plannedEndDate", headerName: "Planned End Date", flex: 1, minWidth: 100 },
@@ -399,6 +421,66 @@ const RptBillingPlanner: React.FC = () => {
     toast.success("✅ Export successful!", { position: "bottom-right" });
   };
 
+  const pendingInvoiceColumns: GridColDef[] = [
+    { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 350 },
+    { field: "startDate", headerName: "Start Date", flex: 1, minWidth: 120 },
+    { field: "enddate", headerName: "End Date", flex: 1, minWidth: 150 },
+    { field: "costCenter", headerName: "CostCenter", flex: 1, minWidth: 120 },
+    { field: "projectManager", headerName: "Project Manager", flex: 1, minWidth: 120 },
+    { field: "flag_Raisedon", headerName: "Flag Raised Date", flex: 1, minWidth: 100 },
+    { field: "totTimesheetHrs", headerName: "Total Timesheet Hrs", flex: 1, minWidth: 100 },
+    { field: "approvedHrs", headerName: "Approved Hrsr", flex: 1, minWidth: 120 },
+    { field: "rateperhour", headerName: "Rate Per hr", flex: 1, minWidth: 120 },
+    { field: "poDate", headerName: "PO Date", flex: 1, minWidth: 100 },
+    { field: "poNumber", headerName: "PO Number", flex: 1, minWidth: 100 },
+    { field: "unBilledAmount", headerName: "UnBilledAmt", flex: 1, minWidth: 100 },
+    { field: "enquiryNo", headerName: "Enquiryno", flex: 1, minWidth: 100 },
+    { field: "enquiryType", headerName: "Enquiry Type", flex: 1, minWidth: 100 },
+    { field: "type", headerName: "Type", flex: 1, minWidth: 100 },
+    { field: "govt_tender", headerName: "govt_tender", flex: 1, minWidth: 100 },
+    { field: "poAmount", headerName: "PO Amount", flex: 1, minWidth: 100 },
+  ];
+
+// ✅ Compute summary grouped by main categories (for pending invoices)
+const buildPendingSummary = (data: BillingData[]) => {
+  const buckets: Record<string, TotalsRow> = {};
+  const total: TotalsRow = initTotalsRow();
+
+  data.forEach((r) => {
+    const job = r.jobNumber || "";
+    const enqType = (r as any).enquiryType || "";
+    const typ = (r as any).type || "";
+    const po = parseFloat(r.poAmount?.toString() || "0");
+    const govtTender = (r as any).govt_tender || "";
+
+    // Determine main category (reuse same logic)
+    const mainKey = mainCategoryFor(enqType, typ);
+    const columnKey = columnFor(job, govtTender);
+
+    if (!buckets[mainKey]) buckets[mainKey] = initTotalsRow();
+
+    (buckets[mainKey][columnKey] as number) += po;
+    buckets[mainKey].GrandTotal =
+      buckets[mainKey].Layout +
+      buckets[mainKey].Analysis +
+      buckets[mainKey].GovtLayout +
+      buckets[mainKey].GovtAnalysis +
+      buckets[mainKey].Library +
+      buckets[mainKey].DFM;
+
+    // Also track overall totals
+    (total[columnKey] as number) += po;
+    total.GrandTotal =
+      total.Layout +
+      total.Analysis +
+      total.GovtLayout +
+      total.GovtAnalysis +
+      total.Library +
+      total.DFM;
+  });
+
+  return { buckets, total };
+};
 
   return (
     <div style={{ padding: "120px", textAlign: "center" }}>
@@ -590,6 +672,20 @@ const RptBillingPlanner: React.FC = () => {
               getRowClassName={(params) => getRowClassName(params) ?? ""}
               title="Billing Planner Data"
               loading={loading}
+              sx={dataGridSx}
+            />
+          </div>
+        )}
+
+        {Array.isArray(invoicePendingData) && invoicePendingData.length > 0 && (
+          <div>
+            <CustomDataGrid
+              rows={invoicePendingData.map((r: any, i: number) => ({
+                id: r.id ?? i, // ✅ ensure every row has an ID
+                ...r,
+              }))}
+              columns={pendingInvoiceColumns}
+              title="Invoice Pending Data"
               sx={dataGridSx}
             />
           </div>
