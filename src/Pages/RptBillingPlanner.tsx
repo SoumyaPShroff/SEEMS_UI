@@ -168,7 +168,6 @@ const RptBillingPlanner: React.FC = () => {
       const pendingResponse = await axios.get<BillingData[]>(invPendingUrl);
       setInvoicePendingData(pendingResponse.data);
 
-
       // if (pendingResponse.data && pendingResponse.data.length > 0) {
       //   const summary = buildPendingSummary(pendingResponse.data);
       //   setPendingSummary(summary);
