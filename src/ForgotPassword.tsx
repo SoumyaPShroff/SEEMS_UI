@@ -39,8 +39,8 @@ const ForgotPassword: React.FC = () => {
     setLoading(true);
 
     try {
-      //const response = await axios.get(`${baseUrl}/forgotpassword?ploginid=${loginId}`)
-      const response = await axios.get<ForgotPasswordResponse>(`${baseUrl}/forgotpassword?ploginid=${loginId}`);
+      // const response = await axios.get<ForgotPasswordResponse>(`${baseUrl}/ForgotPassword?ploginid=${loginId}`);
+      const response = await axios.get<ForgotPasswordResponse>(`${baseUrl}/ForgotPassword/${loginId}`);
       if (response.status === 200) {
         setMessage(
           response.data.message ||

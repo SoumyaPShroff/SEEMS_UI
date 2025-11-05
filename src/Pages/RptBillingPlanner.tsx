@@ -52,32 +52,32 @@ const initTotalsRow = (): TotalsRow => ({
   GovtAnalysis: 0,
   Library: 0,
   DFM: 0,
+  GrandTotal: 0,
   VA: 0,
   NPI: 0,
   ECO: 0,
-  GrandTotal: 0,
 });
 
-const bucketFor = (job: string, enqType: string, typ: string, govtTender?: string): string | null => {
-  if (!job) return null;
-  const isGovt = govtTender === "YES";
-  if (job.endsWith("_VA")) return "VA";
-  if (job.endsWith("_NPI")) return "NPI";
-  if (job.endsWith("_DFM")) return "DFM";
-  if (job.endsWith("_Lib")) return "Library";
-
-  //if (job.endsWith("_Analysis")) return "Analysis";
-  if (job.endsWith("_Analysis")) return isGovt ? "GovtAnalysis" : "Analysis";
-  if (isGovt) return "GovtLayout";
-
+// ✅ Map each record into main category (row)
+const mainCategoryFor = (enqType: string, typ: string): string => {
   if (enqType === "OFFSHORE" && typ === "Export") return "At Office Export";
   if (enqType === "OFFSHORE" && typ === "Domestic") return "At Office Domestic";
   if (enqType === "ONSITE" && typ === "Domestic") return "Onsite Domestic";
-
-  return "Layout";
+  return "At Office Domestic"; // default fallback
 };
 
-// ✅ Utility to compute summary totals
+// ✅ Identify which column the PO amount belongs to
+const columnFor = (job: string, govtTender?: string): keyof TotalsRow => {
+  const isGovt = govtTender === "YES";
+  if (job.endsWith("_VA")) return "VA";
+  if (job.endsWith("_NPI")) return "NPI";
+  if (job.endsWith("_DFM") || job.endsWith("_CAM") || job.endsWith("_CEG")) return "DFM";
+  if (job.endsWith("_Lib")) return "Library";
+  if (job.endsWith("_Analysis")) return isGovt ? "GovtAnalysis" : "Analysis";
+  return isGovt ? "GovtLayout" : "Layout";
+};
+
+// ✅ Compute summary grouped by main categories
 const buildSummaryFromData = (data: BillingData[]) => {
   const buckets: Record<string, TotalsRow> = {};
   const total: TotalsRow = initTotalsRow();
@@ -89,33 +89,43 @@ const buildSummaryFromData = (data: BillingData[]) => {
     const po = parseFloat(r.poAmount?.toString() || "0");
     const eco = parseFloat((r as any).eco || "0");
     const govtTender = (r as any).govt_tender || "";
-    const key = bucketFor(job, enqType, typ, govtTender);
-    if (!key) return;
 
-    if (!buckets[key]) buckets[key] = initTotalsRow();
+    // Determine which row (main category) it belongs to
+    const mainKey = mainCategoryFor(enqType, typ);
+    // Determine which column to add to
+    const columnKey = columnFor(job, govtTender);
 
-    const addSeg = (tr: TotalsRow) => {
-      if (key === "Analysis") tr.Analysis += po;
-      else if (key === "GovtAnalysis") tr.GovtAnalysis += po;
-      else if (key === "Layout") tr.Layout += po;
-      else if (key === "GovtLayout") tr.GovtLayout += po;
-      else if (key === "VA") tr.VA += po;
-      else if (key === "NPI") tr.NPI += po;
-      else if (key === "Library") tr.Library += po;
-      else if (key === "DFM") tr.DFM += po;
+    if (!buckets[mainKey]) buckets[mainKey] = initTotalsRow();
 
-      tr.ECO += eco;
-      tr.GrandTotal =
-        tr.Layout + tr.Analysis + tr.Library + tr.DFM + tr.VA + tr.NPI + tr.ECO;
-    };
+    // Add to specific column
+    (buckets[mainKey][columnKey] as number) += po;
 
-    addSeg(buckets[key]);
-    addSeg(total);
+    // Always add ECO
+    buckets[mainKey].ECO += eco;
+
+    // Recalculate row total
+    buckets[mainKey].GrandTotal =
+      buckets[mainKey].Layout +
+      buckets[mainKey].Analysis +
+      buckets[mainKey].GovtLayout +
+      buckets[mainKey].GovtAnalysis +
+      buckets[mainKey].Library +
+      buckets[mainKey].DFM;
+
+    // Update grand totals
+    (total[columnKey] as number) += po;
+    total.ECO += eco;
+    total.GrandTotal =
+      total.Layout +
+      total.Analysis +
+      total.GovtLayout +
+      total.GovtAnalysis +
+      total.Library +
+      total.DFM;
   });
 
   return { buckets, total };
 };
-
 
 const RptBillingPlanner: React.FC = () => {
   const { data, loading, fetchBillingData } = useBillingData();
@@ -131,7 +141,6 @@ const RptBillingPlanner: React.FC = () => {
   const [totalDesignVA, setTotalDesignVA] = useState(0);
   const [loadingData, setLoadingData] = useState(false);
 
-
   const handleGenerate = async () => {
     try {
       setLoadingData(true); // show spinner
@@ -142,7 +151,7 @@ const RptBillingPlanner: React.FC = () => {
       await fetchBillingData(startdate, enddate, selectedManager.costcenter);
 
       // ✅ Fetch Invoice Dictionary
-      const invUrl = `${baseUrl}/getInvoiceDictionary?startdate=${startdate}&enddate=${enddate}`;
+      const invUrl = `${baseUrl}/InvoiceDictionary/${startdate}/${enddate}`;
       const invResponse = await axios.get<{ jobnumber: string; month: number; year: number }[]>(invUrl);
 
       const invSet = new Set<string>();
@@ -182,7 +191,6 @@ const RptBillingPlanner: React.FC = () => {
       const designSum = data.reduce((acc, item) => acc + (item[columnToPSum] || 0), 0);
       setTotalDesignVA(designSum);
       setShowResults(true);
-
     }
     // else {
     //   setSummary(null);
@@ -190,16 +198,19 @@ const RptBillingPlanner: React.FC = () => {
     // }
   }, [data]);
 
-  useEffect(() => {
-  console.log("Data changed:", data?.length);
-  console.log("ShowResults:", showResults);
-}, [data, showResults]);
-
-  // ✅ Render Summary Table
   const renderSummaryTable = () => {
     if (!summary) return null;
     const { buckets, total } = summary;
 
+    // ✅ Define the main rows you want in order
+    const mainCategories = [
+      "At Office Export",
+      "At Office Domestic",
+      "Onsite Domestic",
+      "Not Invoiced",
+    ];
+
+    // ✅ Render a single data row
     const renderRow = (label: string, row: TotalsRow) => (
       <tr key={label}>
         <td
@@ -213,19 +224,24 @@ const RptBillingPlanner: React.FC = () => {
         >
           {label}
         </td>
-        {Object.keys(row).map((key) => (
-          <td
-            key={key}
-            style={{
-              textAlign: "right",
-              padding: "4px 8px",
-              border: "2px solid #ccc",
-              fontFamily: "'Segoe UI', Roboto, sans-serif",
-            }}
-          >
-            {row[key as keyof TotalsRow].toFixed(2)}
-          </td>
-        ))}
+        {Object.keys(row).map((key) => {
+          const isGrandTotal = key === "GrandTotal";
+          return (
+            <td
+              key={key}
+              style={{
+                textAlign: "right",
+                padding: "4px 8px",
+                border: "2px solid #ccc",
+                fontFamily: "'Segoe UI', Roboto, sans-serif",
+                color: isGrandTotal ? "#506dbdff" : "inherit",
+                fontWeight: isGrandTotal ? "bold" : "normal",
+              }}
+            >
+              {row[key as keyof TotalsRow].toFixed(2)}
+            </td>
+          );
+        })}
       </tr>
     );
 
@@ -265,7 +281,13 @@ const RptBillingPlanner: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {Object.entries(buckets).map(([label, row]) => renderRow(label, row as TotalsRow))}
+            {/* ✅ Only show your defined main rows */}
+            {mainCategories.map((label) => {
+              const row = buckets[label] || initTotalsRow();
+              return renderRow(label, row);
+            })}
+
+            {/* ✅ Total Row */}
             <tr style={{ backgroundColor: "#e6f0ff", fontWeight: "bold" }}>
               <td
                 style={{
@@ -377,6 +399,7 @@ const RptBillingPlanner: React.FC = () => {
     toast.success("✅ Export successful!", { position: "bottom-right" });
   };
 
+
   return (
     <div style={{ padding: "120px", textAlign: "center" }}>
       {/* Manager Selection */}
@@ -477,7 +500,7 @@ const RptBillingPlanner: React.FC = () => {
               <SegmentWiseBillingChart data={data} />
             </div>
           </div>
-      )} 
+        )}
         {/* === Row 2: 2 charts === */}
         <div
           style={{
@@ -491,13 +514,13 @@ const RptBillingPlanner: React.FC = () => {
             <div style={{ flex: 1, background: "#fff", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
               <ProjectManagerChart data={data} />
             </div>
-           )} 
-          {!loadingData && showResults && data?.length > 0 && (  
+          )}
+          {!loadingData && showResults && data?.length > 0 && (
             <div style={{ flex: 1, background: "#fff", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
               <SalesManagerChart data={data} />
             </div>
-            )} 
-            {!loadingData && showResults && data?.length > 0 && (  
+          )}
+          {!loadingData && showResults && data?.length > 0 && (
             <div style={{ flex: 1, background: "#fff", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
               <DesignVsWipChart
                 totalDesignVA={totalDesignVA}
@@ -505,9 +528,9 @@ const RptBillingPlanner: React.FC = () => {
                 targetAbs={53900000}
               />
             </div>
-          )}  
+          )}
         </div>
-         {!loadingData && showResults && data?.length > 0 && ( 
+        {!loadingData && showResults && data?.length > 0 && (
           <div style={{ textAlign: "right", padding: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "20px" }}>
             <button
               style={{ backgroundColor: "#2b7be3", color: "white" }}
@@ -552,8 +575,8 @@ const RptBillingPlanner: React.FC = () => {
               <span>Invoiced</span>
             </div>
           </div>
-      )}  
-        {!loadingData && showResults && data?.length > 0 && (  
+        )}
+        {!loadingData && showResults && data?.length > 0 && (
           <div
             style={{
               position: "relative",
@@ -570,7 +593,7 @@ const RptBillingPlanner: React.FC = () => {
               sx={dataGridSx}
             />
           </div>
-      )} 
+        )}
       </>
     </div>
   );

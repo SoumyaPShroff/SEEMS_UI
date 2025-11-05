@@ -38,7 +38,8 @@ const SalesDashboard: React.FC = () => {
     try {
       const [chartRes, tentquorderRes, openconfmorderRes] = await Promise.all([
         fetch(
-          `${baseUrl}/api/Sales/GetThreeMonthConfirmedOrders?startdate=${startdate}&enddate=${enddate}`
+          //`${baseUrl}/api/Sales/ThreeMonthConfirmedOrders?startdate=${startdate}&enddate=${enddate}`
+          `${baseUrl}/api/Sales/ThreeMonthConfirmedOrders/${startdate}/${enddate}`
         ),
         fetch(`${baseUrl}/api/Sales/TentativeQuotedOrders`),
         fetch(`${baseUrl}/api/Sales/OpenConfirmedOrders`),

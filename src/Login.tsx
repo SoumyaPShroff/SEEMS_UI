@@ -76,7 +76,8 @@ const LoginPage: React.FC<ILogin> = ({ setUserId }) => {
     // }
 
     try {
-      const response = await fetch(`${baseUrl}/verifyloginuser?ploginid=${loginId}&ppassword=${password}`);
+      //  const response = await fetch(`${baseUrl}/VerifyLoginUser?ploginid=${loginId}&ppassword=${password}`);
+      const response = await fetch(`${baseUrl}/VerifyLoginUser/${loginId}/${password}`);
       if (response.ok) {
         const result = await response.json();
         if (result != null) {

@@ -4,11 +4,6 @@ import axios from "axios";
 import { baseUrl } from "./const/BaseUrl";
 import "./Styles/ResetForgotPswd.css"
 
-// interface ResetPasswordProps {
-//   loginId: string | null; // 👈 received as a prop from parent
-// }
-
-// const ResetPassword: React.FC<ResetPasswordProps> = ({ loginId }) => {
 const ResetPassword: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -19,7 +14,7 @@ const ResetPassword: React.FC = () => {
   const [message, setMessage] = useState("");
   const [strength, setStrength] = useState({ level: 0, text: "", color: "" });
 
- // Read from navigation state (from Link)
+  // Read from navigation state (from Link)
   const loginIdFromState = (location.state as { loginId?: string })?.loginId ?? "";
 
   const [loginId, setLoginId] = useState<string>(loginIdFromState || "");
@@ -60,7 +55,7 @@ const ResetPassword: React.FC = () => {
     };
   };
 
-    useEffect(() => {
+  useEffect(() => {
     // If not from navigation, try to get from sessionStorage
     if (!loginIdFromState) {
       const sessionId = sessionStorage.getItem("SessionUserID");
@@ -107,8 +102,8 @@ const ResetPassword: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post(
-        `${baseUrl}/resetpassword?ploginid=${loginId}&pNewpassword=${newPassword}`
+      //  const response = await axios.post(`${baseUrl}/ResetPassword?ploginid=${loginId}&pNewpassword=${newPassword}`
+      const response = await axios.post(`${baseUrl}/ResetPassword/${loginId}/${newPassword}`
       );
 
       if (response.status === 200) {
@@ -128,7 +123,7 @@ const ResetPassword: React.FC = () => {
     }
   };
 
-   return (
+  return (
     <div className="container">
       <div className="card">
         <h2 className="title">🔒 Reset Password</h2>
@@ -198,8 +193,8 @@ const ResetPassword: React.FC = () => {
                         strength.text === "Strong"
                           ? "green"
                           : strength.text === "Medium"
-                          ? "orange"
-                          : "red",
+                            ? "orange"
+                            : "red",
                       transition: "width 0.3s ease",
                     }}
                   ></div>

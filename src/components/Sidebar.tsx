@@ -75,13 +75,10 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID }) => {
     useEffect(() => {
         const fetchUserName = async () => {
             try {
-               // const response = await axios.get<UserResponse | UserResponse[]>(`${baseUrl}/getUserName?pLoginId=${sessionUserID}`);
-               const response = await axios.get<string>(`${baseUrl}/getUserName?pLoginId=${sessionUserID}`);
-               console.log(response);
-            setUserName(response.data || "");
-
-               // setUserName(response.data || "");
-               //setUserName(response.data[0] || ""); // if response returns object
+                // const response = await axios.get<string>(`${baseUrl}/UserName?pLoginId=${sessionUserID}`);
+                const response = await axios.get<string>(`${baseUrl}/UserName/${sessionUserID}`);
+                console.log(response);
+                setUserName(response.data || "");
                 console.log(name);
             } catch (error) {
                 console.error("Error fetching username:", error);
