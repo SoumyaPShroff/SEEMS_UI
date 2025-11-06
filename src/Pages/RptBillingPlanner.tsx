@@ -537,12 +537,12 @@ const renderSummaryTable = () => {
   };
 
   const handleBillExport = () => {
-    exporttoexcel(data, "BillingPlanner", "BillingPlanner.xlsx");
+    exporttoexcel(data, "BillingPlanner", "BillingPlanner-Data.xlsx");
     toast.success("✅ Billing Planner Data exported!", { position: "bottom-right" });
   };
 
   const handleInvPenExport = () => {
-    exporttoexcel(data, "PendingInvoices", "BillingPlanner.xlsx");
+    exporttoexcel(data, "PendingInvoices", "BillingPlanner-PendInv.xlsx");
     toast.success("✅ Pending Invoices exported!", { position: "bottom-right" });
   };
   
