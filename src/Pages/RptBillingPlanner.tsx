@@ -804,7 +804,7 @@ const buildPendingSummary = (data: BillingData[]) => {
         )}
 
         {Array.isArray(invoicePendingData) && invoicePendingData.length > 0 && (
-        <div style={{ textAlign: "left",  display: "flex", alignItems: "center",  marginTop: "20px" }}>
+        <div style={{ textAlign: "left",   alignItems: "center",  marginTop: "20px" }}>
           <button
               style={{ backgroundColor: "#2b7be3", color: "white" }}
               onClick={handleInvPenExport}
