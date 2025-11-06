@@ -168,11 +168,10 @@ const RptBillingPlanner: React.FC = () => {
       const pendingResponse = await axios.get<BillingData[]>(invPendingUrl);
       setInvoicePendingData(pendingResponse.data);
 
-      // if (pendingResponse.data && pendingResponse.data.length > 0) {
-      //   const summary = buildPendingSummary(pendingResponse.data);
-      //   setPendingSummary(summary);
-      // }
-  
+     // if (pendingResponse.data && pendingResponse.data.length > 0) {
+        const summary = buildPendingSummary(pendingResponse.data);
+        setPendingSummary(summary);
+      //}
        setShowResults(true);
        setLoadingData(false);
       // ✅ Wait until billing data is populated (React state may lag a bit)
@@ -180,8 +179,6 @@ const RptBillingPlanner: React.FC = () => {
         setShowResults(true);
         setLoadingData(false);
       }, 500); // slight delay ensures React updated `data`
-
-      console.log("▶️ Generating report...");
 
     } catch (error) {
       console.error("Error generating report:", error);
@@ -211,132 +208,256 @@ const RptBillingPlanner: React.FC = () => {
     // }
   }, [data]);
 
-  const renderSummaryTable = () => {
-    if (!summary) return null;
-    const { buckets, total } = summary;
+  // const renderSummaryTable = () => {
+  //   if (!summary) return null;
+  //   const { buckets, total } = summary;
 
-    // ✅ Define the main rows you want in order
-    const mainCategories = [
-      "At Office Export",
-      "At Office Domestic",
-      "Onsite Domestic",
-      "Not Invoiced",
-    ];
+  //   // ✅ Define the main rows you want in order
+  //   const mainCategories = [
+  //     "At Office Export",
+  //     "At Office Domestic",
+  //     "Onsite Domestic",
+  //     "Not Invoiced",
+  //   ];
 
-    // ✅ Render a single data row
-    const renderRow = (label: string, row: TotalsRow) => (
-      <tr key={label}>
-        <td
-          style={{
-            fontWeight: "bold",
-            textAlign: "left",
-            padding: "6px 10px",
-            border: "2px solid #ccc",
-            fontFamily: "'Segoe UI', Roboto, sans-serif",
-          }}
-        >
-          {label}
-        </td>
-        {Object.keys(row).map((key) => {
-          const isGrandTotal = key === "GrandTotal";
-          return (
-            <td
-              key={key}
+  //   // ✅ Render a single data row
+  //   const renderRow = (label: string, row: TotalsRow) => (
+  //     <tr key={label}>
+  //       <td
+  //         style={{
+  //           fontWeight: "bold",
+  //           textAlign: "left",
+  //           padding: "6px 10px",
+  //           border: "2px solid #ccc",
+  //           fontFamily: "'Segoe UI', Roboto, sans-serif",
+  //         }}
+  //       >
+  //         {label}
+  //       </td>
+  //       {Object.keys(row).map((key) => {
+  //         const isGrandTotal = key === "GrandTotal";
+  //         return (
+  //           <td
+  //             key={key}
+  //             style={{
+  //               textAlign: "right",
+  //               padding: "4px 8px",
+  //               border: "2px solid #ccc",
+  //               fontFamily: "'Segoe UI', Roboto, sans-serif",
+  //               color: isGrandTotal ? "#506dbdff" : "inherit",
+  //               fontWeight: isGrandTotal ? "bold" : "normal",
+  //             }}
+  //           >
+  //             {row[key as keyof TotalsRow].toFixed(2)}
+  //           </td>
+  //         );
+  //       })}
+  //     </tr>
+  //   );
+
+  //   return (
+  //     <div style={{ marginTop: "20px", textAlign: "center" }}>
+  //       <table
+  //         style={{
+  //           width: "100%",
+  //           borderCollapse: "collapse",
+  //           marginTop: "10px",
+  //           fontSize: "13px",
+  //         }}
+  //       >
+  //         <thead>
+  //           <tr style={{ backgroundColor: "#f2f2f2" }}>
+  //             <th
+  //               style={{
+  //                 padding: "6px",
+  //                 border: "1px solid #ccc",
+  //                 fontFamily: "'Segoe UI', Roboto, sans-serif",
+  //               }}
+  //             >
+  //               Category
+  //             </th>
+  //             {Object.keys(total).map((key) => (
+  //               <th
+  //                 key={key}
+  //                 style={{
+  //                   border: "1px solid #ccc",
+  //                   padding: "6px",
+  //                   fontFamily: "'Segoe UI', Roboto, sans-serif",
+  //                 }}
+  //               >
+  //                 {key}
+  //               </th>
+  //             ))}
+  //           </tr>
+  //         </thead>
+  //         <tbody>
+  //           {mainCategories.map((label) => {
+  //             let row = buckets[label] || initTotalsRow();
+  //              // ✅ Inject pending invoice totals into "Not Invoiced"
+  //              if (label === "Not Invoiced" && pendingSummary) {
+  //                const pendingTotalRow = pendingSummary.total;
+  //                row = { ...pendingTotalRow };
+  //              }
+  //             return renderRow(label, row);
+  //           })}
+
+  //           {/* ✅ Total Row */}
+  //           <tr style={{ backgroundColor: "#e6f0ff", fontWeight: "bold" }}>
+  //             <td
+  //               style={{
+  //                 border: "1px solid #ccc",
+  //                 padding: "6px",
+  //                 fontFamily: "'Segoe UI', Roboto, sans-serif",
+  //               }}
+  //             >
+  //               Total
+  //             </td>
+  //             {Object.keys(total).map((key) => (
+  //               <td
+  //                 key={key}
+  //                 style={{
+  //                   textAlign: "right",
+  //                   padding: "4px 8px",
+  //                   fontFamily: "'Segoe UI', Roboto, sans-serif",
+  //                 }}
+  //               >
+  //                 {total[key as keyof TotalsRow].toFixed(2)}
+  //               </td>
+  //             ))}
+  //           </tr>
+  //         </tbody>
+  //       </table>
+  //     </div>
+  //   );
+  // };
+const renderSummaryTable = () => {
+  if (!summary) return null;
+  const { buckets, total } = summary;
+
+  // ✅ Define order — Total will be manually rendered before "Not Invoiced"
+  const mainCategories = [
+    "At Office Export",
+    "At Office Domestic",
+    "Onsite Domestic",
+    "Not Invoiced",
+  ];
+
+  // ✅ Render a single data row
+  const renderRow = (label: string, row: TotalsRow) => (
+    <tr key={label}>
+      <td
+        style={{
+          fontWeight: "bold",
+          textAlign: "left",
+          padding: "6px 10px",
+          border: "2px solid #ccc",
+          fontFamily: "'Segoe UI', Roboto, sans-serif",
+        }}
+      >
+        {label}
+      </td>
+      {Object.keys(row).map((key) => {
+        const isGrandTotal = key === "GrandTotal";
+        return (
+          <td
+            key={key}
+            style={{
+              textAlign: "right",
+              padding: "4px 8px",
+              border: "2px solid #ccc",
+              fontFamily: "'Segoe UI', Roboto, sans-serif",
+              color: isGrandTotal ? "#506dbdff" : "inherit",
+              fontWeight: isGrandTotal ? "bold" : "normal",
+            }}
+          >
+            {row[key as keyof TotalsRow].toFixed(2)}
+          </td>
+        );
+      })}
+    </tr>
+  );
+
+  return (
+    <div style={{ marginTop: "20px", textAlign: "center" }}>
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          marginTop: "10px",
+          fontSize: "13px",
+        }}
+      >
+        <thead>
+          <tr style={{ backgroundColor: "#f2f2f2" }}>
+            <th
               style={{
-                textAlign: "right",
-                padding: "4px 8px",
-                border: "2px solid #ccc",
+                padding: "6px",
+                border: "1px solid #ccc",
                 fontFamily: "'Segoe UI', Roboto, sans-serif",
-                color: isGrandTotal ? "#506dbdff" : "inherit",
-                fontWeight: isGrandTotal ? "bold" : "normal",
               }}
             >
-              {row[key as keyof TotalsRow].toFixed(2)}
-            </td>
-          );
-        })}
-      </tr>
-    );
-
-    return (
-      <div style={{ marginTop: "20px", textAlign: "center" }}>
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            marginTop: "10px",
-            fontSize: "13px",
-          }}
-        >
-          <thead>
-            <tr style={{ backgroundColor: "#f2f2f2" }}>
+              Category
+            </th>
+            {Object.keys(total).map((key) => (
               <th
+                key={key}
                 style={{
-                  padding: "6px",
                   border: "1px solid #ccc",
+                  padding: "6px",
                   fontFamily: "'Segoe UI', Roboto, sans-serif",
                 }}
               >
-                Category
+                {key}
               </th>
-              {Object.keys(total).map((key) => (
-                <th
-                  key={key}
-                  style={{
-                    border: "1px solid #ccc",
-                    padding: "6px",
-                    fontFamily: "'Segoe UI', Roboto, sans-serif",
-                  }}
-                >
-                  {key}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {/* ✅ Only show your defined main rows */}
-            {mainCategories.map((label) => {
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {/* ✅ Regular main categories (excluding "Not Invoiced") */}
+          {mainCategories
+            .filter((label) => label !== "Not Invoiced")
+            .map((label) => {
               const row = buckets[label] || initTotalsRow();
-
-              // ✅ Inject pending invoice totals into "Not Invoiced"
-              if (label === "Not Invoiced" && pendingSummary) {
-                const pendingTotalRow = pendingSummary.total;
-                row = { ...pendingTotalRow };
-              }
-
-
               return renderRow(label, row);
             })}
 
-            {/* ✅ Total Row */}
-            <tr style={{ backgroundColor: "#e6f0ff", fontWeight: "bold" }}>
+          {/* ✅ Total Row (before Not Invoiced) */}
+          <tr style={{ backgroundColor: "#e6f0ff", fontWeight: "bold" }}>
+            <td
+              style={{
+                border: "1px solid #ccc",
+                textAlign: "left",
+                padding:"4px 8px",
+                fontFamily: "'Segoe UI', Roboto, sans-serif",
+              }}
+            >
+              Total
+            </td>
+            {Object.keys(total).map((key) => (
               <td
+                key={key}
                 style={{
-                  border: "1px solid #ccc",
-                  padding: "6px",
+                border: "1px solid #ccc",
+                  textAlign: "right",
+                  padding: "4px 8px",
                   fontFamily: "'Segoe UI', Roboto, sans-serif",
                 }}
               >
-                Total
+                {total[key as keyof TotalsRow].toFixed(2)}
               </td>
-              {Object.keys(total).map((key) => (
-                <td
-                  key={key}
-                  style={{
-                    textAlign: "right",
-                    padding: "4px 8px",
-                    fontFamily: "'Segoe UI', Roboto, sans-serif",
-                  }}
-                >
-                  {total[key as keyof TotalsRow].toFixed(2)}
-                </td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
-  };
+            ))}
+          </tr>
+
+          {/* ✅ Not Invoiced row (pending summary only) */}
+          {pendingSummary && (() => {
+            const pendingRow = pendingSummary.total;
+            return renderRow("Not Invoiced", pendingRow);
+          })()}
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
   const columns: GridColDef[] = [
     { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 350, },
@@ -415,11 +536,16 @@ const RptBillingPlanner: React.FC = () => {
     return "row-black";
   };
 
-  const handleExport = () => {
+  const handleBillExport = () => {
     exporttoexcel(data, "BillingPlanner", "BillingPlanner.xlsx");
-    toast.success("✅ Export successful!", { position: "bottom-right" });
+    toast.success("✅ Billing Planner Data exported!", { position: "bottom-right" });
   };
 
+  const handleInvPenExport = () => {
+    exporttoexcel(data, "PendingInvoices", "BillingPlanner.xlsx");
+    toast.success("✅ Pending Invoices exported!", { position: "bottom-right" });
+  };
+  
   const pendingInvoiceColumns: GridColDef[] = [
     { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 350 },
     { field: "startDate", headerName: "Start Date", flex: 1, minWidth: 120 },
@@ -477,8 +603,9 @@ const buildPendingSummary = (data: BillingData[]) => {
       total.Library +
       total.DFM;
   });
-
+  console.log("Pending Summary:", buckets, total);
   return { buckets, total };
+
 };
 
   return (
@@ -615,7 +742,7 @@ const buildPendingSummary = (data: BillingData[]) => {
           <div style={{ textAlign: "right", padding: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "20px" }}>
             <button
               style={{ backgroundColor: "#2b7be3", color: "white" }}
-              onClick={handleExport}
+              onClick={handleBillExport}
             >
               Export to Excel
             </button>
@@ -677,7 +804,14 @@ const buildPendingSummary = (data: BillingData[]) => {
         )}
 
         {Array.isArray(invoicePendingData) && invoicePendingData.length > 0 && (
-          <div>
+        <div style={{ textAlign: "left",  display: "flex", alignItems: "center",  marginTop: "20px" }}>
+          <button
+              style={{ backgroundColor: "#2b7be3", color: "white" }}
+              onClick={handleInvPenExport}
+            >
+              Export to Excel
+          </button>
+ 
             <CustomDataGrid
               rows={invoicePendingData.map((r: any, i: number) => ({
                 id: r.id ?? i, // ✅ ensure every row has an ID
@@ -687,7 +821,7 @@ const buildPendingSummary = (data: BillingData[]) => {
               title="Invoice Pending Data"
               sx={dataGridSx}
             />
-          </div>
+            </div>
         )}
       </>
     </div>
