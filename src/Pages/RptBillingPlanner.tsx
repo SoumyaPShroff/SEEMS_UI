@@ -129,11 +129,14 @@ const buildSummaryFromData = (data: BillingData[]) => {
 
 const RptBillingPlanner: React.FC = () => {
   const { data, loading, fetchBillingData } = useBillingData();
-  const { managers } = useManagers();
+  // Example: Get loginId from sessionStorage (or Auth context)
+  const loginId = sessionStorage.getItem("SessionUserID") || "guest";
+  const { managers } = useManagers(loginId, "billingplanner");
   const { startdate: initialStart, enddate: initialEnd } = getCurrentMonthDates();
   const [startdate, setStartdate] = useState(initialStart);
   const [enddate, setEnddate] = useState(initialEnd);
-  const [selectedManager, setSelectedManager] = useState<any>({ costcenter: "All" });
+ // const [selectedManager, setSelectedManager] = useState<any>({ costcenter: "All" });
+  const [selectedManager, setSelectedManager] =useState<any>(null);
   const [summary, setSummary] = useState<any>(null);
   const [invoiceDict, setInvoiceDict] = useState<Set<string>>(new Set());
   const [showResults, setShowResults] = useState(false); // New state to control rendering
@@ -187,6 +190,21 @@ const RptBillingPlanner: React.FC = () => {
       setLoadingData(false); // hide spinner
     }
   };
+
+  // Automatically set selectedManager when managers are loaded
+useEffect(() => {
+  if ( managers.length > 0) {
+    // If user has limited access → only one manager in list
+    if (managers.length === 1) {
+      setSelectedManager(managers[0]);
+    } 
+    // Else default to "All"
+    else {
+      const allOption = managers.find((m) => m.hopc1id === "All");
+      setSelectedManager(allOption || managers[0]);
+    }
+  }
+}, [  managers]);
 
   useEffect(() => {
     if (data && data.length > 0) {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { getCurrentMonthDates } from "../components/utils/DateUtils";
 import { baseUrl } from "../const/BaseUrl";
 import { LoadingButton } from "@mui/lab";
@@ -13,6 +13,8 @@ import {
 } from "recharts";
 import "../styles/SalesDashboard.css";
 import type { PieLabelRenderProps } from "recharts";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#00C49F", "#FFBB28"];
 
@@ -28,6 +30,38 @@ const SalesDashboard: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showData, setShowData] = useState(false);
+  const navigate = useNavigate();
+  const loginId = sessionStorage.getItem("SessionUserID") || "guest";
+
+  useEffect(() => {
+  const checkAccess = async () => {
+    try {
+      // Step 1: Get user role
+      const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
+      const userRole = userRoleRes.data;
+       console.log("User role response:", userRoleRes);
+
+      // Step 2: Verify internal rights
+      const roleCheck = await axios.get<boolean>(
+        `${baseUrl}/UserRoleInternalRights/${userRole}/salesmgmtdashboard`
+      );
+
+      console.log("Role check result:", roleCheck.data);
+
+      // Step 3: If not authorized, redirect
+      if (!roleCheck.data) {
+        navigate("/blank");
+      }
+    } catch (error) {
+      console.error("Error checking role:", error);
+      navigate("/blank");
+    }
+  };
+
+  // ✅ Call the async function
+  checkAccess();
+}, [navigate, baseUrl, loginId]);
+
 
   // === Fetch chart + order data ===
   const handleGenerate = async () => {

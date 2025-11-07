@@ -3,7 +3,7 @@ import Sidebar from "./components/Sidebar";
 import { Routes, Route } from "react-router-dom";
 import Support from "./Pages/Support";
 import SeemsHomeSubMenu from './Pages/SeemsHomeSubMenu';
-import Blank from './Pages/Blank';
+// import Blank from './Pages/Blank';
 import RptBillingPlanner from './Pages/RptBillingPlanner';
 import SalesDashboard from './Pages/SalesDashboard';
 
@@ -26,12 +26,12 @@ const Home = () => {
         <>
             <Sidebar sessionUserID={sessionUserID} />
             <Routes>
-                <Route path="/" element={<Blank />} />
+                {/* <Route path="/" element={<Blank />} /> */}
                 <Route path="/SeemsHomeSubMenu" element={<SeemsHomeSubMenu />} />
                 <Route path="/RptBillingPlanner" element={<RptBillingPlanner />} />
                 <Route path="/SalesDashboard" element={<SalesDashboard />} />
                 <Route path="/support" element={<Support />} />
-                <Route path="*" element={<Blank />} />
+                {/* <Route path="*" element={<Blank />} /> */}
             </Routes>
         </>
     );
