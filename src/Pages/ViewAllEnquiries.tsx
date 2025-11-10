@@ -17,7 +17,7 @@ const ViewAllEnquiries = () => {
     // ✅ Correct column typing
     const columns: GridColDef[] = [
         { field: "enquiryno", headerName: "Enquiryno", flex: 1, minWidth:70 },
-        { field: "customer", headerName: "Customer", flex: 1, minWidth:220 },
+        { field: "customer", headerName: "Customer", flex: 1, minWidth:200 },
         { field: "createdon", headerName: "Createdon", flex: 1, Width: 60 },
         { field: "endDate", headerName: "EndDate", flex: 1, Width: 60 },
         { field: "salesResponsibility", headerName: "Sales Resp", flex: 1, minWidth: 100 },
@@ -66,8 +66,8 @@ const ViewAllEnquiries = () => {
   field: "status",
   headerName: "Status",
   flex: 1,
-  minWidth: 60,
-      sortable: false,
+  minWidth: 40,
+  sortable: false,
   renderCell: (params) => (
     <a
       href="#"
@@ -75,7 +75,7 @@ const ViewAllEnquiries = () => {
       onClick={(e) => {
         e.preventDefault();
         // 👇 Navigate to your desired page with data
-        navigate(`/enquiry-details/${params.row.enquiryno}`);
+      //  navigate(`/enquiry-details/${params.row.enquiryno}`);
       }}
     >
       {params.value}
@@ -102,7 +102,7 @@ const ViewAllEnquiries = () => {
     ),
   },
         { field: "esti", headerName: "Esti", flex: 1, minWidth: 30 },
-        { field: "completeResponsibility", headerName: "Complete Resp", flex: 1, minWidth: 100 },
+        { field: "completeResponsibility", headerName: "PM Resp", flex: 1, minWidth: 130 },
         { field: "enquiryType", headerName: "EnqType", flex: 1, minWidth: 60 },
         { field: "boardRef", headerName: "Board Ref", flex: 1, minWidth: 100 },
         { field: "referenceBy", headerName: "Reference By", flex: 1, minWidth: 100 },
