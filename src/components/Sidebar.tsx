@@ -77,9 +77,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID }) => {
             try {
                 // const response = await axios.get<string>(`${baseUrl}/UserName?pLoginId=${sessionUserID}`);
                 const response = await axios.get<string>(`${baseUrl}/UserName/${sessionUserID}`);
-                console.log(response);
                 setUserName(response.data || "");
-                console.log(name);
             } catch (error) {
                 console.error("Error fetching username:", error);
             }
@@ -91,13 +89,6 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID }) => {
             navigate('/');
         }
     }, [sessionUserID, navigate]);
-
-    // Optional: watch userName state
-    useEffect(() => {
-        if (userName) {
-            console.log("✅ userName updated in state:", userName);
-        }
-    }, [userName]);
 
     // ✅ Automatically close sidebar when route changes
     useEffect(() => {

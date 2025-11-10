@@ -35,8 +35,14 @@ export const SidebarData = [
                             },
                         ],
                     },
+                    {
+                        title: "View All Enquiries",
+                        path: "/Home/ViewAllEnquiries",
+                        icon: <IoIcons.IoIosPaper />,
+                    },
                 ],
             },
+
             {
                 title: "Reports",
                 icon: <FaIcons.FaFileAlt />,

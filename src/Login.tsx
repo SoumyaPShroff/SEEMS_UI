@@ -95,7 +95,6 @@ const LoginPage: React.FC<ILogin> = ({ setUserId }) => {
         setLoginError(<span className="warning-message">Login failed. Please check your credentials.</span>);
       }
     } catch (error) {
-      console.error('Error during login:', error);
       setLoginError(<span className="error-message">Login failed. Please check your credentials.</span>);
     }
   };

@@ -39,14 +39,11 @@ const SalesDashboard: React.FC = () => {
       // Step 1: Get user role
       const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
       const userRole = userRoleRes.data;
-       console.log("User role response:", userRoleRes);
 
       // Step 2: Verify internal rights
       const roleCheck = await axios.get<boolean>(
         `${baseUrl}/UserRoleInternalRights/${userRole}/salesmgmtdashboard`
       );
-
-      console.log("Role check result:", roleCheck.data);
 
       // Step 3: If not authorized, redirect
       if (!roleCheck.data) {
