@@ -158,9 +158,9 @@ const ViewAllEnquiries = () => {
     }, [loginId, status]);
 
     return (
-        <Box sx={{ height: 600, width: "100%", padding: "100px" }}>
+        <Box sx={{ height: "100%", width: "100%", padding: "100px",  mt: "20px", ml: "-30px"}}>
             <InputLabel style={{ textAlign: "left" }}>Status</InputLabel>
-            <FormControl sx={{ mb: 2, minWidth: 200 }}>
+            <FormControl>
                 <Select value={status} onChange={(e) => setStatus(e.target.value)}>
                     <MenuItem value="Open">Open</MenuItem>
                     <MenuItem value="Confirmed">Confirmed</MenuItem>
