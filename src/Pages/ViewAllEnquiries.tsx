@@ -16,7 +16,7 @@ const ViewAllEnquiries = () => {
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
   const loginUserName = sessionStorage.getItem("SessionUserName") || "guestName";
   const [salesResponsibilityId, setSalesResponsibilityId] = useState("");
-  const [hasSpecialRole, sethasSpecialRole] = useState(false); 
+  const [hasSpecialRole, sethasSpecialRole] = useState(false);
 
   //check for access to edit - own enquiry of sesion user
   const canEditRow = (row: any) => {
@@ -189,8 +189,8 @@ const ViewAllEnquiries = () => {
       let url = `${baseUrl}/api/sales/AllEnquiries`;
 
       // If user does NOT have complete rights → include their ID
-     // if (!hasSpecialRole) {
-     if (!roleFlag){
+      // if (!hasSpecialRole) {
+      if (!roleFlag) {
         url += `?salesResponsibilityId=${loginId}&status=${status}`;
       } else {
         // User has complete rights → only pass default status
@@ -240,9 +240,12 @@ const ViewAllEnquiries = () => {
           <MenuItem value="Rejected By Customer">Rejected By Customer</MenuItem>
           <MenuItem value="Rejected By Sienna">Rejected By Sienna</MenuItem>
         </Select>
-        <ExportButton label="Export to Excel" onClick={handleViewEnqExport} />
       </FormControl>
-
+      <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "left", gap: 2, mb: 2, }}>
+        <ExportButton label="Export to Excel" onClick={handleViewEnqExport} />
+        <Button variant="contained" color="primary" onClick={() => navigate("/home/addenquiry")}> Add Enquiry</Button>
+        <Button variant="contained" color="primary" onClick={() => navigate("/home/enquiryregister")}>Enquiry Register</Button>
+      </Box>
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
           <CircularProgress />
