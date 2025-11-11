@@ -6,6 +6,7 @@ import SeemsHomeSubMenu from './Pages/SeemsHomeSubMenu';
 import RptBillingPlanner from './Pages/RptBillingPlanner';
 import SalesDashboard from './Pages/SalesDashboard';
  import ViewAllEnquiries from './Pages/ViewAllEnquiries';
+ import AddEnquiry from './Pages/AddEnquiry';
 
 const Home = () => {
     const sessionUserID = sessionStorage.getItem('SessionUserID');
@@ -30,6 +31,7 @@ const Home = () => {
                 <Route path="/RptBillingPlanner" element={<RptBillingPlanner />} />
                 <Route path="/SalesDashboard" element={<SalesDashboard />} />
                 <Route path="/ViewAllEnquiries" element={<ViewAllEnquiries />} />
+                <Route path="/AddEnquiry" element={<AddEnquiry />} />
                 <Route path="/support" element={<Support />} />
             </Routes>
         </>
