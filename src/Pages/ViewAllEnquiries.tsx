@@ -6,7 +6,7 @@ import CustomDataGrid from "../components/common/CustomerDataGrid";
 import { baseUrl } from "../const/BaseUrl";
 import { useNavigate } from "react-router-dom";
 import { exporttoexcel } from "../components/utils/exporttoexcel";
-import DownloadIcon from "@mui/icons-material/Download";
+import ExportButton from "../components/ReusablePageControls/ExportButton";
 
 const ViewAllEnquiries = () => {
   const navigate = useNavigate();
@@ -14,16 +14,23 @@ const ViewAllEnquiries = () => {
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
+  const loginUserName = sessionStorage.getItem("SessionUserName") || "guestName";
   const [salesResponsibilityId, setSalesResponsibilityId] = useState("");
+  const [hasSpecialRole, sethasSpecialRole] = useState(false); 
+
+  //check for access to edit - own enquiry of sesion user
+  const canEditRow = (row: any) => {
+    const isOwn = row.salesResponsibility === loginUserName;
+    return isOwn;
+  };
 
   // ✅ Correct column typing
   const columns: GridColDef[] = [
     { field: "enquiryno", headerName: "Enquiryno", flex: 1, minWidth: 70 },
     { field: "customer", headerName: "Customer", flex: 1, minWidth: 200 },
-    { field: "createdon", headerName: "Createdon", flex: 1, Width: 60 },
-    { field: "endDate", headerName: "EndDate", flex: 1, Width: 60 },
+    { field: "createdon", headerName: "Createdon", flex: 1, Width: 50 },
+    { field: "endDate", headerName: "EndDate", flex: 1, Width: 50 },
     { field: "salesResponsibility", headerName: "Sales Resp", flex: 1, minWidth: 100 },
-
 
     // 🟢 Add link columns like in your screenshot
     {
@@ -32,18 +39,27 @@ const ViewAllEnquiries = () => {
       flex: 1,
       minWidth: 50,
       sortable: false,
-      renderCell: (params) => (
-        <a
-          href="#"
-          style={{ color: "#1976d2", textDecoration: "none", cursor: "pointer" }}
-          onClick={(e) => {
-            e.preventDefault();
-            // handleEditEnquiry(params.row);
-          }}
-        >
-          Edit Enquiry
-        </a>
-      ),
+      renderCell: (params) => {
+        const enabled = canEditRow(params.row);
+        const hasAccess = enabled || hasSpecialRole; // ✅ allow for complete access users
+
+        return (
+          <a
+            href="#"
+            style={{
+              color: hasAccess ? "#1976d2" : "gray",
+              cursor: hasAccess ? "pointer" : "not-allowed",
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              if (!hasAccess) return;
+              // handleEditEnquiry(params.row);
+            }}
+          >
+            Edit Enquiry
+          </a>
+        );
+      },
     },
     {
       field: "addQuote",
@@ -51,60 +67,100 @@ const ViewAllEnquiries = () => {
       flex: 1,
       minWidth: 50,
       sortable: false,
-      renderCell: (params) => (
-        <a
-          href="#"
-          style={{ color: "#1976d2", textDecoration: "none", cursor: "pointer" }}
-          onClick={(e) => {
-            e.preventDefault();
-            //   handleAddQuote(params.row);
-          }}
-        >
-          Add Quote
-        </a>
-      ),
+      renderCell: (params) => {
+        const enabled = canEditRow(params.row);
+        const hasAccess = enabled || hasSpecialRole; // ✅ allow for complete access users
+
+        return (
+          <a
+            href="#"
+            style={{
+              color: hasAccess ? "#1976d2" : "gray",
+              cursor: hasAccess ? "pointer" : "not-allowed",
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              if (!hasAccess) return;
+              // handleAddQuote(params.row);
+            }}
+          >
+            Add Quote
+          </a>
+        );
+      },
     },
     {
       field: "status",
       headerName: "Status",
       flex: 1,
-      minWidth: 40,
+      minWidth: 150,
       sortable: false,
-      renderCell: (params) => (
-        <a
-          href="#"
-          style={{ color: "orange", textDecoration: "none", cursor: "pointer" }}
-          onClick={(e) => {
-            e.preventDefault();
-            // 👇 Navigate to your desired page with data
-            //  navigate(`/enquiry-details/${params.row.enquiryno}`);
-          }}
-        >
-          {params.value}
-        </a>
-      ),
+      renderCell: (params) => {
+        const statusValue = params.value?.toString() || "";
+        const isDisabled =
+          statusValue === "Cancelled" ||
+          statusValue === "Rejected By Customer" ||
+          statusValue === "Rejected By Sienna";
+        return (
+          <span
+            style={{
+              color: isDisabled ? "gray" : "orange",
+              textDecoration: isDisabled ? "none" : "underline",
+              cursor: isDisabled ? "not-allowed" : "pointer",
+              fontWeight: 600,
+              opacity: isDisabled ? 0.6 : 1,
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              if (!isDisabled) {
+                // ✅ Navigate only if not disabled
+                // navigate(`/enquiry-details/${params.row.enquiryno}`);
+              }
+            }}
+          >
+            {statusValue}
+          </span>
+        );
+      },
     },
     {
       field: "addEstimate",
       headerName: "Add Estimate",
       flex: 1,
-      minWidth: 60,
+      minWidth: 50,
       sortable: false,
-      renderCell: (params) => (
-        <a
-          href="#"
-          style={{ color: "#1976d2", textDecoration: "none", cursor: "pointer" }}
-          onClick={(e) => {
-            e.preventDefault();
-            //  handleAddEstimate(params.row);
-          }}
-        >
-          Add Estimate
-        </a>
-      ),
+      renderCell: (params) => {
+        const estiValue = params.row.esti?.toUpperCase() || "";
+        const enabled = canEditRow(params.row);
+        const hasAccess = enabled || hasSpecialRole; // ✅ allow for complete access users
+
+        // ✅ Logic:
+        // - Disable if DONE
+        // - Enable only if esti == NO and user has rights
+        //const isClickable = estiValue === "NO" && enabled;
+        const isClickable = estiValue === "NO" && hasAccess;
+
+        return (
+          <span
+            style={{
+              color: isClickable ? "#1976d2" : "gray",
+              textDecoration: isClickable ? "underline" : "none",
+              cursor: isClickable ? "pointer" : "not-allowed",
+              opacity: isClickable ? 1 : 0.6,
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              if (!isClickable) return; // ✅ Block click when disabled
+              // handleAddEstimate(params.row);
+            }}
+          >
+            Add Estimate
+          </span>
+        );
+      },
     },
     { field: "esti", headerName: "Esti", flex: 1, minWidth: 30 },
-    { field: "completeResponsibility", headerName: "PM Resp", flex: 1, minWidth: 130 },
+    { field: "completeResponsibility", headerName: "PM Resp", flex: 1, minWidth: 120 },
     { field: "enquiryType", headerName: "EnqType", flex: 1, minWidth: 60 },
     { field: "boardRef", headerName: "Board Ref", flex: 1, minWidth: 100 },
     { field: "referenceBy", headerName: "Reference By", flex: 1, minWidth: 100 },
@@ -122,7 +178,9 @@ const ViewAllEnquiries = () => {
       const roleCheck = await axios.get<boolean>(
         `${baseUrl}/UserRoleInternalRights/${userRole}/viewallenquiries`
       );
-      const hasSpecialRole = roleCheck.data === true;
+      //const hasSpecialRole = roleCheck.data === true;
+      const roleFlag = roleCheck.data === true;
+      sethasSpecialRole(roleFlag); // ✅ store in state
 
       // Step 3: Set salesResponsibilityId (from loginId)
       setSalesResponsibilityId(loginId);
@@ -131,7 +189,8 @@ const ViewAllEnquiries = () => {
       let url = `${baseUrl}/api/sales/AllEnquiries`;
 
       // If user does NOT have complete rights → include their ID
-      if (!hasSpecialRole) {
+     // if (!hasSpecialRole) {
+     if (!roleFlag){
         url += `?salesResponsibilityId=${loginId}&status=${status}`;
       } else {
         // User has complete rights → only pass default status
@@ -158,15 +217,15 @@ const ViewAllEnquiries = () => {
   }, [loginId, status]);
 
 
-const handleViewEnqExport = () => {
-  if (!rows || rows.length === 0) {
-    toast.warning("⚠️ No data available to export.", { position: "bottom-right" });
-    return;
-  }
+  const handleViewEnqExport = () => {
+    if (!rows || rows.length === 0) {
+      toast.warning("⚠️ No data available to export.", { position: "bottom-right" });
+      return;
+    }
 
-  exporttoexcel(rows, "ViewAllEnquiries", "ViewAllEnquiries.xlsx");
-  toast.success("✅ All Enquiries Data exported!", { position: "bottom-right" });
-};
+    exporttoexcel(rows, "ViewAllEnquiries", "ViewAllEnquiries.xlsx");
+    toast.success("✅ All Enquiries Data exported!", { position: "bottom-right" });
+  };
 
   return (
     <Box sx={{ height: "100%", width: "100%", padding: "100px", mt: "20px", ml: "-30px" }}>
@@ -177,14 +236,24 @@ const handleViewEnqExport = () => {
           <MenuItem value="Confirmed">Confirmed</MenuItem>
           <MenuItem value="Tentative">Tentative</MenuItem>
           <MenuItem value="Realised">Realised</MenuItem>
+          <MenuItem value="Cancelled">Cancelled</MenuItem>
+          <MenuItem value="Rejected By Customer">Rejected By Customer</MenuItem>
+          <MenuItem value="Rejected By Sienna">Rejected By Sienna</MenuItem>
         </Select>
-        <Button onClick={handleViewEnqExport}         startIcon={<DownloadIcon />}> Export to Excel </Button>
+        <ExportButton label="Export to Excel" onClick={handleViewEnqExport} />
       </FormControl>
 
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
           <CircularProgress />
         </Box>
+      ) : rows.length === 0 ? (
+        <Typography
+          variant="subtitle1"
+          sx={{ textAlign: "center", mt: 4, color: "gray" }}
+        >
+          No enquiries found for selected status.
+        </Typography>
       ) : (
         <CustomDataGrid
           autoHeight

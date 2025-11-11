@@ -15,6 +15,7 @@ import SegmentWiseBillingChart from "../components/charts/SegmentWiseBillingChar
 import { toast } from "react-toastify";
 import CustomDataGrid from "../components/common/CustomerDataGrid";
 import type { GridColDef } from '@mui/x-data-grid';
+import ExportButton from "../components/ReusablePageControls/ExportButton";
 
 // ✅ Types
 interface BillingData {
@@ -134,7 +135,7 @@ const RptBillingPlanner: React.FC = () => {
   const { startdate: initialStart, enddate: initialEnd } = getCurrentMonthDates();
   const [startdate, setStartdate] = useState(initialStart);
   const [enddate, setEnddate] = useState(initialEnd);
-  const [selectedManager, setSelectedManager] =useState<any>(null);
+  const [selectedManager, setSelectedManager] = useState<any>(null);
   const [summary, setSummary] = useState<any>(null);
   const [invoiceDict, setInvoiceDict] = useState<Set<string>>(new Set());
   const [showResults, setShowResults] = useState(false); // New state to control rendering
@@ -142,7 +143,7 @@ const RptBillingPlanner: React.FC = () => {
   const [totalDesignVA, setTotalDesignVA] = useState(0);
   const [loadingData, setLoadingData] = useState(false);
   const [invoicePendingData, setInvoicePendingData] = useState<BillingData[]>([]);
-  const [pendingSummary, setPendingSummary] = useState<any>(null); 
+  const [pendingSummary, setPendingSummary] = useState<any>(null);
 
   const handleGenerate = async () => {
     try {
@@ -169,12 +170,12 @@ const RptBillingPlanner: React.FC = () => {
       const pendingResponse = await axios.get<BillingData[]>(invPendingUrl);
       setInvoicePendingData(pendingResponse.data);
 
-     // if (pendingResponse.data && pendingResponse.data.length > 0) {
-        const summary = buildPendingSummary(pendingResponse.data);
-        setPendingSummary(summary);
+      // if (pendingResponse.data && pendingResponse.data.length > 0) {
+      const summary = buildPendingSummary(pendingResponse.data);
+      setPendingSummary(summary);
       //}
-       setShowResults(true);
-       setLoadingData(false);
+      setShowResults(true);
+      setLoadingData(false);
       // ✅ Wait until billing data is populated (React state may lag a bit)
       setTimeout(() => {
         setShowResults(true);
@@ -190,19 +191,19 @@ const RptBillingPlanner: React.FC = () => {
   };
 
   // Automatically set selectedManager when managers are loaded
-useEffect(() => {
-  if ( managers.length > 0) {
-    // If user has limited access → only one manager in list
-    if (managers.length === 1) {
-      setSelectedManager(managers[0]);
-    } 
-    // Else default to "All"
-    else {
-      const allOption = managers.find((m) => m.hopc1id === "All");
-      setSelectedManager(allOption || managers[0]);
+  useEffect(() => {
+    if (managers.length > 0) {
+      // If user has limited access → only one manager in list
+      if (managers.length === 1) {
+        setSelectedManager(managers[0]);
+      }
+      // Else default to "All"
+      else {
+        const allOption = managers.find((m) => m.hopc1id === "All");
+        setSelectedManager(allOption || managers[0]);
+      }
     }
-  }
-}, [  managers]);
+  }, [managers]);
 
   useEffect(() => {
     if (data && data.length > 0) {
@@ -224,134 +225,134 @@ useEffect(() => {
     // }
   }, [data]);
 
-const renderSummaryTable = () => {
-  if (!summary) return null;
-  const { buckets, total } = summary;
+  const renderSummaryTable = () => {
+    if (!summary) return null;
+    const { buckets, total } = summary;
 
-  // ✅ Define order — Total will be manually rendered before "Not Invoiced"
-  const mainCategories = [
-    "At Office Export",
-    "At Office Domestic",
-    "Onsite Domestic",
-    "Not Invoiced",
-  ];
+    // ✅ Define order — Total will be manually rendered before "Not Invoiced"
+    const mainCategories = [
+      "At Office Export",
+      "At Office Domestic",
+      "Onsite Domestic",
+      "Not Invoiced",
+    ];
 
-  // ✅ Render a single data row
-  const renderRow = (label: string, row: TotalsRow) => (
-    <tr key={label}>
-      <td
-        style={{
-          fontWeight: "bold",
-          textAlign: "left",
-          padding: "6px 10px",
-          border: "2px solid #ccc",
-          fontFamily: "'Segoe UI', Roboto, sans-serif",
-        }}
-      >
-        {label}
-      </td>
-      {Object.keys(row).map((key) => {
-        const isGrandTotal = key === "GrandTotal";
-        return (
-          <td
-            key={key}
-            style={{
-              textAlign: "right",
-              padding: "4px 8px",
-              border: "2px solid #ccc",
-              fontFamily: "'Segoe UI', Roboto, sans-serif",
-              color: isGrandTotal ? "#506dbdff" : "inherit",
-              fontWeight: isGrandTotal ? "bold" : "normal",
-            }}
-          >
-            {row[key as keyof TotalsRow].toFixed(2)}
-          </td>
-        );
-      })}
-    </tr>
-  );
-
-  return (
-    <div style={{ marginTop: "20px", textAlign: "center" }}>
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          marginTop: "10px",
-          fontSize: "13px",
-        }}
-      >
-        <thead>
-          <tr style={{ backgroundColor: "#f2f2f2" }}>
-            <th
+    // ✅ Render a single data row
+    const renderRow = (label: string, row: TotalsRow) => (
+      <tr key={label}>
+        <td
+          style={{
+            fontWeight: "bold",
+            textAlign: "left",
+            padding: "6px 10px",
+            border: "2px solid #ccc",
+            fontFamily: "'Segoe UI', Roboto, sans-serif",
+          }}
+        >
+          {label}
+        </td>
+        {Object.keys(row).map((key) => {
+          const isGrandTotal = key === "GrandTotal";
+          return (
+            <td
+              key={key}
               style={{
-                padding: "6px",
-                border: "1px solid #ccc",
+                textAlign: "right",
+                padding: "4px 8px",
+                border: "2px solid #ccc",
                 fontFamily: "'Segoe UI', Roboto, sans-serif",
+                color: isGrandTotal ? "#506dbdff" : "inherit",
+                fontWeight: isGrandTotal ? "bold" : "normal",
               }}
             >
-              Category
-            </th>
-            {Object.keys(total).map((key) => (
+              {row[key as keyof TotalsRow].toFixed(2)}
+            </td>
+          );
+        })}
+      </tr>
+    );
+
+    return (
+      <div style={{ marginTop: "20px", textAlign: "center" }}>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            marginTop: "10px",
+            fontSize: "13px",
+          }}
+        >
+          <thead>
+            <tr style={{ backgroundColor: "#f2f2f2" }}>
               <th
-                key={key}
                 style={{
-                  border: "1px solid #ccc",
                   padding: "6px",
+                  border: "1px solid #ccc",
                   fontFamily: "'Segoe UI', Roboto, sans-serif",
                 }}
               >
-                {key}
+                Category
               </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {/* ✅ Regular main categories (excluding "Not Invoiced") */}
-          {mainCategories
-            .filter((label) => label !== "Not Invoiced")
-            .map((label) => {
-              const row = buckets[label] || initTotalsRow();
-              return renderRow(label, row);
-            })}
+              {Object.keys(total).map((key) => (
+                <th
+                  key={key}
+                  style={{
+                    border: "1px solid #ccc",
+                    padding: "6px",
+                    fontFamily: "'Segoe UI', Roboto, sans-serif",
+                  }}
+                >
+                  {key}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {/* ✅ Regular main categories (excluding "Not Invoiced") */}
+            {mainCategories
+              .filter((label) => label !== "Not Invoiced")
+              .map((label) => {
+                const row = buckets[label] || initTotalsRow();
+                return renderRow(label, row);
+              })}
 
-          {/* ✅ Total Row (before Not Invoiced) */}
-          <tr style={{ backgroundColor: "#e6f0ff", fontWeight: "bold" }}>
-            <td
-              style={{
-                border: "1px solid #ccc",
-                textAlign: "left",
-                padding:"4px 8px",
-                fontFamily: "'Segoe UI', Roboto, sans-serif",
-              }}
-            >
-              Total
-            </td>
-            {Object.keys(total).map((key) => (
+            {/* ✅ Total Row (before Not Invoiced) */}
+            <tr style={{ backgroundColor: "#e6f0ff", fontWeight: "bold" }}>
               <td
-                key={key}
                 style={{
-                border: "1px solid #ccc",
-                  textAlign: "right",
+                  border: "1px solid #ccc",
+                  textAlign: "left",
                   padding: "4px 8px",
                   fontFamily: "'Segoe UI', Roboto, sans-serif",
                 }}
               >
-                {total[key as keyof TotalsRow].toFixed(2)}
+                Total
               </td>
-            ))}
-          </tr>
+              {Object.keys(total).map((key) => (
+                <td
+                  key={key}
+                  style={{
+                    border: "1px solid #ccc",
+                    textAlign: "right",
+                    padding: "4px 8px",
+                    fontFamily: "'Segoe UI', Roboto, sans-serif",
+                  }}
+                >
+                  {total[key as keyof TotalsRow].toFixed(2)}
+                </td>
+              ))}
+            </tr>
 
-          {/* ✅ Not Invoiced row (pending summary only) */}
-          {pendingSummary && (() => {
-            const pendingRow = pendingSummary.total;
-            return renderRow("Not Invoiced", pendingRow);
-          })()}
-        </tbody>
-      </table>
-    </div>
-  );
-};
+            {/* ✅ Not Invoiced row (pending summary only) */}
+            {pendingSummary && (() => {
+              const pendingRow = pendingSummary.total;
+              return renderRow("Not Invoiced", pendingRow);
+            })()}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
   const columns: GridColDef[] = [
     { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 350, },
@@ -439,7 +440,7 @@ const renderSummaryTable = () => {
     exporttoexcel(data, "PendingInvoices", "BillingPlanner-PendInv.xlsx");
     toast.success("✅ Pending Invoices exported!", { position: "bottom-right" });
   };
-  
+
   const pendingInvoiceColumns: GridColDef[] = [
     { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 350 },
     { field: "startDate", headerName: "Start Date", flex: 1, minWidth: 120 },
@@ -460,46 +461,46 @@ const renderSummaryTable = () => {
     { field: "poAmount", headerName: "PO Amount", flex: 1, minWidth: 100 },
   ];
 
-// ✅ Compute summary grouped by main categories (for pending invoices)
-const buildPendingSummary = (data: BillingData[]) => {
-  const buckets: Record<string, TotalsRow> = {};
-  const total: TotalsRow = initTotalsRow();
+  // ✅ Compute summary grouped by main categories (for pending invoices)
+  const buildPendingSummary = (data: BillingData[]) => {
+    const buckets: Record<string, TotalsRow> = {};
+    const total: TotalsRow = initTotalsRow();
 
-  data.forEach((r) => {
-    const job = r.jobNumber || "";
-    const enqType = (r as any).enquiryType || "";
-    const typ = (r as any).type || "";
-    const po = parseFloat(r.poAmount?.toString() || "0");
-    const govtTender = (r as any).govt_tender || "";
+    data.forEach((r) => {
+      const job = r.jobNumber || "";
+      const enqType = (r as any).enquiryType || "";
+      const typ = (r as any).type || "";
+      const po = parseFloat(r.poAmount?.toString() || "0");
+      const govtTender = (r as any).govt_tender || "";
 
-    // Determine main category (reuse same logic)
-    const mainKey = mainCategoryFor(enqType, typ);
-    const columnKey = columnFor(job, govtTender);
+      // Determine main category (reuse same logic)
+      const mainKey = mainCategoryFor(enqType, typ);
+      const columnKey = columnFor(job, govtTender);
 
-    if (!buckets[mainKey]) buckets[mainKey] = initTotalsRow();
+      if (!buckets[mainKey]) buckets[mainKey] = initTotalsRow();
 
-    (buckets[mainKey][columnKey] as number) += po;
-    buckets[mainKey].GrandTotal =
-      buckets[mainKey].Layout +
-      buckets[mainKey].Analysis +
-      buckets[mainKey].GovtLayout +
-      buckets[mainKey].GovtAnalysis +
-      buckets[mainKey].Library +
-      buckets[mainKey].DFM;
+      (buckets[mainKey][columnKey] as number) += po;
+      buckets[mainKey].GrandTotal =
+        buckets[mainKey].Layout +
+        buckets[mainKey].Analysis +
+        buckets[mainKey].GovtLayout +
+        buckets[mainKey].GovtAnalysis +
+        buckets[mainKey].Library +
+        buckets[mainKey].DFM;
 
-    // Also track overall totals
-    (total[columnKey] as number) += po;
-    total.GrandTotal =
-      total.Layout +
-      total.Analysis +
-      total.GovtLayout +
-      total.GovtAnalysis +
-      total.Library +
-      total.DFM;
-  });
-  return { buckets, total };
+      // Also track overall totals
+      (total[columnKey] as number) += po;
+      total.GrandTotal =
+        total.Layout +
+        total.Analysis +
+        total.GovtLayout +
+        total.GovtAnalysis +
+        total.Library +
+        total.DFM;
+    });
+    return { buckets, total };
 
-};
+  };
 
   return (
     <div style={{ padding: "120px", textAlign: "center" }}>
@@ -633,12 +634,7 @@ const buildPendingSummary = (data: BillingData[]) => {
         </div>
         {!loadingData && showResults && data?.length > 0 && (
           <div style={{ textAlign: "right", padding: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "20px" }}>
-            <button
-              style={{ backgroundColor: "#2b7be3", color: "white" }}
-              onClick={handleBillExport}
-            >
-              Export to Excel
-            </button>
+            <ExportButton label="Export to Excel" onClick={handleBillExport}/>
 
             {/* 🟦🟥🟩 Legends */}
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -697,14 +693,8 @@ const buildPendingSummary = (data: BillingData[]) => {
         )}
 
         {Array.isArray(invoicePendingData) && invoicePendingData.length > 0 && (
-        <div style={{ textAlign: "left",   alignItems: "center",  marginTop: "20px" }}>
-          <button
-              style={{ backgroundColor: "#2b7be3", color: "white" }}
-              onClick={handleInvPenExport}
-            >
-              Export to Excel
-          </button>
- 
+          <div style={{ textAlign: "left", alignItems: "center", marginTop: "20px" }}>
+            <ExportButton label="Export to Excel" onClick={handleInvPenExport}/>
             <CustomDataGrid
               rows={invoicePendingData.map((r: any, i: number) => ({
                 id: r.id ?? i, // ✅ ensure every row has an ID
@@ -714,7 +704,7 @@ const buildPendingSummary = (data: BillingData[]) => {
               title="Invoice Pending Data"
               sx={dataGridSx}
             />
-            </div>
+          </div>
         )}
       </>
     </div>

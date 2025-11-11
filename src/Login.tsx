@@ -5,6 +5,7 @@ import logo1 from './const/Images/Sienna-Ecad-logo.jpg'
 import logo2 from './const/Images/Sienna-Ecad-logo2.jpg'
 import './Login.css';
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 interface ILogin {
   userId: string | null; // Add userId to the interface
@@ -16,6 +17,7 @@ const LoginPage: React.FC<ILogin> = ({ setUserId }) => {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState<React.ReactNode>(null);
   const [SessionUserID, setSessionUserID] = useState(sessionStorage.getItem('SessionUserID'));
+  const [SessionUserName, setSessionUserName] = useState(sessionStorage.getItem('SessionUserName'));
   const navigate = useNavigate();
 
   //const [strength, setStrength] = useState({ level: 0, text: "", color: "" });
@@ -84,6 +86,9 @@ const LoginPage: React.FC<ILogin> = ({ setUserId }) => {
           setUserId(result.loginId);
           sessionStorage.setItem('SessionUserID', result.loginId);
           setSessionUserID(result.loginId);
+          const responseName = await axios.get<string>(`${baseUrl}/UserName/${loginId}`);
+          sessionStorage.setItem('SessionUserName', responseName.data);
+          setSessionUserName(responseName.data);
           navigate('/Home');
         } else {
           setLoginError(<span className="error-message">Login failed. Please check your credentials.</span>);
