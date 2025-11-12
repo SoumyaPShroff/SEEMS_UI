@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
-    Grid, FormGroup, TextField, MenuItem, FormControl, InputLabel, Button, Card, CardContent, Typography, Box, ToggleButton, ToggleButtonGroup,
+    Grid, FormGroup, TextField, FormControl, InputLabel, Button, Card, CardContent, Typography, Box, ToggleButton, ToggleButtonGroup,
     FormControlLabel, Checkbox, RadioGroup, Radio,
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -11,7 +11,11 @@ interface LookupData {
     customers: { itemno: string; customer: string }[];
     AllActiveEmployees: { iDno: string; name: string }[];
     AnalysisManagers: { HOPC1ID: string; HOPC1NAME: string }[];
+    SalesManagers: { HOPC1ID: string; HOPC1NAME: string }[];
+    designMngrs: { HOPC1ID: string; HOPC1NAME: string }[],
+    salesnpiusers: { iDno: string; name: string }[],
     States: { id: string; name: string }[];
+    PCBTools: [],
 }
 
 interface EnquiryForm {
@@ -34,6 +38,15 @@ interface EnquiryForm {
     salesResp: string;
     referenceBy: string;
     remarks: string;
+    layout: string[];
+    analysis: string[];
+    va: string[];
+    npi: string[];
+
+    layoutResp: string;
+    analysisResp: string;
+    vaResp: string;
+    npiResp: string;
 }
 
 
@@ -58,13 +71,25 @@ const OffshoreEnquiry: React.FC = () => {
         salesResp: "",
         referenceBy: "",
         remarks: "",
+        layout: [],
+        analysis: [],
+        va: [],
+        npi: [],
+        layoutResp: "",
+        analysisResp: "",
+        vaResp: "",
+        npiResp: "",
     });
 
     const [lookups, setLookups] = useState<LookupData>({
         customers: [],
         AllActiveEmployees: [],
         AnalysisManagers: [],
+        SalesManagers: [],
+        designMngrs: [],
+        salesnpiusers: [],
         States: [],
+        PCBTools: [],
     });
 
     const [file, setFile] = useState<File | null>(null);
@@ -74,26 +99,38 @@ const OffshoreEnquiry: React.FC = () => {
     useEffect(() => {
         const fetchLookups = async () => {
             try {
-                const [custRes, empRes, analysisRes] = await Promise.all([
+                const [custRes, empRes, analysisRes, salesisRes, designRes, npiRes, PCBToolsRes] = await Promise.all([
                     fetch(`${baseUrl}/api/Sales/customers`),
                     fetch(`${baseUrl}/AllActiveEmployees`),
                     fetch(`${baseUrl}/AnalysisManagers`),
+                    fetch(`${baseUrl}/SalesManagers`),
+                    fetch(`${baseUrl}/DesignManagers`),
+                    fetch(`${baseUrl}/SalesNpiUsers`),
+                    fetch(`${baseUrl}/PCBTools`),
                 ]);
-                const [customers, AllActiveEmployees, AnalysisManagers] =
+                const [customers, AllActiveEmployees, AnalysisManagers, SalesManagers, designMngrs, salesnpiusers, PCBTools] =
                     await Promise.all([
                         custRes.json(),
                         empRes.json(),
                         analysisRes.json(),
+                        salesisRes.json(),
+                        designRes.json(),
+                        npiRes.json(),
+                        PCBToolsRes.json(),
                     ]);
                 setLookups({
                     customers,
                     AllActiveEmployees,
                     AnalysisManagers,
+                    SalesManagers,
+                    designMngrs,
+                    salesnpiusers,
                     States: [
                         { id: "KA", name: "Karnataka" },
                         { id: "TN", name: "Tamil Nadu" },
                         { id: "MH", name: "Maharashtra" },
                     ],
+                    PCBTools,
                 });
             } catch (err) {
                 console.error("Error fetching lookups:", err);
@@ -139,22 +176,60 @@ const OffshoreEnquiry: React.FC = () => {
             const items = new Set(prev[section] || []);
             if (checked) items.add(item);
             else items.delete(item);
-            return { ...prev, [section]: Array.from(items) };
+
+            const updated = { ...prev, [section]: Array.from(items) };
+
+            // 🔹 Clear responsibility if no checkboxes remain
+            if (items.size === 0) updated[`${section}Resp`] = "";
+
+            return updated;
         });
     };
+//    // 👇 Combine selected responsibilities dynamically
+//                         const combinedResponsibilities = [
+//                             form.layoutResp,
+//                             form.analysisResp,
+//                             form.vaResp,
+//                             form.npiResp,
+//                         ]
+//                             .filter((val) => val && val.trim() !== ""); // remove empty or undefined ones
+
+//                         // 👇 Get unique employee details (id + name)
+//                         const completeRespOptions =
+//                             combinedResponsibilities.length > 0
+//                                 ? [
+//                                     ...new Map(
+//                                         combinedResponsibilities
+//                                             .map((id) => {
+//                                                 // find in all possible sources
+//                                                 const emp =
+//                                                     lookups.designMngrs.find((e) => e.hopC1ID === id) ||
+//                                                     lookups.AnalysisManagers.find((e) => e.hopC1ID === id) ||
+//                                                     lookups.salesnpiusers.find((e) => e.iDno === id);
+//                                                 return emp
+//                                                     ? {
+//                                                         value: emp.hopC1ID || emp.iDno,
+//                                                         label: emp.hopC1NAME || emp.name,
+//                                                     }
+//                                                     : null;
+//                                             })
+//                                             .filter(Boolean)
+//                                     ).values(),
+//                                 ]
+//                                 : [];
+
 
     return (
         <Card
             sx={{
-                width: "95%",
+                width: "100%",
                 maxWidth: 1250,
                 m: "auto",
                 mt: 3,
                 p: 4,
                 boxShadow: 6,
                 borderRadius: 3,
-                maxHeight: "90vh",
-                overflowY: "auto",
+                maxHeight: "200vh",
             }}
         >
             <CardContent>
@@ -281,7 +356,7 @@ const OffshoreEnquiry: React.FC = () => {
                             ]}
                             height={40}
                             required
-                            width="140px"
+                            width="200px"
                         />
                     </Grid>
 
@@ -301,9 +376,11 @@ const OffshoreEnquiry: React.FC = () => {
                                 onChange={handleChange}
                                 sx={{
                                     display: "flex",
-                                    justifyContent: "space-around",
                                     alignItems: "center",
-                                    height: 30,
+                                    height: 50,
+                                    border: "1px solid #ccc",
+                                    borderRadius: "8px",
+                                    padding: "4px",
                                 }}
                             >
                                 <FormControlLabel value="INR" control={<Radio />} label="INR" />
@@ -330,9 +407,11 @@ const OffshoreEnquiry: React.FC = () => {
                                 onChange={handleChange}
                                 sx={{
                                     display: "flex",
-                                    justifyContent: "space-around",
                                     alignItems: "center",
-                                    height: 30,
+                                    height: 50,
+                                    border: "1px solid #ccc",
+                                    borderRadius: "8px",
+                                    padding: "4px",
                                 }}
                             >
                                 <FormControlLabel value="Export" control={<Radio />} label="Export" />
@@ -362,137 +441,167 @@ const OffshoreEnquiry: React.FC = () => {
                     </Grid>
 
                     <Grid item xs={12} md={3}>
-                        <TextField
+                        <SelectControl
+                            name="PCB Tool"
                             label="PCB Tool"
-                            name="pcbTool"
+                            value={form.PCBTool || ""}
                             onChange={handleChange}
-                            size="small"
-                            fullWidth
+                            options={lookups.PCBTools.map((tool: string, index: number) => ({
+                                value: tool,
+                                label: tool,
+                            }))}
+                            height={40}
+                            required
+                            width="200px"
                         />
                     </Grid>
-                    {/* --- Scope Sections --- */}
-                    {["Layout", "Analysis", "VA", "NPI"].map((section) => (
-                        <Grid
-                            item
-                            xs={12}
-                            key={section}
+                    <Grid item xs={12}>
+                        <Box
                             sx={{
                                 display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "flex-start",
-                                flexWrap: "wrap",
-                                mb: 3, // space between sections
+                                alignItems: "center",
+                                mt: 3,
+                                mb: 1,
                             }}
                         >
-                            {/* Left side: Checkboxes */}
-                            <Box sx={{ flex: "1 1 78%", minWidth: { xs: "100%", sm: "75%" } }}>
-                                <Typography sx={{ fontWeight: 600, mb: 0.5 }}>{section}</Typography>
-
-                                <FormGroup
-                                    row
-                                    sx={{
-                                        display: "flex",
-                                        flexWrap: "wrap",
-                                        gap: 1.5,
-                                    }}
-                                >
-                                    {(section === "Layout"
-                                        ? [
-                                            "Design",
-                                            "Library",
-                                            "QA/CAM",
-                                            "DFA",
-                                            "DFM",
-                                            "Fabrication",
-                                            "Testing",
-                                            "Others",
-                                        ]
-                                        : section === "Analysis"
-                                            ? [
-                                                "SI",
-                                                "PI",
-                                                "EMI Net Level",
-                                                "EMI System Level",
-                                                "Thermal Board Level",
-                                                "Thermal System Level",
-                                                "Others",
-                                            ]
-                                            : section === "VA"
-                                                ? [
-                                                    "Fabrication",
-                                                    "Assembly",
-                                                    "Hardware",
-                                                    "Software",
-                                                    "FPGA",
-                                                    "Testing",
-                                                    "Others",
-                                                    "Design Outsourced",
-                                                ]
-                                                : [
-                                                    "BOM Procurement",
-                                                    "NPI-Fabrication",
-                                                    "NPI-Assembly",
-                                                    "Job Work",
-                                                    "NPI-Testing",
-                                                ]
-                                    ).map((item) => (
-                                        <FormControlLabel
-                                            key={item}
-                                            control={
-                                                <Checkbox
-                                                    checked={form[section.toLowerCase()]?.includes(item)}
-                                                    onChange={(e) =>
-                                                        handleCheckboxChange(
-                                                            section.toLowerCase(),
-                                                            item,
-                                                            e.target.checked
-                                                        )
-                                                    }
-                                                />
-                                            }
-                                            label={item}
-                                            sx={{
-                                                minWidth: { xs: "45%", sm: "30%", md: "20%" },
-                                            }}
-                                        />
-                                    ))}
-                                </FormGroup>
-                            </Box>
-
-                            {/* Right side: Responsibility dropdown */}
-                            <Box
+                            <Box sx={{ flex: 1, borderTop: "1px solid #ccc" }} />
+                            <Typography
+                                variant="subtitle2"
                                 sx={{
-                                    flex: "0 0 20%",
-                                    minWidth: 200,
-                                    mt: { xs: 2, sm: 0 },
-                                    textAlign: { xs: "left", sm: "right" },
+                                    mx: 55,
+                                    color: "#666",
+                                    fontSize: 20,
+                                    fontWeight: 600,
                                 }}
                             >
-                                <SelectControl
-                                    name={`${section.toLowerCase()}Resp`}
-                                    label="Responsibility"
-                                    value={form[`${section.toLowerCase()}Resp`] || ""}
-                                    onChange={handleChange}
-                                    options={lookups.AllActiveEmployees.map((e) => ({
-                                        value: e.iDno,
-                                        label: e.name,
-                                    }))}
-                                    fullWidth
-                                    height={42}
-                                />
-                            </Box>
-                        </Grid>
-                    ))}
+                                SCOPE DETAILS
+                            </Typography>
+                            <Box sx={{ flex: 1, borderTop: "1px solid #ccc" }} />
+                        </Box>
+                    </Grid>
+                    {/* --- Scope Sections --- */}
+                    {["Layout", "Analysis", "VA", "NPI"].map((section) => {
+                        const lower = section.toLowerCase();
+
+                        // Select responsibility list based on section
+                        let responsibilityOptions = lookups.AllActiveEmployees;
+                        if (section === "Layout") responsibilityOptions = lookups.designMngrs;
+                        else if (section === "Analysis") responsibilityOptions = lookups.AnalysisManagers;
+                        else if (section === "VA") responsibilityOptions = lookups.salesnpiusers;
+                        else if (section === "NPI") responsibilityOptions = lookups.salesnpiusers;
+
+                        // Checkbox lists per section
+                        const checkboxItems =
+                            section === "Layout"
+                                ? ["Design", "Library", "QA/CAM", "DFA", "DFM", "Fabrication", "Testing", "Others"]
+                                : section === "Analysis"
+                                    ? ["SI", "PI", "EMI Net Level", "EMI System Level", "Thermal Board Level", "Thermal System Level", "Others"]
+                                    : section === "VA"
+                                        ? ["Fabrication", "Assembly", "Hardware", "Software", "FPGA", "Testing", "Others", "Design Outsourced"]
+                                        : ["BOM Procurement", "NPI-Fabrication", "NPI-Assembly", "Job Work", "NPI-Testing"];
+
+                    
+                        return (
+                            <Grid item xs={12} key={section}>
+                                <Grid
+                                    container
+                                    alignItems="center"
+                                    justifyContent="space-between"
+                                    sx={{
+                                        borderBottom: "1px dashed #ddd",
+                                        pb: 1,
+                                        mb: 1,
+                                    }}
+                                >
+                                    {/* --- Left side: checkboxes --- */}
+                                    <Grid item xs={10}>
+                                        <Typography sx={{ fontWeight: 600, mb: 0.5 }}>{section}</Typography>
+                                        <FormGroup row>
+                                            {checkboxItems.map((item, index) => (
+                                                <FormControlLabel
+                                                    key={`${section}-${item}-${index}`}
+                                                    control={
+                                                        <Checkbox
+                                                            checked={form[lower]?.includes(item)}
+                                                            onChange={(e) => handleCheckboxChange(lower, item, e.target.checked)}
+                                                        />
+                                                    }
+                                                    label={item}
+                                                />
+                                            ))}
+                                        </FormGroup>
+                                    </Grid>
+
+                                    {/* --- Right side: responsibility dropdown --- */}
+                                    <Grid
+                                        item
+                                        xs={2}
+                                        sx={{
+                                            display: "flex",
+                                            justifyContent: "flex-end",
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        {form[lower].length > 0 ? (
+                                            <SelectControl
+                                                name={`${lower}Resp`}
+                                                label={`${section} Responsibility`}
+                                                value={form[`${lower}Resp`]}
+                                                onChange={(e) => {
+                                                    const selectedValue = e.target.value;
+                                                    setForm((prev) => ({
+                                                        ...prev,
+                                                        [`${lower}Resp`]: selectedValue,
+                                                    }));
+                                                }}
+                                                options={responsibilityOptions.map((opt: any) =>
+                                                    section === "Layout" || section === "Analysis"
+                                                        ? { value: opt.hopC1ID, label: opt.hopC1NAME }
+                                                        : { value: opt.iDno, label: opt.name }
+                                                )}
+                                                height={40}
+                                                width="220px"
+                                            />
+                                        ) : null}
+
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        );
+                    })}
+                    <Grid item xs={12}>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                mt: 3,
+                                mb: 1,
+                            }}
+                        >
+                            <Box sx={{ flex: 1, borderTop: "1px solid #ccc" }} />
+                            <Typography
+                                variant="subtitle2"
+                            >
+                                -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                            </Typography>
+                            <Box sx={{ flex: 1, borderTop: "1px solid #ccc" }} />
+                        </Box>
+                    </Grid>
+
                     {/* --- Quotation & Tender --- */}
                     <Grid item xs={12} md={3}>
                         <TextField
                             type="date"
                             label="Quotation Request Last Date"
+                            name="quotationDate"
+                            value={form.quotationDate || ""}
+                            onChange={(e) => {
+                                const value = e.target.value; // always yyyy-mm-dd from <input type="date">
+                                setForm((p) => ({ ...p, quotationDate: value }));
+                            }}
                             InputLabelProps={{ shrink: true }}
                             fullWidth
-                            name="quotationDate"
-                            onChange={handleChange}
-                            size="small"
+                            required
                         />
                     </Grid>
 
@@ -511,19 +620,18 @@ const OffshoreEnquiry: React.FC = () => {
                     </Grid>
 
                     {/* --- Responsibilities --- */}
-                    <Grid item xs={12} md={3}>
+                    {/* <Grid item xs={12} md={3}>
                         <SelectControl
                             name="completeResp"
                             label="Complete Responsibility"
                             value={form.completeResp}
                             onChange={handleChange}
-                            options={lookups.AnalysisManagers.map((m) => ({
-                                value: m.hopC1ID,
-                                label: m.hopC1NAME,
-                            }))}
+                            options={completeRespOptions}
                             fullWidth
+                            width="220px"
+                            required
                         />
-                    </Grid>
+                    </Grid> */}
 
                     <Grid item xs={12} md={3}>
                         <SelectControl
@@ -531,11 +639,13 @@ const OffshoreEnquiry: React.FC = () => {
                             label="Sales Responsibility"
                             value={form.salesResp}
                             onChange={handleChange}
-                            options={lookups.AllActiveEmployees.map((e) => ({
-                                value: e.iDno,
-                                label: e.name,
+                            options={lookups.SalesManagers.map((e) => ({
+                                value: e.hopC1ID,
+                                label: e.hopC1NAME,
                             }))}
                             fullWidth
+                            width="200px"
+                            required
                         />
                     </Grid>
 
@@ -551,6 +661,7 @@ const OffshoreEnquiry: React.FC = () => {
                                 label: e.name,
                             }))}
                             fullWidth
+                            width="200px"
                         />
                     </Grid>
 

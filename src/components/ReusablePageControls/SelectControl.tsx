@@ -43,7 +43,10 @@ const SelectControl: React.FC<SelectControlProps> = ({
 }) => {
   // Find currently selected option (for Autocomplete to display correct label)
   const selectedOption = options.find((opt) => opt.value === value) || null;
-
+// const selectedOption =
+//   typeof value === "object"
+//     ? value
+//     : options.find((opt) => opt.value === value) || null;
   return (
     <FormControl
       required={required}
@@ -64,6 +67,11 @@ const SelectControl: React.FC<SelectControlProps> = ({
         value={selectedOption}
         options={options}
         getOptionLabel={(opt) => opt.label?.toString() ?? ""}
+        isOptionEqualToValue={(option, val) => option.value === val.value}
+// isOptionEqualToValue={(option, val) => {
+//   if (!option || !val) return false;
+//   return option.value === val.value;
+// }}
         onChange={(_, newValue) => {
           onChange({
             target: { name, value: newValue ? newValue.value : "" },
@@ -72,9 +80,15 @@ const SelectControl: React.FC<SelectControlProps> = ({
         renderInput={(params) => (
           <TextField
             {...params}
-            label={label}
+           label={
+              <>
+                {label}
+                {required && (
+                  <span style={{ color: "red", marginLeft: 2 }}>*</span>
+                )}
+              </>
+            }
             size="small"
-            required={required}
           />
         )}
         PaperProps={{
