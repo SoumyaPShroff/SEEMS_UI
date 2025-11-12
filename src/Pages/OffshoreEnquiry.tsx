@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
-    Grid, TextField, MenuItem, FormControl, InputLabel, Button, Card, CardContent, Typography, Box, ToggleButton, ToggleButtonGroup,
+    Grid, FormGroup, TextField, MenuItem, FormControl, InputLabel, Button, Card, CardContent, Typography, Box, ToggleButton, ToggleButtonGroup,
     FormControlLabel, Checkbox, RadioGroup, Radio,
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -134,31 +134,60 @@ const OffshoreEnquiry: React.FC = () => {
             setLoading(false);
         }
     };
+    const handleCheckboxChange = (section: string, item: string, checked: boolean) => {
+        setForm((prev) => {
+            const items = new Set(prev[section] || []);
+            if (checked) items.add(item);
+            else items.delete(item);
+            return { ...prev, [section]: Array.from(items) };
+        });
+    };
 
     return (
-        <Card sx={{  m: "auto", mt: 2, p: 4, boxShadow: 6, borderRadius: 3 }}>
-            <Typography
-                variant="h5"
-                sx={{
-                    textAlign: "center",
-                    mb: 3,
-                    fontWeight: 700,
-                    color: "#1565c0",
-                    textTransform: "uppercase",
-                }}
-            >
-                Add Offshore Enquiry
-            </Typography>
-
+        <Card
+            sx={{
+                width: "95%",
+                maxWidth: 1250,
+                m: "auto",
+                mt: 3,
+                p: 4,
+                boxShadow: 6,
+                borderRadius: 3,
+                maxHeight: "90vh",
+                overflowY: "auto",
+            }}
+        >
             <CardContent>
-                <Grid 
+                {/* --- Header --- */}
+                <Typography
+                    variant="h5"
+                    sx={{
+                        textAlign: "center",
+                        mb: 3,
+                        fontWeight: 700,
+                        color: "#1565c0",
+                        textTransform: "uppercase",
+                    }}
+                >
+                    Add Offshore Enquiry
+                </Typography>
+
+                {/* --- Main Form Grid --- */}
+                <Grid
                     container
                     spacing={2}
                     alignItems="center"
-                    justifyContent="space-between"
+                    sx={{
+                        "& .MuiFormControl-root, & .MuiTextField-root": {
+                            width: "100%",
+                        },
+                        "& .MuiOutlinedInput-root": {
+                            height: 40,
+                        },
+                    }}
                 >
                     {/* Row 1 */}
-                    <Grid item xs={12}  md={4}>
+                    <Grid item xs={12} md={3}>
                         <SelectControl
                             name="customerId"
                             label="Customer"
@@ -169,16 +198,21 @@ const OffshoreEnquiry: React.FC = () => {
                             }))}
                             onChange={handleChange}
                             required
-                            height={40}
-                            width="250px"
+                            width="200px"
                         />
                     </Grid>
 
-                    <Grid item xs={12}  md={4}>
-                        <TextField label="Location" name="location" onChange={handleChange} fullWidth />
+                    <Grid item xs={12} md={3}>
+                        <TextField
+                            label="Location"
+                            name="location"
+                            onChange={handleChange}
+                            size="small"
+                            fullWidth
+                        />
                     </Grid>
-                    
-                    <Grid item xs={12} md={4}>
+
+                    <Grid item xs={12} md={3}>
                         <SelectControl
                             name="state"
                             label="State"
@@ -189,103 +223,268 @@ const OffshoreEnquiry: React.FC = () => {
                                 label: s.name,
                             }))}
                             required
-                            height={40}
-                            width="130px"
+                            width="200px"
                         />
                     </Grid>
 
-                    <Grid item xs={12}  md={4}>
-                        <TextField label="Board Ref" name="boardRef" onChange={handleChange} fullWidth />
+                    <Grid item xs={12} md={3}>
+                        <TextField
+                            label="Contact Name"
+                            name="contactName"
+                            onChange={handleChange}
+                            size="small"
+                            width="200px"
+                        />
                     </Grid>
 
                     {/* Row 2 */}
-                    <Grid item xs={12} sm={6} md={4}>
-                        <TextField label="Contact Name" name="contactName" onChange={handleChange} fullWidth />
+                    <Grid item xs={12} md={3}>
+                        <TextField
+                            label="Email Address"
+                            name="emailAddress"
+                            onChange={handleChange}
+                            size="small"
+                            width="200px"
+                        />
                     </Grid>
 
-                    <Grid item xs={12} sm={6} md={4}>
-                        <TextField label="Email Address" name="emailAddress" onChange={handleChange} fullWidth />
-                    </Grid>
-
-
-                    {/* Row 3 - Address */}
-                    <Grid item xs={12}>
+                    <Grid item xs={12} md={3}>
                         <TextField
                             label="Address"
                             name="address"
                             onChange={handleChange}
-                            fullWidth
                             multiline
                             rows={2}
+                            fullWidth
+                            size="small"
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                        <TextField
+                            label="Board Ref"
+                            name="boardRef"
+                            onChange={handleChange}
+                            size="small"
+                            fullWidth
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                        <SelectControl
+                            name="inputReceivedThru"
+                            label="Input Received Thru"
+                            value={form.inputReceivedThru || ""}
+                            onChange={handleChange}
+                            options={[
+                                { value: "Email", label: "Email" },
+                                { value: "FTP", label: "FTP" },
+                                { value: "Other", label: "Other" },
+                            ]}
+                            height={40}
+                            required
+                            width="140px"
                         />
                     </Grid>
 
-                    {/* Row 4 - Currency & Type */}
-                    <Grid item xs={12} sm={6}>
-                        <Typography sx={{ mb: 0.5, fontWeight: 500 }}>Currency</Typography>
-                        <RadioGroup
-                            row
-                            name="currency"
-                            value={form.currency}
+                    <Grid item xs={12} md={3}>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                px: 1,
+                                py: 0.5,
+                            }}
+                        >
+                            <RadioGroup
+                                row
+                                name="currency"
+                                value={form.currency}
+                                onChange={handleChange}
+                                sx={{
+                                    display: "flex",
+                                    justifyContent: "space-around",
+                                    alignItems: "center",
+                                    height: 30,
+                                }}
+                            >
+                                <FormControlLabel value="INR" control={<Radio />} label="INR" />
+                                <FormControlLabel value="USD" control={<Radio />} label="USD" />
+                                <FormControlLabel value="EURO" control={<Radio />} label="EURO" />
+                            </RadioGroup>
+                        </Box>
+                    </Grid>
+
+                    {/* Row 3 */}
+                    <Grid item xs={12} md={3}>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                px: 1,
+                                py: 0.5,
+                            }}
+                        >
+                            <RadioGroup
+                                row
+                                name="type"
+                                value={form.type}
+                                onChange={handleChange}
+                                sx={{
+                                    display: "flex",
+                                    justifyContent: "space-around",
+                                    alignItems: "center",
+                                    height: 30,
+                                }}
+                            >
+                                <FormControlLabel value="Export" control={<Radio />} label="Export" />
+                                <FormControlLabel
+                                    value="Domestic"
+                                    control={<Radio />}
+                                    label="Domestic"
+                                />
+                            </RadioGroup>
+                        </Box>
+                    </Grid>
+
+                    <Grid item xs={12} md={3}>
+                        <SelectControl
+                            name="billingType"
+                            label="Billing Type"
+                            value={form.billingType || ""}
                             onChange={handleChange}
-                        >
-                            <FormControlLabel value="INR" control={<Radio />} label="INR" />
-                            <FormControlLabel value="USD" control={<Radio />} label="USD" />
-                            <FormControlLabel value="EURO" control={<Radio />} label="EURO" />
-                        </RadioGroup>
+                            options={[
+                                { value: "Fixed-Cost", label: "Fixed-Cost" },
+                                { value: "Time and Material", label: "Time and Material" },
+                            ]}
+                            height={40}
+                            required
+                            width="200px"
+                        />
                     </Grid>
 
-                    <Grid item xs={12} sm={6}>
-                        <Typography sx={{ mb: 0.5, fontWeight: 500 }}>Type</Typography>
-                        <RadioGroup
-                            row
-                            name="type"
-                            value={form.type}
+                    <Grid item xs={12} md={3}>
+                        <TextField
+                            label="PCB Tool"
+                            name="pcbTool"
                             onChange={handleChange}
-                        >
-                            <FormControlLabel value="Export" control={<Radio />} label="Export" />
-                            <FormControlLabel value="Domestic" control={<Radio />} label="Domestic" />
-                        </RadioGroup>
+                            size="small"
+                            fullWidth
+                        />
                     </Grid>
-
-                    {/* Divider */}
-                    <Grid item xs={12}>
-                        <Box sx={{ borderTop: "1px solid #ccc", mt: 3, mb: 2 }} />
-                        <Typography
-                            variant="h6"
-                            align="center"
-                            sx={{ color: "#1976d2", fontWeight: 600 }}
+                    {/* --- Scope Sections --- */}
+                    {["Layout", "Analysis", "VA", "NPI"].map((section) => (
+                        <Grid
+                            item
+                            xs={12}
+                            key={section}
+                            sx={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "flex-start",
+                                flexWrap: "wrap",
+                                mb: 3, // space between sections
+                            }}
                         >
-                            SCOPE
-                        </Typography>
-                    </Grid>
+                            {/* Left side: Checkboxes */}
+                            <Box sx={{ flex: "1 1 78%", minWidth: { xs: "100%", sm: "75%" } }}>
+                                <Typography sx={{ fontWeight: 600, mb: 0.5 }}>{section}</Typography>
 
-                    {/* Scope Rows */}
-                    {["Layout", "Analysis", "VA", "NPI"].map((scope) => (
-                        <React.Fragment key={scope}>
-                            <Grid item xs={12} sm={6}>
-                                <Typography>{scope}</Typography>
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
+                                <FormGroup
+                                    row
+                                    sx={{
+                                        display: "flex",
+                                        flexWrap: "wrap",
+                                        gap: 1.5,
+                                    }}
+                                >
+                                    {(section === "Layout"
+                                        ? [
+                                            "Design",
+                                            "Library",
+                                            "QA/CAM",
+                                            "DFA",
+                                            "DFM",
+                                            "Fabrication",
+                                            "Testing",
+                                            "Others",
+                                        ]
+                                        : section === "Analysis"
+                                            ? [
+                                                "SI",
+                                                "PI",
+                                                "EMI Net Level",
+                                                "EMI System Level",
+                                                "Thermal Board Level",
+                                                "Thermal System Level",
+                                                "Others",
+                                            ]
+                                            : section === "VA"
+                                                ? [
+                                                    "Fabrication",
+                                                    "Assembly",
+                                                    "Hardware",
+                                                    "Software",
+                                                    "FPGA",
+                                                    "Testing",
+                                                    "Others",
+                                                    "Design Outsourced",
+                                                ]
+                                                : [
+                                                    "BOM Procurement",
+                                                    "NPI-Fabrication",
+                                                    "NPI-Assembly",
+                                                    "Job Work",
+                                                    "NPI-Testing",
+                                                ]
+                                    ).map((item) => (
+                                        <FormControlLabel
+                                            key={item}
+                                            control={
+                                                <Checkbox
+                                                    checked={form[section.toLowerCase()]?.includes(item)}
+                                                    onChange={(e) =>
+                                                        handleCheckboxChange(
+                                                            section.toLowerCase(),
+                                                            item,
+                                                            e.target.checked
+                                                        )
+                                                    }
+                                                />
+                                            }
+                                            label={item}
+                                            sx={{
+                                                minWidth: { xs: "45%", sm: "30%", md: "20%" },
+                                            }}
+                                        />
+                                    ))}
+                                </FormGroup>
+                            </Box>
+
+                            {/* Right side: Responsibility dropdown */}
+                            <Box
+                                sx={{
+                                    flex: "0 0 20%",
+                                    minWidth: 200,
+                                    mt: { xs: 2, sm: 0 },
+                                    textAlign: { xs: "left", sm: "right" },
+                                }}
+                            >
                                 <SelectControl
-                                    name={`${scope}Resp`}
+                                    name={`${section.toLowerCase()}Resp`}
                                     label="Responsibility"
-                                    value={form[`${scope}Resp`] || ""}
+                                    value={form[`${section.toLowerCase()}Resp`] || ""}
                                     onChange={handleChange}
                                     options={lookups.AllActiveEmployees.map((e) => ({
                                         value: e.iDno,
                                         label: e.name,
                                     }))}
-                                    required
-                                    height={40}
-                                    width="130px"
+                                    fullWidth
+                                    height={42}
                                 />
-                            </Grid>
-                        </React.Fragment>
+                            </Box>
+                        </Grid>
                     ))}
-
-                    {/* Date and Tender */}
-                    <Grid item xs={12} sm={6}>
+                    {/* --- Quotation & Tender --- */}
+                    <Grid item xs={12} md={3}>
                         <TextField
                             type="date"
                             label="Quotation Request Last Date"
@@ -293,10 +492,11 @@ const OffshoreEnquiry: React.FC = () => {
                             fullWidth
                             name="quotationDate"
                             onChange={handleChange}
+                            size="small"
                         />
                     </Grid>
 
-                    <Grid item xs={12} sm={6}>
+                    <Grid item xs={12} md={3}>
                         <FormControlLabel
                             control={
                                 <Checkbox
@@ -310,8 +510,8 @@ const OffshoreEnquiry: React.FC = () => {
                         />
                     </Grid>
 
-                    {/* Reference & Responsibility */}
-                    <Grid item xs={12} sm={6}>
+                    {/* --- Responsibilities --- */}
+                    <Grid item xs={12} md={3}>
                         <SelectControl
                             name="completeResp"
                             label="Complete Responsibility"
@@ -321,13 +521,11 @@ const OffshoreEnquiry: React.FC = () => {
                                 value: m.hopC1ID,
                                 label: m.hopC1NAME,
                             }))}
-                            required
-                            height={40}
-                            width="150px"
+                            fullWidth
                         />
                     </Grid>
 
-                    <Grid item xs={12} sm={6}>
+                    <Grid item xs={12} md={3}>
                         <SelectControl
                             name="salesResp"
                             label="Sales Responsibility"
@@ -337,13 +535,12 @@ const OffshoreEnquiry: React.FC = () => {
                                 value: e.iDno,
                                 label: e.name,
                             }))}
-                            required
-                            height={40}
-                            width="130px"
+                            fullWidth
                         />
                     </Grid>
 
-                    <Grid item xs={12} sm={6}>
+                    {/* --- Reference + Remarks --- */}
+                    <Grid item xs={12} md={3}>
                         <SelectControl
                             name="referenceBy"
                             label="Reference By"
@@ -353,13 +550,11 @@ const OffshoreEnquiry: React.FC = () => {
                                 value: e.iDno,
                                 label: e.name,
                             }))}
-                            required
-                            height={40}
-                            width="130px"
+                            fullWidth
                         />
                     </Grid>
 
-                    <Grid item xs={12} sm={6}>
+                    <Grid item xs={12} md={9}>
                         <TextField
                             label="Remarks"
                             fullWidth
@@ -367,11 +562,12 @@ const OffshoreEnquiry: React.FC = () => {
                             rows={2}
                             name="remarks"
                             onChange={handleChange}
+                            size="small"
                         />
                     </Grid>
 
-                    {/* File Upload */}
-                    <Grid item xs={12}>
+                    {/* --- File Upload --- */}
+                    <Grid item xs={12} md={9}>
                         <Box
                             sx={{
                                 border: "2px dashed #90caf9",
@@ -403,16 +599,16 @@ const OffshoreEnquiry: React.FC = () => {
                         </Typography>
                     </Grid>
 
-                    {/* Save Button */}
-                    <Grid item xs={12} textAlign="center">
+                    {/* --- Submit Button --- */}
+                    <Grid item xs={12} md={3} textAlign="center" sx={{ mt: 3 }}>
                         <Button
                             variant="contained"
                             color="primary"
                             onClick={handleSubmit}
                             disabled={loading}
-                            sx={{ mt: 2, px: 6 }}
+                            sx={{ px: 6, height: 45 }}
                         >
-                            {loading ? "Saving..." : "Add"}
+                            {loading ? "Saving..." : "ADD"}
                         </Button>
                     </Grid>
                 </Grid>

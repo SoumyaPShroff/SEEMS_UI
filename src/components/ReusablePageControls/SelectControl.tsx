@@ -1,6 +1,11 @@
 import React from "react";
-import {FormControl, InputLabel, Select, MenuItem,  FormHelperText,} from "@mui/material";
-import type { SelectChangeEvent } from "@mui/material/Select";
+import {
+  FormControl,
+  InputLabel,
+  FormHelperText,
+  TextField,
+  Autocomplete,
+} from "@mui/material";
 
 interface Option {
   value: string | number;
@@ -10,61 +15,77 @@ interface Option {
 interface SelectControlProps {
   name: string;
   label: string;
-  value: string | number;
+  value: string | number | null;
   options: Option[];
-  onChange: (e: SelectChangeEvent<string | number>) => void;
+  onChange: (e: any) => void;
   required?: boolean;
+  fullWidth?: boolean;
+  height?: number;
+  width?: string | number;
   error?: boolean;
   helperText?: string;
-  disabled?: boolean;
-  fullWidth?: boolean;
-  size?: "small" | "medium";
-  height?: string | number;
-  width?: string | number;
-  sx?: object; // optional extra MUI styling prop
+  sx?: object;
 }
 
 const SelectControl: React.FC<SelectControlProps> = ({
   name,
   label,
   value,
-  options,
   onChange,
+  options,
   required = false,
-  error = false,
-  helperText = "",
-  disabled = false,
   fullWidth = true,
-  size = "small",
-  height,
-  width,
+  height = 40,
+  width = "100%",
+  error = false,
+  helperText,
   sx = {},
 }) => {
+  // Find currently selected option (for Autocomplete to display correct label)
+  const selectedOption = options.find((opt) => opt.value === value) || null;
+
   return (
-    <FormControl fullWidth={fullWidth} size={size} error={error} disabled={disabled} sx={{ width, ...sx }}>
-      <InputLabel required={required}>{label}</InputLabel>
-      <Select
-        name={name}
-        value={value}
-        label={label}
-        onChange={onChange}
-        sx={{
-          backgroundColor: "#fff",
+    <FormControl
+      required={required}
+      fullWidth={fullWidth}
+      error={error}
+      sx={{
+        minWidth: width,
+        "& .MuiOutlinedInput-root": {
           height,
+        },
+        "& .MuiInputBase-input": {
+          padding: "6px 10px",
+        },
+        ...sx,
+      }}
+    >
+      <Autocomplete
+        value={selectedOption}
+        options={options}
+        getOptionLabel={(opt) => opt.label?.toString() ?? ""}
+        onChange={(_, newValue) => {
+          onChange({
+            target: { name, value: newValue ? newValue.value : "" },
+          });
         }}
-      >
-        {options.length > 0 ? (
-          options.map((opt) => (
-            <MenuItem key={opt.value} value={opt.value}>
-              {opt.label}
-            </MenuItem>
-          ))
-        ) : (
-          <MenuItem disabled value="">
-            No options available
-          </MenuItem>
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label={label}
+            size="small"
+            required={required}
+          />
         )}
-      </Select>
+        PaperProps={{
+          style: { maxHeight: 250 },
+        }}
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            height,
+          },
+        }}
+      />
       {helperText && <FormHelperText>{helperText}</FormHelperText>}
     </FormControl>
   );
