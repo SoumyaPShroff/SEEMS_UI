@@ -7,40 +7,17 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { baseUrl } from "../const/BaseUrl";
 import SelectControl from "../components/ReusablePageControls/SelectControl";
 
-interface Customer {
-    itemno: string;
-    customer: string;
-}
+interface Customer { itemno: string; customer: string; }
 
-interface Employee {
-    iDno: string;
-    name: string;
-}
+interface Employee { iDno: string; name: string; }
 
-interface Manager {
-    HOPC1ID: string;
-    HOPC1NAME: string;
-}
+interface Manager { HOPC1ID: string; HOPC1NAME: string; }
 
-interface Location {
-    location_id: string;
-    location: string;
-    address?: string;
-}
+interface Location { location_id: string; location: string; address?: string; }
 
-interface Contact {
-    contact_id: string;
-    contactName: string;
-    email11?: string;
-    location_id?: string;
-    customer_id?: string;
-}
+interface Contact { contact_id: string; contactName: string; email11?: string; location_id?: string; customer_id?: string; }
 
-interface State {
-    id: string;
-    name: string;
-}
-
+interface State { id: string; name: string; }
 
 interface LookupData {
     customers: Customer[];
@@ -185,6 +162,19 @@ const OffshoreEnquiry: React.FC = () => {
         fetchLookups();
     }, []);
 
+    useEffect(() => {
+        const combined = [
+            form.layoutResp,
+            form.analysisResp,
+            form.vaResp,
+            form.npiResp,
+        ]
+            .filter(Boolean)
+            .join(", ");
+
+        setForm((prev) => ({ ...prev, completeResp: combined }));
+    }, [form.layoutResp, form.analysisResp, form.vaResp, form.npiResp]);
+
     const fetchCustomerLocations = async (customerId: string): Promise<void> => {
         try {
             const res = await fetch(`${baseUrl}/api/Sales/customerlocations?customerId=${customerId}`);
@@ -210,37 +200,62 @@ const OffshoreEnquiry: React.FC = () => {
         }
     };
 
+    const getResponsibilityOptions = (section: string) => {
+        switch (section) {
+            case "Layout": return lookups.designMngrs;
+            case "Analysis": return lookups.AnalysisManagers;
+            case "VA":
+            case "NPI": return lookups.salesnpiusers;
+            default: return lookups.AllActiveEmployees;
+        }
+    };
+
+
     const getCompleteRespOptions = () => {
-        // Collect all selected responsibility IDs
-        const selectedIds = [form.layoutResp, form.analysisResp, form.vaResp, form.npiResp].filter(
-            (id) => id && id.trim() !== ""
-        );
+        const selectedIds = [
+            form.layoutResp,
+            form.analysisResp,
+            form.vaResp,
+            form.npiResp,
+        ].filter((id) => id && id.trim() !== "");
 
         if (selectedIds.length === 0) return [];
 
-        // Find employee details from all lookup sources
-        const allEmployees = [...lookups.designMngrs, ...lookups.AnalysisManagers, ...lookups.salesnpiusers];
+        const allEmployees: any[] = [
+            ...(lookups.designMngrs || []),
+            ...(lookups.AnalysisManagers || []),
+            ...(lookups.salesnpiusers || []),
+            ...(lookups.AllActiveEmployees || []),
+        ];
 
-        const uniqueOptions = Array.from(
-            new Map(
-                selectedIds
-                    .map((id) => {
-                        const emp = allEmployees.find(
-                            (e: any) => e.hopC1ID === id || e.iDno === id
-                        );
-                        return emp
-                            ? {
-                                value: emp.hopC1ID || emp.iDno,
-                                label: emp.hopC1NAME || emp.name,
-                            }
-                            : null;
-                    })
-                    .filter(Boolean)
-            ).values()
+        const options = selectedIds
+            .map((id) => {
+                const emp =
+                    allEmployees.find(
+                        (e) => e.hopC1ID === id || e.iDno === id
+                    ) || null;
+
+                if (!emp) {
+                    console.warn("No matching employee found for ID:", id);
+                    return null;
+                }
+
+                return {
+                    value: emp.hopC1ID || emp.iDno || id,
+                    label: emp.hopC1NAME || emp.name || `Unknown (${id})`,
+                };
+            })
+            .filter((opt) => opt && opt.label && opt.value);
+
+        // Remove duplicates
+        const unique = Array.from(
+            new Map(options.map((opt) => [opt.value, opt])).values()
         );
 
-        return uniqueOptions;
+        return unique;
     };
+
+
 
     const handleChange = async (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>
@@ -294,6 +309,37 @@ const OffshoreEnquiry: React.FC = () => {
             setForm(updatedForm);
             return;
         }
+
+        // Auto-update Complete Responsibility when any scope responsibility changes
+        const responsibilityFields = ["layoutResp", "analysisResp", "vaResp", "npiResp"];
+
+        if (responsibilityFields.includes(name)) {
+            // Collect all selected responsibilities (excluding empty ones)
+            const selectedNames = responsibilityFields
+                .map((key) => {
+                    const id = name === key ? value : form[key as keyof EnquiryForm];
+                    if (!id) return null;
+
+                    // Find matching employee name across lookups
+                    const allEmps = [
+                        ...lookups.designMngrs,
+                        ...lookups.AnalysisManagers,
+                        ...lookups.salesnpiusers,
+                    ];
+                    const emp = allEmps.find(
+                        (e: any) => e.hopC1ID === id || e.iDno === id
+                    );
+                    return emp ? emp.hopC1NAME || emp.name : null;
+                })
+                .filter(Boolean);
+
+            updatedForm = {
+                ...updatedForm,
+                completeResp: selectedNames.join(", "),
+            };
+        }
+
+
         setForm(updatedForm);
     };
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -369,14 +415,6 @@ const OffshoreEnquiry: React.FC = () => {
                     container
                     spacing={2}
                     alignItems="center"
-                    sx={{
-                        "& .MuiFormControl-root, & .MuiTextField-root": {
-                            width: "100%",
-                        },
-                        "& .MuiOutlinedInput-root": {
-                            height: 40,
-                        },
-                    }}
                 >
                     {/* Row 1 */}
                     <Grid item xs={12} md={3}>
@@ -442,17 +480,18 @@ const OffshoreEnquiry: React.FC = () => {
                     </Grid>
 
                     {/* Row 2 */}
-                    <Grid item xs={12} md={12}>
+                    <Grid item xs={12} md={4}>
                         <TextField
                             name="emailAddress"
                             label="Email Address"
                             value={form.emailAddress}
                             onChange={handleChange}
                             fullWidth
+                            InputLabelProps={{ shrink: true }} // To keep label above even if empty and avoid overlapping pf placeholder or label with value
                         />
                     </Grid>
 
-                    <Grid item xs={12} md={12}>
+                    <Grid item xs={12} md={4}>
                         <TextField
                             label="Address"
                             name="address"
@@ -460,10 +499,9 @@ const OffshoreEnquiry: React.FC = () => {
                             onChange={handleChange}
                             multiline
                             rows={2}
-                            fullWidth
                         />
                     </Grid>
-                    <Grid item xs={12} md={12}>
+                    <Grid item xs={12} md={2}>
                         <TextField
                             label="Board Ref"
                             name="boardRef"
@@ -472,7 +510,7 @@ const OffshoreEnquiry: React.FC = () => {
                             fullWidth
                         />
                     </Grid>
-                    <Grid item xs={12} md={12}>
+                    <Grid item xs={12} md={2}>
                         <SelectControl
                             name="inputReceivedThru"
                             label="Input Received Thru"
@@ -571,7 +609,7 @@ const OffshoreEnquiry: React.FC = () => {
 
                     <Grid item xs={12} md={3}>
                         <SelectControl
-                            name="PCB Tool"
+                            name="PCBTool"
                             label="PCB Tool"
                             value={form.PCBTool || ""}
                             onChange={handleChange}
@@ -611,15 +649,7 @@ const OffshoreEnquiry: React.FC = () => {
                     {/* --- Scope Sections --- */}
                     {["Layout", "Analysis", "VA", "NPI"].map((section) => {
                         const lower = section.toLowerCase();
-
-                        // Select responsibility list based on section
-                        let responsibilityOptions = lookups.AllActiveEmployees;
-                        if (section === "Layout") responsibilityOptions = lookups.designMngrs;
-                        else if (section === "Analysis") responsibilityOptions = lookups.AnalysisManagers;
-                        else if (section === "VA") responsibilityOptions = lookups.salesnpiusers;
-                        else if (section === "NPI") responsibilityOptions = lookups.salesnpiusers;
-
-                        // Checkbox lists per section
+                        const responsibilityOptions = getResponsibilityOptions(section);
                         const checkboxItems =
                             section === "Layout"
                                 ? ["Design", "Library", "QA/CAM", "DFA", "DFM", "Fabrication", "Testing", "Others"]
@@ -629,26 +659,15 @@ const OffshoreEnquiry: React.FC = () => {
                                         ? ["Fabrication", "Assembly", "Hardware", "Software", "FPGA", "Testing", "Others", "Design Outsourced"]
                                         : ["BOM Procurement", "NPI-Fabrication", "NPI-Assembly", "Job Work", "NPI-Testing"];
 
-
                         return (
                             <Grid item xs={12} key={section}>
-                                <Grid
-                                    container
-                                    alignItems="center"
-                                    justifyContent="space-between"
-                                    sx={{
-                                        borderBottom: "1px dashed #ddd",
-                                        pb: 1,
-                                        mb: 1,
-                                    }}
-                                >
-                                    {/* --- Left side: checkboxes --- */}
+                                <Grid container alignItems="center" justifyContent="space-between" sx={{ borderBottom: "1px dashed #ddd", pb: 1, mb: 1 }}>
                                     <Grid item xs={10}>
                                         <Typography sx={{ fontWeight: 600, mb: 0.5 }}>{section}</Typography>
                                         <FormGroup row>
-                                            {checkboxItems.map((item, index) => (
+                                            {checkboxItems.map((item) => (
                                                 <FormControlLabel
-                                                    key={`${section}-${item}-${index}`}
+                                                    key={item}
                                                     control={
                                                         <Checkbox
                                                             checked={form[lower]?.includes(item)}
@@ -661,53 +680,29 @@ const OffshoreEnquiry: React.FC = () => {
                                         </FormGroup>
                                     </Grid>
 
-                                    {/* --- Right side: responsibility dropdown --- */}
-                                    <Grid
-                                        item
-                                        xs={2}
-                                        sx={{
-                                            display: "flex",
-                                            justifyContent: "flex-end",
-                                            alignItems: "center",
-                                        }}
-                                    >
-                                        {form[lower].length > 0 ? (
+                                    <Grid item xs={2} sx={{ display: "flex", justifyContent: "flex-end" }}>
+                                        {form[lower].length > 0 && (
                                             <SelectControl
                                                 name={`${lower}Resp`}
                                                 label={`${section} Responsibility`}
                                                 value={form[`${lower}Resp`] || ""}
-                                                onChange={(e) => {
-                                                    const selectedValue = e.target.value;
-                                                    setForm((prev) => {
-                                                        const updated = { ...prev, [`${lower}Resp`]: selectedValue };
-
-                                                        // Update completeResp based on all responsibilities
-                                                        const completeOptions = getCompleteRespOptions();
-                                                        if (!completeOptions.find((o) => o.value === updated.completeResp)) {
-                                                            updated.completeResp = ""; // clear if current value is no longer valid
-                                                        }
-
-                                                        return updated;
-                                                    });
-                                                }}
-
-                                                options={responsibilityOptions.map((opt: any) => {
-                                                    if (section === "Layout" || section === "Analysis") {
-                                                        return { value: opt.hopC1ID, label: opt.hopC1NAME }; // 🔹 fix capitalization
-                                                    } else {
-                                                        return { value: opt.iDno, label: opt.name };
-                                                    }
-                                                })}
-                                                height={40}
+                                                onChange={handleChange}
+                                                options={responsibilityOptions.map((opt: any) =>
+                                                    section === "Layout" || section === "Analysis"
+                                                        ? { value: opt.hopC1ID, label: opt.hopC1NAME }
+                                                        : { value: opt.iDno, label: opt.name }
+                                                )}
+                                                fullWidth={false}
                                                 width="220px"
+                                                required
                                             />
-                                        ) : null}
-
+                                        )}
                                     </Grid>
                                 </Grid>
                             </Grid>
                         );
                     })}
+
                     <Grid item xs={12}>
                         <Box
                             sx={{
@@ -768,6 +763,7 @@ const OffshoreEnquiry: React.FC = () => {
                             options={getCompleteRespOptions()}
                             fullWidth
                             width="220px"
+                            required
                         />
                     </Grid>
                     <Grid item xs={12} md={3}>

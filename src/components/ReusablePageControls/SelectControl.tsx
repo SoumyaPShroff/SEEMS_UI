@@ -64,13 +64,10 @@ const selectedOption =
     >
       <Autocomplete
         value={selectedOption}
-        options={options}
+       // options={options}
+       options={options || []}
         getOptionLabel={(opt) => opt.label?.toString() ?? ""}
         isOptionEqualToValue={(option, val) => option.value === val.value}
-// isOptionEqualToValue={(option, val) => {
-//   if (!option || !val) return false;
-//   return option.value === val.value;
-// }}
         onChange={(_, newValue) => {
           onChange({
             target: { name, value: newValue ? newValue.value : "" },
