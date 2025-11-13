@@ -42,11 +42,10 @@ const SelectControl: React.FC<SelectControlProps> = ({
   sx = {},
 }) => {
   // Find currently selected option (for Autocomplete to display correct label)
-  const selectedOption = options.find((opt) => opt.value === value) || null;
-// const selectedOption =
-//   typeof value === "object"
-//     ? value
-//     : options.find((opt) => opt.value === value) || null;
+ // const selectedOption = options.find((opt) => opt.value === value) || null;
+const selectedOption =
+  options?.find((opt) => opt?.value !== undefined && opt.value === value) || null;
+
   return (
     <FormControl
       required={required}

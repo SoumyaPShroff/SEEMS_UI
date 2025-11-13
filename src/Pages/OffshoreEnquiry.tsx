@@ -7,15 +7,52 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { baseUrl } from "../const/BaseUrl";
 import SelectControl from "../components/ReusablePageControls/SelectControl";
 
+interface Customer {
+    itemno: string;
+    customer: string;
+}
+
+interface Employee {
+    iDno: string;
+    name: string;
+}
+
+interface Manager {
+    HOPC1ID: string;
+    HOPC1NAME: string;
+}
+
+interface Location {
+    location_id: string;
+    location: string;
+    address?: string;
+}
+
+interface Contact {
+    contact_id: string;
+    contactName: string;
+    email11?: string;
+    location_id?: string;
+    customer_id?: string;
+}
+
+interface State {
+    id: string;
+    name: string;
+}
+
+
 interface LookupData {
-    customers: { itemno: string; customer: string }[];
-    AllActiveEmployees: { iDno: string; name: string }[];
-    AnalysisManagers: { HOPC1ID: string; HOPC1NAME: string }[];
-    SalesManagers: { HOPC1ID: string; HOPC1NAME: string }[];
-    designMngrs: { HOPC1ID: string; HOPC1NAME: string }[],
-    salesnpiusers: { iDno: string; name: string }[],
-    States: { id: string; name: string }[];
-    PCBTools: [],
+    customers: Customer[];
+    AllActiveEmployees: Employee[];
+    AnalysisManagers: Manager[];
+    SalesManagers: Manager[];
+    designMngrs: Manager[];
+    salesnpiusers: Employee[];
+    States: State[];
+    PCBTools: string[];
+    Locations: Location[];
+    Contacts: Contact[];
 }
 
 interface EnquiryForm {
@@ -23,7 +60,7 @@ interface EnquiryForm {
     customerId: string;
     boardRef: string;
     contactName: string;
-    emailAddress: string;
+    email11: string;
     address: string;
     location: string;
     state: string;
@@ -42,11 +79,11 @@ interface EnquiryForm {
     analysis: string[];
     va: string[];
     npi: string[];
-
     layoutResp: string;
     analysisResp: string;
     vaResp: string;
     npiResp: string;
+    locationId: string;
 }
 
 
@@ -56,7 +93,7 @@ const OffshoreEnquiry: React.FC = () => {
         customerId: "",
         boardRef: "",
         contactName: "",
-        emailAddress: "",
+        email11: "",
         address: "",
         location: "",
         state: "",
@@ -79,6 +116,7 @@ const OffshoreEnquiry: React.FC = () => {
         analysisResp: "",
         vaResp: "",
         npiResp: "",
+        locationId: "",
     });
 
     const [lookups, setLookups] = useState<LookupData>({
@@ -90,6 +128,8 @@ const OffshoreEnquiry: React.FC = () => {
         salesnpiusers: [],
         States: [],
         PCBTools: [],
+        Locations: [],
+        Contacts: [],
     });
 
     const [file, setFile] = useState<File | null>(null);
@@ -99,7 +139,7 @@ const OffshoreEnquiry: React.FC = () => {
     useEffect(() => {
         const fetchLookups = async () => {
             try {
-                const [custRes, empRes, analysisRes, salesisRes, designRes, npiRes, PCBToolsRes] = await Promise.all([
+                const [custRes, empRes, analysisRes, salesisRes, designRes, npiRes, PCBToolsRes, LocationsRes, ContactsRes] = await Promise.all([
                     fetch(`${baseUrl}/api/Sales/customers`),
                     fetch(`${baseUrl}/AllActiveEmployees`),
                     fetch(`${baseUrl}/AnalysisManagers`),
@@ -107,8 +147,10 @@ const OffshoreEnquiry: React.FC = () => {
                     fetch(`${baseUrl}/DesignManagers`),
                     fetch(`${baseUrl}/SalesNpiUsers`),
                     fetch(`${baseUrl}/PCBTools`),
+                    fetch(`${baseUrl}/api/Sales/customerlocations`),
+                    fetch(`${baseUrl}/api/Sales/customercontacts`),
                 ]);
-                const [customers, AllActiveEmployees, AnalysisManagers, SalesManagers, designMngrs, salesnpiusers, PCBTools] =
+                const [customers, AllActiveEmployees, AnalysisManagers, SalesManagers, designMngrs, salesnpiusers, PCBTools, Locations, Contacts,] =
                     await Promise.all([
                         custRes.json(),
                         empRes.json(),
@@ -117,6 +159,8 @@ const OffshoreEnquiry: React.FC = () => {
                         designRes.json(),
                         npiRes.json(),
                         PCBToolsRes.json(),
+                        LocationsRes.json(),
+                        ContactsRes.json(),
                     ]);
                 setLookups({
                     customers,
@@ -131,6 +175,8 @@ const OffshoreEnquiry: React.FC = () => {
                         { id: "MH", name: "Maharashtra" },
                     ],
                     PCBTools,
+                    Locations,
+                    Contacts,
                 });
             } catch (err) {
                 console.error("Error fetching lookups:", err);
@@ -139,13 +185,117 @@ const OffshoreEnquiry: React.FC = () => {
         fetchLookups();
     }, []);
 
-    const handleChange = (
-        e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | any
-    ) => {
-        const { name, value } = e.target;
-        setForm((prev) => ({ ...prev, [name]: value }));
+    const fetchCustomerLocations = async (customerId: string): Promise<void> => {
+        try {
+            const res = await fetch(`${baseUrl}/api/Sales/customerlocations?customerId=${customerId}`);
+            if (!res.ok) throw new Error("Failed to load customer locations");
+            const data: Location[] = await res.json();
+            setLookups((prev) => ({ ...prev, Locations: data, Contacts: [] }));
+        } catch (err) {
+            console.error("Error fetching customer locations:", err);
+            setLookups((prev) => ({ ...prev, Locations: [], Contacts: [] }));
+        }
     };
 
+    const fetchCustomerContacts = async (customer_id: string, locationId: string): Promise<void> => {
+        try {
+            const res = await fetch(`${baseUrl}/api/Sales/customercontacts?customer_id=${customer_id}&location_id=${locationId}`);
+
+            if (!res.ok) throw new Error("Failed to load customer contacts");
+            const data: Contact[] = await res.json();
+            setLookups((prev) => ({ ...prev, Contacts: data }));
+        } catch (err) {
+            console.error("Error fetching customer contacts:", err);
+            setLookups((prev) => ({ ...prev, Contacts: [] }));
+        }
+    };
+
+    const getCompleteRespOptions = () => {
+        // Collect all selected responsibility IDs
+        const selectedIds = [form.layoutResp, form.analysisResp, form.vaResp, form.npiResp].filter(
+            (id) => id && id.trim() !== ""
+        );
+
+        if (selectedIds.length === 0) return [];
+
+        // Find employee details from all lookup sources
+        const allEmployees = [...lookups.designMngrs, ...lookups.AnalysisManagers, ...lookups.salesnpiusers];
+
+        const uniqueOptions = Array.from(
+            new Map(
+                selectedIds
+                    .map((id) => {
+                        const emp = allEmployees.find(
+                            (e: any) => e.hopC1ID === id || e.iDno === id
+                        );
+                        return emp
+                            ? {
+                                value: emp.hopC1ID || emp.iDno,
+                                label: emp.hopC1NAME || emp.name,
+                            }
+                            : null;
+                    })
+                    .filter(Boolean)
+            ).values()
+        );
+
+        return uniqueOptions;
+    };
+
+    const handleChange = async (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>
+    ) => {
+        const { name, value } = e.target as HTMLInputElement;
+        // Prepare an updated form object (no state reset yet)
+        let updatedForm = { ...form, [name]: value };
+
+        if (name === "customerId") {
+            updatedForm = {
+                ...updatedForm,
+                locationId: "",
+                contactName: "",
+                address: "",
+                emailAddress: "",
+                state: form.state,// 👇 Preserve state
+            };
+            setForm(updatedForm);
+            await fetchCustomerLocations(value);
+            return; // stop here, don’t run other logic
+        }
+
+        // 🔹 Location changed
+        if (name === "locationId") {
+            const selectedLoc = lookups.Locations.find((l) => l.location_id === value);
+            updatedForm = {
+                ...form, // 👈 rebuild from *latest* form every time
+                locationId: value,
+                contactName: "",
+                address: selectedLoc?.address ?? "",
+                emailAddress: "",
+                state: form.state, // 👈 explicitly preserve state
+            };
+            setForm(updatedForm);
+
+            await fetchCustomerContacts(form.customerId, value);
+            return;
+        }
+
+        if (name === "contactName") {
+            const contact = lookups.Contacts.find((c) => c.contact_id === value);
+            if (contact) {
+                updatedForm = {
+                    ...updatedForm,
+                    contactName: value,
+                    address: contact.address ?? form.address,
+                    emailAddress: contact.email11 ?? form.emailAddress,
+                    state: form.state,
+                };
+            }
+            setForm(updatedForm);
+            return;
+        }
+        setForm(updatedForm);
+    };
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files?.length) setFile(e.target.files[0]);
     };
@@ -185,39 +335,6 @@ const OffshoreEnquiry: React.FC = () => {
             return updated;
         });
     };
-//    // 👇 Combine selected responsibilities dynamically
-//                         const combinedResponsibilities = [
-//                             form.layoutResp,
-//                             form.analysisResp,
-//                             form.vaResp,
-//                             form.npiResp,
-//                         ]
-//                             .filter((val) => val && val.trim() !== ""); // remove empty or undefined ones
-
-//                         // 👇 Get unique employee details (id + name)
-//                         const completeRespOptions =
-//                             combinedResponsibilities.length > 0
-//                                 ? [
-//                                     ...new Map(
-//                                         combinedResponsibilities
-//                                             .map((id) => {
-//                                                 // find in all possible sources
-//                                                 const emp =
-//                                                     lookups.designMngrs.find((e) => e.hopC1ID === id) ||
-//                                                     lookups.AnalysisManagers.find((e) => e.hopC1ID === id) ||
-//                                                     lookups.salesnpiusers.find((e) => e.iDno === id);
-//                                                 return emp
-//                                                     ? {
-//                                                         value: emp.hopC1ID || emp.iDno,
-//                                                         label: emp.hopC1NAME || emp.name,
-//                                                     }
-//                                                     : null;
-//                                             })
-//                                             .filter(Boolean)
-//                                     ).values(),
-//                                 ]
-//                                 : [];
-
 
     return (
         <Card
@@ -278,12 +395,18 @@ const OffshoreEnquiry: React.FC = () => {
                     </Grid>
 
                     <Grid item xs={12} md={3}>
-                        <TextField
+                        <SelectControl
+                            name="locationId"
                             label="Location"
-                            name="location"
+                            value={form.locationId}
+                            options={lookups.Locations.map((l) => ({
+                                value: l.location_id,
+                                label: l.location,
+                            }))}
                             onChange={handleChange}
-                            size="small"
-                            fullWidth
+                            required
+                            disabled={!form.customerId}
+                            width="200px"
                         />
                     </Grid>
 
@@ -303,38 +426,44 @@ const OffshoreEnquiry: React.FC = () => {
                     </Grid>
 
                     <Grid item xs={12} md={3}>
-                        <TextField
-                            label="Contact Name"
+                        <SelectControl
                             name="contactName"
+                            label="Contact Name"
+                            value={form.contactName}
+                            options={lookups.Contacts.map((c) => ({
+                                value: c.contact_id,
+                                label: c.contactName,
+                            }))}
                             onChange={handleChange}
-                            size="small"
+                            required
                             width="200px"
+                            disabled={!form.location}
                         />
                     </Grid>
 
                     {/* Row 2 */}
-                    <Grid item xs={12} md={3}>
+                    <Grid item xs={12} md={12}>
                         <TextField
-                            label="Email Address"
                             name="emailAddress"
+                            label="Email Address"
+                            value={form.emailAddress}
                             onChange={handleChange}
-                            size="small"
-                            width="200px"
+                             fullWidth
                         />
                     </Grid>
 
-                    <Grid item xs={12} md={3}>
+                    <Grid item xs={12} md={12}>
                         <TextField
                             label="Address"
                             name="address"
+                            value={form.address}
                             onChange={handleChange}
                             multiline
                             rows={2}
-                            fullWidth
-                            size="small"
+                             fullWidth
                         />
                     </Grid>
-                    <Grid item xs={12} md={3}>
+                    <Grid item xs={12} md={12}>
                         <TextField
                             label="Board Ref"
                             name="boardRef"
@@ -343,7 +472,7 @@ const OffshoreEnquiry: React.FC = () => {
                             fullWidth
                         />
                     </Grid>
-                    <Grid item xs={12} md={3}>
+                    <Grid item xs={12} md={12}>
                         <SelectControl
                             name="inputReceivedThru"
                             label="Input Received Thru"
@@ -500,7 +629,7 @@ const OffshoreEnquiry: React.FC = () => {
                                         ? ["Fabrication", "Assembly", "Hardware", "Software", "FPGA", "Testing", "Others", "Design Outsourced"]
                                         : ["BOM Procurement", "NPI-Fabrication", "NPI-Assembly", "Job Work", "NPI-Testing"];
 
-                    
+
                         return (
                             <Grid item xs={12} key={section}>
                                 <Grid
@@ -546,19 +675,29 @@ const OffshoreEnquiry: React.FC = () => {
                                             <SelectControl
                                                 name={`${lower}Resp`}
                                                 label={`${section} Responsibility`}
-                                                value={form[`${lower}Resp`]}
+                                                value={form[`${lower}Resp`] || ""}
                                                 onChange={(e) => {
                                                     const selectedValue = e.target.value;
-                                                    setForm((prev) => ({
-                                                        ...prev,
-                                                        [`${lower}Resp`]: selectedValue,
-                                                    }));
+                                                    setForm((prev) => {
+                                                        const updated = { ...prev, [`${lower}Resp`]: selectedValue };
+
+                                                        // Update completeResp based on all responsibilities
+                                                        const completeOptions = getCompleteRespOptions();
+                                                        if (!completeOptions.find((o) => o.value === updated.completeResp)) {
+                                                            updated.completeResp = ""; // clear if current value is no longer valid
+                                                        }
+
+                                                        return updated;
+                                                    });
                                                 }}
-                                                options={responsibilityOptions.map((opt: any) =>
-                                                    section === "Layout" || section === "Analysis"
-                                                        ? { value: opt.hopC1ID, label: opt.hopC1NAME }
-                                                        : { value: opt.iDno, label: opt.name }
-                                                )}
+
+                                                options={responsibilityOptions.map((opt: any) => {
+                                                    if (section === "Layout" || section === "Analysis") {
+                                                        return { value: opt.hopC1ID, label: opt.hopC1NAME }; // 🔹 fix capitalization
+                                                    } else {
+                                                        return { value: opt.iDno, label: opt.name };
+                                                    }
+                                                })}
                                                 height={40}
                                                 width="220px"
                                             />
@@ -620,19 +759,17 @@ const OffshoreEnquiry: React.FC = () => {
                     </Grid>
 
                     {/* --- Responsibilities --- */}
-                    {/* <Grid item xs={12} md={3}>
+                    <Grid item xs={12} md={3}>
                         <SelectControl
                             name="completeResp"
                             label="Complete Responsibility"
                             value={form.completeResp}
                             onChange={handleChange}
-                            options={completeRespOptions}
+                            options={getCompleteRespOptions()}
                             fullWidth
                             width="220px"
-                            required
                         />
-                    </Grid> */}
-
+                    </Grid>
                     <Grid item xs={12} md={3}>
                         <SelectControl
                             name="salesResp"
