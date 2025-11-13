@@ -448,7 +448,7 @@ const OffshoreEnquiry: React.FC = () => {
                             label="Email Address"
                             value={form.emailAddress}
                             onChange={handleChange}
-                             fullWidth
+                            fullWidth
                         />
                     </Grid>
 
@@ -460,7 +460,7 @@ const OffshoreEnquiry: React.FC = () => {
                             onChange={handleChange}
                             multiline
                             rows={2}
-                             fullWidth
+                            fullWidth
                         />
                     </Grid>
                     <Grid item xs={12} md={12}>
