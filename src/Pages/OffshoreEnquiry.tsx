@@ -52,8 +52,8 @@ interface EnquiryForm {
     govt_tender: string;
     completeresponsibilityid: string;
     salesresponsibilityid: string;
-    referenceBy: string;
-    remarks: string;
+    ReferenceBy: string | null;
+    Remarks: string | null;
     layout: string[];
     analysis: string[];
     va: string[];
@@ -86,16 +86,16 @@ const OffshoreEnquiry: React.FC = () => {
         govt_tender: "NO",
         completeresponsibilityid: "NA",
         salesresponsibilityid: "",
-        referenceBy: "",
-        remarks: "",
+        ReferenceBy: "",
+        Remarks: "",
         layout: [],
         analysis: [],
         va: [],
         npi: [],
-        layoutbyid: "NA",
-        analysisbyid: "NA",
-        npibyid: "NA",
-        NPINewbyid: "NA",
+        layoutbyid: "",
+        analysisbyid: "",
+        npibyid: "",
+        NPINewbyid: "",
         locationId: "",
         createdBy: loginUser,
         status: "Open",
@@ -128,8 +128,9 @@ const OffshoreEnquiry: React.FC = () => {
         emi_net_level: "NO", emi_system_level: "NO", thermal_board_level: "NO", thermal_system_level: "NO",
         hardware: "NO", VA_Assembly: "NO", DesignOutSource: "NO", npi_fab: "NO", npi_testing: "NO", npi_others: "NO",
         NPINew_Fab: "NO", NPINew_Testing: "NO", NPINew_Assbly: "NO", NPINew_BOMProc: "NO",
-        npinew_jobwork: "NO", tool: "", software: "NO", analysis_others: "NO", status: "Open", quotation_request_lastdate: new Date().toISOString(),
-        createdOn: new Date().toISOString(), enquiryno: "AUTO", uploadedfilename: file ? file.name : "test", statename: "-",
+        npinew_jobwork: "NO", tool: "", software: "NO", analysis_others: "NO", status: "Open",
+        quotation_request_lastdate: new Date().toISOString(),createdOn: new Date().toISOString(), enquiryno: "AUTO",
+        uploadedfilename: file ? file.name : "test", statename: "-", Remarks: "", ReferenceBy: "",
     };
 
     // 🔹 Fetch dropdown data
@@ -538,7 +539,9 @@ const OffshoreEnquiry: React.FC = () => {
             }
 
             // 3️⃣ Merge defaults with current form
-            const postPayload: any = { ...dtoBlankDefaults, ...form };
+            const postPayload: any = { ...dtoBlankDefaults, ...form,
+                 Remarks: form.Remarks?.trim() === "" ? null : form.Remarks,
+                 ReferenceBy: form.ReferenceBy?.trim() === "" ? null : form.ReferenceBy, };
 
             // 4️⃣ Map scope arrays to individual YES/NO fields
             // Layout
@@ -620,7 +623,7 @@ const OffshoreEnquiry: React.FC = () => {
             // 6️⃣ Map frontend names to backend-required names for FormData
             const formData = new FormData();
             formData.append("customer_id", postPayload.customerId);
-            formData.append("contact_id", postPayload.contactName); // contactName holds the ID
+            formData.append("contact_id", postPayload.contactName);
             formData.append("location_id", postPayload.locationId);
             formData.append("type", postPayload.type);
             formData.append("currency_id", postPayload.currency);
@@ -630,8 +633,12 @@ const OffshoreEnquiry: React.FC = () => {
             formData.append("govt_tender", postPayload.govt_tender);
             formData.append("quotation_request_lastdate", postPayload.quotation_request_lastdate);
             formData.append("createdBy", postPayload.createdBy);
-            formData.append("ReferenceBy", postPayload.referenceBy || ""); // send name if needed
+            formData.append("ReferenceBy", postPayload.ReferenceBy || "");
             formData.append("appendreq", postPayload.appendreq);
+            formData.append("Remarks", postPayload.Remarks || "");
+
+
+
 
             // 7️⃣ Append the rest
             Object.entries(postPayload).forEach(([key, value]) => {
@@ -1085,12 +1092,12 @@ const OffshoreEnquiry: React.FC = () => {
                         />
                     </Grid>
 
-                    {/* --- Reference + Remarks --- */}
+                    {/* --- Reference   */}
                     <Grid item xs={12} md={3}>
                         <SelectControl
-                            name="referenceBy"
+                            name="ReferenceBy"
                             label="Reference By"
-                            value={form.referenceBy}
+                            value={form.ReferenceBy}
                             onChange={handleChange}
                             options={lookups.AllActiveEmployees.map((e) => ({
                                 value: e.name,
@@ -1107,7 +1114,7 @@ const OffshoreEnquiry: React.FC = () => {
                             fullWidth
                             multiline
                             rows={2}
-                            name="remarks"
+                            name="Remarks"
                             onChange={handleChange}
                             size="small"
                         />
