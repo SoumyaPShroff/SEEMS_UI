@@ -17,7 +17,7 @@ const LoginPage: React.FC<ILogin> = ({ setUserId }) => {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState<React.ReactNode>(null);
   const [SessionUserID, setSessionUserID] = useState(sessionStorage.getItem('SessionUserID'));
-  const [SessionUserName, setSessionUserName] = useState(sessionStorage.getItem('SessionUserName'));
+  //const [SessionUserName, setSessionUserName] = useState(sessionStorage.getItem('SessionUserName'));
   const navigate = useNavigate();
 
   //const [strength, setStrength] = useState({ level: 0, text: "", color: "" });
@@ -78,7 +78,6 @@ const LoginPage: React.FC<ILogin> = ({ setUserId }) => {
     // }
 
     try {
-      //  const response = await fetch(`${baseUrl}/VerifyLoginUser?ploginid=${loginId}&ppassword=${password}`);
       const response = await fetch(`${baseUrl}/VerifyLoginUser/${loginId}/${password}`);
       if (response.ok) {
         const result = await response.json();
@@ -88,7 +87,7 @@ const LoginPage: React.FC<ILogin> = ({ setUserId }) => {
           setSessionUserID(result.loginId);
           const responseName = await axios.get<string>(`${baseUrl}/UserName/${loginId}`);
           sessionStorage.setItem('SessionUserName', responseName.data);
-          setSessionUserName(responseName.data);
+         // setSessionUserName(responseName.data);
           navigate('/Home');
         } else {
           setLoginError(<span className="error-message">Login failed. Please check your credentials.</span>);

@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import axios from "axios";
 import { Box, FormControl, InputLabel, MenuItem, Select, Typography, CircularProgress, Button } from "@mui/material";
 import type { GridColDef } from '@mui/x-data-grid';
-import CustomDataGrid from "../components/common/CustomerDataGrid";
-import { baseUrl } from "../const/BaseUrl";
+import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { exporttoexcel } from "../components/utils/exporttoexcel";
-import ExportButton from "../components/ReusablePageControls/ExportButton";
+import { baseUrl } from "../../const/BaseUrl";
+import { exporttoexcel } from "../../components/utils/exporttoexcel";
+import ExportButton from "../../components/ReusablePageControls/ExportButton";
+import CustomDataGrid from "../../components/common/CustomerDataGrid";
 
 const ViewAllEnquiries = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const ViewAllEnquiries = () => {
   const [loading, setLoading] = useState(false);
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
   const loginUserName = sessionStorage.getItem("SessionUserName") || "guestName";
-  const [salesResponsibilityId, setSalesResponsibilityId] = useState("");
+  //const [salesResponsibilityId, setSalesResponsibilityId] = useState("");
   const [hasSpecialRole, sethasSpecialRole] = useState(false);
 
   //check for access to edit - own enquiry of sesion user
@@ -26,18 +27,18 @@ const ViewAllEnquiries = () => {
 
   // ✅ Correct column typing
   const columns: GridColDef[] = [
-    { field: "enquiryno", headerName: "Enquiryno", flex: 1, minWidth: 70 },
+    { field: "enquiryno", headerName: "Enquiryno", flex: 1, minWidth: 100 },
     { field: "customer", headerName: "Customer", flex: 1, minWidth: 200 },
-    { field: "createdon", headerName: "Createdon", flex: 1, Width: 50 },
-    { field: "endDate", headerName: "EndDate", flex: 1, Width: 50 },
-    { field: "salesResponsibility", headerName: "Sales Resp", flex: 1, minWidth: 100 },
+    { field: "createdon", headerName: "Createdon", flex: 1, minWidth:100 },
+    { field: "endDate", headerName: "EndDate", flex: 1, minWidth: 100 },
+    { field: "salesResponsibility", headerName: "Sales Resp", flex: 1, minWidth: 150 },
 
     // 🟢 Add link columns like in your screenshot
     {
       field: "editEnquiry",
       headerName: "Edit Enquiry",
       flex: 1,
-      minWidth: 50,
+      minWidth: 100,
       sortable: false,
       renderCell: (params) => {
         const enabled = canEditRow(params.row);
@@ -53,7 +54,7 @@ const ViewAllEnquiries = () => {
             onClick={(e) => {
               e.preventDefault();
               if (!hasAccess) return;
-              // handleEditEnquiry(params.row);
+              handleEditEnquiry(params.row.enquiryno);
             }}
           >
             Edit Enquiry
@@ -65,7 +66,7 @@ const ViewAllEnquiries = () => {
       field: "addQuote",
       headerName: "Add Quote",
       flex: 1,
-      minWidth: 50,
+      minWidth: 100,
       sortable: false,
       renderCell: (params) => {
         const enabled = canEditRow(params.row);
@@ -93,7 +94,7 @@ const ViewAllEnquiries = () => {
       field: "status",
       headerName: "Status",
       flex: 1,
-      minWidth: 150,
+      minWidth: 100,
       sortable: false,
       renderCell: (params) => {
         const statusValue = params.value?.toString() || "";
@@ -107,7 +108,7 @@ const ViewAllEnquiries = () => {
               color: isDisabled ? "gray" : "orange",
               textDecoration: isDisabled ? "none" : "underline",
               cursor: isDisabled ? "not-allowed" : "pointer",
-              fontWeight: 600,
+              fontWeight: 400,
               opacity: isDisabled ? 0.6 : 1,
             }}
             onClick={(e) => {
@@ -127,7 +128,7 @@ const ViewAllEnquiries = () => {
       field: "addEstimate",
       headerName: "Add Estimate",
       flex: 1,
-      minWidth: 50,
+      minWidth: 100,
       sortable: false,
       renderCell: (params) => {
         const estiValue = params.row.esti?.toUpperCase() || "";
@@ -159,9 +160,9 @@ const ViewAllEnquiries = () => {
         );
       },
     },
-    { field: "esti", headerName: "Esti", flex: 1, minWidth: 30 },
+    { field: "esti", headerName: "Esti", flex: 1, minWidth: 50 },
     { field: "completeResponsibility", headerName: "PM Resp", flex: 1, minWidth: 120 },
-    { field: "enquiryType", headerName: "EnqType", flex: 1, minWidth: 60 },
+    { field: "enquiryType", headerName: "EnqType", flex: 1, minWidth: 100 },
     { field: "boardRef", headerName: "Board Ref", flex: 1, minWidth: 100 },
     { field: "referenceBy", headerName: "Reference By", flex: 1, minWidth: 100 },
   ];
@@ -183,7 +184,7 @@ const ViewAllEnquiries = () => {
       sethasSpecialRole(roleFlag); // ✅ store in state
 
       // Step 3: Set salesResponsibilityId (from loginId)
-      setSalesResponsibilityId(loginId);
+     // setSalesResponsibilityId(loginId);
 
       // Step 4: Build URL after setting the value
       let url = `${baseUrl}/api/sales/AllEnquiries`;
@@ -227,6 +228,10 @@ const ViewAllEnquiries = () => {
     toast.success("✅ All Enquiries Data exported!", { position: "bottom-right" });
   };
 
+  const handleEditEnquiry = (penquiryno: string) => {
+    navigate(`/Home/OffshoreEnquiry/${penquiryno}`);
+  };
+
   return (
     <Box sx={{ height: "100%", width: "100%", padding: "100px", mt: "20px", ml: "-30px" }}>
       <InputLabel style={{ textAlign: "left" }}>Status</InputLabel>
@@ -263,7 +268,7 @@ const ViewAllEnquiries = () => {
           rows={rows}
           columns={columns}
           title="View All Enquiries"
-          getRowId={(row) => row.Enquiryno} // ✅ alternate approach
+         // getRowId={(row) => row.Enquiryno} // ✅ alternate approach
           loading={loading}
         />
       )}

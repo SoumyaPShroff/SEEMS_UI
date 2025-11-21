@@ -10,6 +10,7 @@ interface CustomDataGridProps {
   rowHeight?: number;
   getRowClassName?: (params: any) => string;
   sx?: object;
+  autoHeight?: boolean;   // ← add this
 }
 
 const CustomDataGrid: React.FC<CustomDataGridProps> = ({
@@ -40,7 +41,7 @@ const defaultSx = {
         height: "auto",
         width: "100%",
         background: "#fff",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+      //  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
         borderRadius: "8px",
         padding: "10px",
       }}
@@ -52,7 +53,10 @@ const defaultSx = {
             textAlign: "center",
             marginBottom: "10px",
             fontWeight: 600,
+            border: "1px solid #d1d1d1",
+            padding: "8px",
           }}
+
         >
           {title}
         </h3>

@@ -1,7 +1,7 @@
-// src/components/common/CustomButton.tsx
 import React from "react";
 import { Button } from "@mui/material";
-import { Download as DownloadIcon } from "@mui/icons-material";
+//import { Download as DownloadIcon } from "@mui/icons-material";
+import DownloadIcon from "@mui/icons-material/Download";
 
 interface ExportButtonProps {
   label: string;
@@ -16,7 +16,7 @@ interface ExportButtonProps {
 const ExportButton: React.FC<ExportButtonProps> = ({
   label,
   onClick,
-  icon = <DownloadIcon size={18} />,
+  icon = <DownloadIcon fontSize="small" />,
   disabled = false,
   style = {},
 }) => {

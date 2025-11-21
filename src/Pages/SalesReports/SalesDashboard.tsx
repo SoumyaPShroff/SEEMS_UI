@@ -1,17 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { getCurrentMonthDates } from "../components/utils/DateUtils";
-import { baseUrl } from "../const/BaseUrl";
+import { getCurrentMonthDates } from "../../components/utils/DateUtils";
+import { baseUrl } from "../../const/BaseUrl";
 import { LoadingButton } from "@mui/lab";
 import { motion } from "framer-motion";
-import {
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
-} from "recharts";
-import "../styles/SalesDashboard.css";
+import { ResponsiveContainer,  PieChart,  Pie,  Cell,  Tooltip,  Legend,} from "recharts";
+import "../../styles/SalesDashboard.css";
 import type { PieLabelRenderProps } from "recharts";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -34,30 +27,30 @@ const SalesDashboard: React.FC = () => {
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
 
   useEffect(() => {
-  const checkAccess = async () => {
-    try {
-      // Step 1: Get user role
-      const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
-      const userRole = userRoleRes.data;
+    const checkAccess = async () => {
+      try {
+        // Step 1: Get user role
+        const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
+        const userRole = userRoleRes.data;
 
-      // Step 2: Verify internal rights
-      const roleCheck = await axios.get<boolean>(
-        `${baseUrl}/UserRoleInternalRights/${userRole}/salesmgmtdashboard`
-      );
+        // Step 2: Verify internal rights
+        const roleCheck = await axios.get<boolean>(
+          `${baseUrl}/UserRoleInternalRights/${userRole}/salesmgmtdashboard`
+        );
 
-      // Step 3: If not authorized, redirect
-      if (!roleCheck.data) {
+        // Step 3: If not authorized, redirect
+        if (!roleCheck.data) {
+          navigate("/blank");
+        }
+      } catch (error) {
+        console.error("Error checking role:", error);
         navigate("/blank");
       }
-    } catch (error) {
-      console.error("Error checking role:", error);
-      navigate("/blank");
-    }
-  };
+    };
 
-  // ✅ Call the async function
-  checkAccess();
-}, [navigate, baseUrl, loginId]);
+    // ✅ Call the async function
+    checkAccess();
+  }, [navigate, baseUrl, loginId]);
 
 
   // === Fetch chart + order data ===
@@ -69,7 +62,6 @@ const SalesDashboard: React.FC = () => {
     try {
       const [chartRes, tentquorderRes, openconfmorderRes] = await Promise.all([
         fetch(
-          //`${baseUrl}/api/Sales/ThreeMonthConfirmedOrders?startdate=${startdate}&enddate=${enddate}`
           `${baseUrl}/api/Sales/ThreeMonthConfirmedOrders/${startdate}/${enddate}`
         ),
         fetch(`${baseUrl}/api/Sales/TentativeQuotedOrders`),
@@ -125,7 +117,6 @@ const SalesDashboard: React.FC = () => {
   };
 
   // === Unified Filtering Logic (Final Optimized Version) ===
-  // const filterOrders = (orders, catKey) => {
   const filterOrders = (orders: OrderItem[], catKey: string): OrderItem[] => {
     if (!orders || !catKey) return [];
 
@@ -188,8 +179,6 @@ const SalesDashboard: React.FC = () => {
       }
 
       // === 4️⃣ TENTATIVE / QUOTED ORDERS ===
-      // const hasQuoted = x.QuotedValue > 0;
-      // const hasTentative = x.TentativeValue > 0;
       const hasQuoted = (x.QuotedValue ?? 0) > 0;
       const hasTentative = (x.TentativeValue ?? 0) > 0;
 
@@ -384,7 +373,6 @@ const SalesDashboard: React.FC = () => {
           transition={{ duration: 0.4 }}
           className="dashboard-section charts-grid"
         >
-          {/* <h3 className="chart-title">Confirmed Orders (Last 3 Months)</h3> */}
           <p className="note-text">Note: All the values are in Lakhs</p>
 
           <div className="summary-grid">
@@ -528,8 +516,6 @@ const SalesDashboard: React.FC = () => {
                   dataKey="totalValue"
                   nameKey="designcategory"
                   outerRadius={100}
-                  // label={({ name, percent }) => `${name} ${(percent * 100).toFixed(1)}%`}
-                  //  label={({ name, percent }: { name: string; percent: number }) => `${name} ${(percent * 100).toFixed(1)}%`}   
                   label={(props: PieLabelRenderProps) => {
                     if (!props || typeof props.percent !== "number" || typeof props.name !== "string") return null;
                     return `${props.name} ${(props.percent * 100).toFixed(1)}%`;
@@ -549,7 +535,6 @@ const SalesDashboard: React.FC = () => {
       )}
 
       {/* === Category Summary === */}
-      {/* {showData   && ( */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
@@ -577,60 +562,41 @@ const SalesDashboard: React.FC = () => {
                 "VA",
                 "NPI",
               ].map((catKey, i) => {
-                // const [typeFilter, designCatFilter] = catKey.split(" ");
                 const [expanded, setExpanded] = useState(false);
-
                 const openSubs = filterOrders(openOrders, catKey);
                 const tentativeSubs = filterOrders(tentativeOrders, catKey);
                 const confirmedSubs = filterOrders(confirmedOrders, catKey);
                 const quotedSubs = filterOrders(quotedOrders, catKey);
 
-                // const openTotal = openSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
-                // const tentativeTotal = tentativeSubs.reduce((a, b) => a + (b.TentativeValue || 0), 0);
-                // const confirmedTotal = confirmedSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
-                // // Combine all values per category (Quoted + Tentative + Confirmed)
-                // const quotedTotal = quotedSubs.reduce((a, b) => a + (b.QuotedValue || 0), 0) +
-                //   tentativeSubs.reduce((a, b) => a + (b.TentativeValue || 0), 0) +
-                //   confirmedSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
-
-
-                const openTotal = openSubs.reduce((a: number, b: OrderItem) => a + (b.TotalValue || 0), 0);
-                const tentativeTotal = tentativeSubs.reduce((a: number, b: OrderItem) => a + (b.TentativeValue || 0), 0);
-                const confirmedTotal = confirmedSubs.reduce((a: number, b: OrderItem) => a + (b.TotalValue || 0), 0);
+                const openTotal = openSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
+                const tentativeTotal = tentativeSubs.reduce((a, b) => a + (b.TentativeValue || 0), 0);
+                const confirmedTotal = confirmedSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
                 const quotedTotal =
-                  quotedSubs.reduce((a: number, b: OrderItem) => a + (b.QuotedValue || 0), 0) +
-                  tentativeSubs.reduce((a: number, b: OrderItem) => a + (b.TentativeValue || 0), 0) +
-                  confirmedSubs.reduce((a: number, b: OrderItem) => a + (b.TotalValue || 0), 0);
+                  quotedSubs.reduce((a, b) => a + (b.QuotedValue || 0), 0) +
+                  tentativeSubs.reduce((a, b) => a + (b.TentativeValue || 0), 0) +
+                  confirmedSubs.reduce((a, b) => a + (b.TotalValue || 0), 0);
+
                 return (
                   <React.Fragment key={i}>
-                    <tr
-                      className="expandable-row"
-                      onClick={() => setExpanded(!expanded)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <td>
-                        {catKey}
-                      </td>
+                    {/* normal row */}
+                    <tr className="expandable-row" onClick={() => setExpanded(!expanded)} style={{ cursor: "pointer" }}>
+                      <td>{catKey}</td>
                       <td className="num">{formatCurrency(openTotal)}</td>
                       <td className="num">{formatCurrency(tentativeTotal)}</td>
                       <td className="num">{formatCurrency(confirmedTotal)}</td>
                       <td className="num">{formatCurrency(quotedTotal)}</td>
                     </tr>
 
+                    {/* expandable children */}
                     {expanded && (
                       <>
-                        {[
-                          { type: "Open", data: openSubs },
-                          { type: "Tentative", data: tentativeSubs },
-                          { type: "Confirmed", data: confirmedSubs },
-                          // { type: "Quoted", data: mergedQuoted },
-                          { type: "Quoted", data: quotedSubs },
-                        ].map(({ type, data }) =>
+                        {[{ type: "Open", data: openSubs },
+                        { type: "Tentative", data: tentativeSubs },
+                        { type: "Confirmed", data: confirmedSubs },
+                        { type: "Quoted", data: quotedSubs }].map(({ type, data }) =>
                           data.map((s, idx) => (
                             <tr key={`${catKey}-${type}-${idx}`} className="sub-row">
-                              <td className="sub-cat">
-                                {s.subcategory || s.designcategory || s.enquirytype || "—"}
-                              </td>
+                              <td className="sub-cat">{s.subcategory || s.designcategory || s.enquirytype || "—"}</td>
                               <td className="num">{type === "Open" ? formatCurrency(s.TotalValue ?? 0) : ""}</td>
                               <td className="num">{type === "Tentative" ? formatCurrency(s.TentativeValue ?? 0) : ""}</td>
                               <td className="num">{type === "Confirmed" ? formatCurrency(s.TotalValue ?? 0) : ""}</td>
@@ -640,10 +606,81 @@ const SalesDashboard: React.FC = () => {
                         )}
                       </>
                     )}
+
+                    {/* ➕ INSERT DESIGN TOTAL AFTER "Analysis" */}
+                    {catKey === "Analysis" && (
+                      <tr className="subtotal-row">
+                        <td>Design Total</td>
+                        <td className="num">
+                          {formatCurrency(
+                            ["Domestic Layout", "Export Layout", "ONSITE", "Analysis"]
+                              .flatMap((c) => filterOrders(openOrders, c))
+                              .reduce((a, b) => a + (b.TotalValue || 0), 0)
+                          )}
+                        </td>
+                        <td className="num">
+                          {formatCurrency(
+                            ["Domestic Layout", "Export Layout", "ONSITE", "Analysis"]
+                              .flatMap((c) => filterOrders(tentativeOrders, c))
+                              .reduce((a, b) => a + (b.TentativeValue || 0), 0)
+                          )}
+                        </td>
+                        <td className="num">
+                          {formatCurrency(
+                            ["Domestic Layout", "Export Layout", "ONSITE", "Analysis"]
+                              .flatMap((c) => filterOrders(confirmedOrders, c))
+                              .reduce((a, b) => a + (b.TotalValue || 0), 0)
+                          )}
+                        </td>
+                        <td className="num">
+                          {formatCurrency(
+                            ["Domestic Layout", "Export Layout", "ONSITE", "Analysis"]
+                              .flatMap((c) => filterOrders(quotedOrders, c))
+                              .reduce((a, b) => a + ((b.QuotedValue ?? 0) + (b.TentativeValue ?? 0) + (b.TotalValue ?? 0)), 0)
+                          )}
+                        </td>
+                      </tr>
+                    )}
+
+                    {/* ➕ INSERT VA TOTAL AFTER "NPI" */}
+                    {catKey === "NPI" && (
+                      <tr className="subtotal-row">
+                        <td>VA Total</td>
+                        <td className="num">
+                          {formatCurrency(
+                            ["VA", "NPI"]
+                              .flatMap((c) => filterOrders(openOrders, c))
+                              .reduce((a, b) => a + (b.TotalValue || 0), 0)
+                          )}
+                        </td>
+                        <td className="num">
+                          {formatCurrency(
+                            ["VA", "NPI"]
+                              .flatMap((c) => filterOrders(tentativeOrders, c))
+                              .reduce((a, b) => a + (b.TentativeValue || 0), 0)
+                          )}
+                        </td>
+                        <td className="num">
+                          {formatCurrency(
+                            ["VA", "NPI"]
+                              .flatMap((c) => filterOrders(confirmedOrders, c))
+                              .reduce((a, b) => a + (b.TotalValue || 0), 0)
+                          )}
+                        </td>
+                        <td className="num">
+                          {formatCurrency(
+                            ["VA", "NPI"]
+                              .flatMap((c) => filterOrders(quotedOrders, c))
+                              .reduce((a, b) => a + ((b.QuotedValue ?? 0) + (b.TentativeValue ?? 0) + (b.TotalValue ?? 0)), 0)
+                          )}
+                        </td>
+                      </tr>
+                    )}
                   </React.Fragment>
                 );
               })}
             </tbody>
+
             <tfoot>
               <tr className="total-row">
 

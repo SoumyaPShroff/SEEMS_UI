@@ -21,8 +21,8 @@
   display: flex;
   background: white;
   border-radius: 10px;
-  width:600px; /* Adjusted for better fit */
-  height: 400px;
+  width: 550px; /* Adjusted for better fit */
+  height: 300px;
   box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
   overflow: hidden; 
 }
@@ -48,8 +48,8 @@
 
 /* Logo Image - Adjust for Proper Fit */
 .LogoImage {
-  width: 280px; /* Adjust as needed */
-  height: 250px; /* Keeps aspect ratio */
+  width: 150px; /* Adjust as needed */
+  height: 150px; /* Keeps aspect ratio */
 }
 
 /* Login Input Fields */
@@ -71,7 +71,7 @@
   border: 1px solid #ccc;
   font-size: 1rem;
   outline: none;
-  width:92%;
+  width:90%;
 }
 
 .InputField input:focus {
@@ -107,7 +107,7 @@
   color: #287bc4; /* Slightly lighter color */
   font-size: 4rem; /* Bigger font for main title */
   margin-bottom: 2px; /* Small gap between main header and subtitle */
-  margin-top: 1px;
+  margin-top: 50px;
 }
 .SubTitle {
   font-size: 2rem; /* Smaller than the main header */

@@ -1,7 +1,6 @@
 import React from "react";
 import {
   FormControl,
-  InputLabel,
   FormHelperText,
   TextField,
   Autocomplete,
@@ -87,7 +86,7 @@ const selectedOption =
             size="small"
           />
         )}
-        PaperProps={{
+        ListboxProps={{
           style: { maxHeight: 250 },
         }}
         sx={{

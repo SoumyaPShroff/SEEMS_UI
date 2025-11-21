@@ -40,6 +40,11 @@ export const SidebarData = [
                         path: "/Home/ViewAllEnquiries",
                         icon: <IoIcons.IoIosPaper />,
                     },
+                    {
+                        title: "View Enquiry Report",
+                        path: "/Home/ViewEnquiryReport",
+                        icon: <IoIcons.IoIosPaper />,
+                    },
                 ],
             },
 

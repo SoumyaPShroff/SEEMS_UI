@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { Button, CircularProgress, FormControl, InputLabel } from "@mui/material";
-import { useBillingData } from "../components/hooks/useBillingData";
-import { useManagers } from "../components/hooks/useManagers";
-import { getCurrentMonthDates } from "../components/utils/DateUtils";
-import { ProjectionVsTargetChart } from "../components/charts/ProjectionVsTargetChart";
-import { dataGridSx } from "../components/common/DataGridStyles";
-import { exporttoexcel } from "../components/utils/exporttoexcel";
-import { ProjectManagerChart } from "../components/charts/ProjectManagerChart";
-import { SalesManagerChart } from "../components/charts/SalesManagerChart";
-import { baseUrl } from "../const/BaseUrl";
+import { useBillingData } from "../../components/hooks/useBillingData";
+import { useManagers } from "../../components/hooks/useManagers";
+import { getCurrentMonthDates } from "../../components/utils/DateUtils";
+import { ProjectionVsTargetChart } from "../../components/charts/ProjectionVsTargetChart";
+import { dataGridSx } from "../../components/common/DataGridStyles";
+import { ProjectManagerChart } from "../../components/charts/ProjectManagerChart";
+import { SalesManagerChart } from "../../components/charts/SalesManagerChart";
 import axios from "axios";
-import DesignVsWipChart from "../components/charts/DesignVsWipChart";
-import SegmentWiseBillingChart from "../components/charts/SegmentWiseBillingChart";
+import DesignVsWipChart from "../../components/charts/DesignVsWipChart";
+import SegmentWiseBillingChart from "../../components/charts/SegmentWiseBillingChart";
 import { toast } from "react-toastify";
-import CustomDataGrid from "../components/common/CustomerDataGrid";
 import type { GridColDef } from '@mui/x-data-grid';
-import ExportButton from "../components/ReusablePageControls/ExportButton";
+import { baseUrl } from "../../const/BaseUrl";
+import { exporttoexcel } from "../../components/utils/exporttoexcel";
+import ExportButton from "../../components/ReusablePageControls/ExportButton";
+import CustomDataGrid from "../../components/common/CustomerDataGrid";
 
 // ✅ Types
 interface BillingData {
@@ -594,11 +594,11 @@ const RptBillingPlanner: React.FC = () => {
         {/* === Row 1: 3 charts === */}
         {!loadingData && showResults && data?.length > 0 && (
           <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", marginBottom: "30px", marginTop: "10px" }}>
-            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
+            <div style={{ flex: 1, background: "#fff", border: "1px solid #d1d1d1", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
               <ProjectionVsTargetChart data={data} />
             </div>
 
-            <div style={{ flex: 1, background: "#fff", maxWidth: "35%", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
+            <div style={{ flex: 1, background: "#fff", maxWidth: "35%", border: "1px solid #d1d1d1", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
               <SegmentWiseBillingChart data={data} />
             </div>
           </div>
@@ -613,17 +613,17 @@ const RptBillingPlanner: React.FC = () => {
           }}
         >
           {!loadingData && showResults && data?.length > 0 && (
-            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
+            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", border: "1px solid #d1d1d1", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
               <ProjectManagerChart data={data} />
             </div>
           )}
           {!loadingData && showResults && data?.length > 0 && (
-            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
+            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", border: "1px solid #d1d1d1", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
               <SalesManagerChart data={data} />
             </div>
           )}
           {!loadingData && showResults && data?.length > 0 && (
-            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
+            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", border: "1px solid #d1d1d1", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
               <DesignVsWipChart
                 totalDesignVA={totalDesignVA}
                 totalWip={wipSumData}
