@@ -9,6 +9,7 @@ import SalesDashboard from './Pages/SalesReports/SalesDashboard';
  import AddEnquiry from './Pages/AddEnquiry';
  import OffshoreEnquiry from './Pages/OffshoreEnquiry';
  import ViewEnquiryReport from './Pages/SalesReports/ViewEnquiryReport';
+import ViewPOEnqData from './Pages/SalesReports/ViewPOEnqData';
 
 const Home = () => {
     const sessionUserID = sessionStorage.getItem('SessionUserID');
@@ -36,6 +37,7 @@ const Home = () => {
                 <Route path="/AddEnquiry" element={<AddEnquiry />} />
                 <Route path="/OffshoreEnquiry/:enquiryNo" element={<OffshoreEnquiry />} />
                 <Route path="/ViewEnquiryReport" element={<ViewEnquiryReport />} />
+                <Route path="/ViewPOEnqData" element={<ViewPOEnqData />} />
                 <Route path="/support" element={<Support />} />
             </Routes>
         </>
