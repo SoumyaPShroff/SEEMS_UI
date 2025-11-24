@@ -1,5 +1,5 @@
 import React from "react";
-//import React, { useEffect, useState } from "react";
+// import React, { useEffect, useState } from "react";
 // import {
 //     Grid, FormGroup, TextField, Button, Card, CardContent, Typography, Box, ToggleButtonGroup,
 //     FormControlLabel, Checkbox, RadioGroup, Radio,
@@ -23,7 +23,7 @@ import React from "react";
 
 // interface Contact { contact_id: string; contactName: string; email11?: string; location_id?: string; customer_id?: string; address?: string; }
 
-// interface State { id: string; statename: string; }
+// interface State { id: string; state: string; }
 
 // interface LookupData {
 //     customers: Customer[];
@@ -68,13 +68,13 @@ import React from "react";
 //     locationId: string;
 //     createdBy: string;
 //     status: string;
-//     statename: string;
+//     state: string;
 //     email11: string;
 //     address?: string;
 // }
 
 const OffshoreEnquiry: React.FC = () => {
-     return (<div>...</div>);
+ return (<div>...</div>);
 //     const loginUser = sessionStorage.getItem("SessionUserName") || "guest";
 //     const navigate = useNavigate();
 //     const { enquiryNo } = useParams();
@@ -112,7 +112,7 @@ const OffshoreEnquiry: React.FC = () => {
 //         status: "Open",
 //         uploadedfilename: "test",
 //         email11: "",
-//         statename: "",
+//         state: "",
 //     });
 
 //     const [lookups, setLookups] = useState<LookupData>({
@@ -141,7 +141,7 @@ const OffshoreEnquiry: React.FC = () => {
 //         NPINew_Fab: "NO", NPINew_Testing: "NO", NPINew_Assbly: "NO", NPINew_BOMProc: "NO",
 //         npinew_jobwork: "NO", tool: "", software: "NO", analysis_others: "NO", status: "Open",
 //         quotation_request_lastdate: new Date().toISOString(), createdOn: new Date().toISOString(), enquiryno: "AUTO",
-//         uploadedfilename: file ? file.name : "test", statename: "-", remarks: "", referenceBy: "",
+//         uploadedfilename: file ? file.name : "test", state: "-", remarks: "", referenceBy: "",
 //     };
 
 
@@ -149,7 +149,7 @@ const OffshoreEnquiry: React.FC = () => {
 //     useEffect(() => {
 //         const fetchLookups = async () => {
 //             try {
-//                 const [custRes, empRes, analysisRes, salesisRes, designRes, npiRes, PCBToolsRes, LocationsRes, ContactsRes] = await Promise.all([
+//                 const [custRes, empRes, analysisRes, salesisRes, designRes, npiRes, PCBToolsRes, LocationsRes, ContactsRes, StatesRes] = await Promise.all([
 //                     fetch(`${baseUrl}/api/Sales/customers`),
 //                     fetch(`${baseUrl}/AllActiveEmployees`),
 //                     fetch(`${baseUrl}/AnalysisManagers`),
@@ -158,9 +158,9 @@ const OffshoreEnquiry: React.FC = () => {
 //                     fetch(`${baseUrl}/SalesNpiUsers`),
 //                     fetch(`${baseUrl}/PCBTools`),
 //                     fetch(`${baseUrl}/api/Sales/customerlocations`),
-//                     fetch(`${baseUrl}/api/Sales/customercontacts`),
+//                     fetch(`${baseUrl}/api/Sales/States`),
 //                 ]);
-//                 const [customers, AllActiveEmployees, AnalysisManagers, SalesManagers, designMngrs, salesnpiusers, PCBTools, Locations, Contacts,] =
+//                 const [customers, AllActiveEmployees, AnalysisManagers, SalesManagers, designMngrs, salesnpiusers, PCBTools, Locations, Contacts, States] =
 //                     await Promise.all([
 //                         custRes.json(),
 //                         empRes.json(),
@@ -171,6 +171,7 @@ const OffshoreEnquiry: React.FC = () => {
 //                         PCBToolsRes.json(),
 //                         LocationsRes.json(),
 //                         ContactsRes.json(),
+//                         StatesRes.json(),
 //                     ]);
 //                 setLookups({
 //                     customers,
@@ -182,11 +183,7 @@ const OffshoreEnquiry: React.FC = () => {
 //                     PCBTools,
 //                     Locations,
 //                     Contacts,
-//                     States: [
-//                         { id: "Karnataka", statename: "Karnataka" },
-//                         { id: "Tamil Nadu", statename: "Tamil Nadu" },
-//                         { id: "Maharashtra", statename: "Maharashtra" },
-//                     ],
+//                     States,
 //                 });
 //             } catch (err) {
 //                 console.error("Error fetching lookups:", err);
@@ -230,8 +227,8 @@ const OffshoreEnquiry: React.FC = () => {
 //                     salesresponsibilityid: data.salesresponsibilityid,
 //                     remarks: data.remarks,
 //                     referenceBy: data.referenceBy,
-//                     statename: data.statename ?? "",
-
+//                     state: data.state ?? "",
+//                     address: data.address  || form.address || "",
 //                     // Scope sections mapped using helper
 //                     layout: getCheckedArrayFromAPI(data, "layout"),
 //                     analysis: getCheckedArrayFromAPI(data, "analysis"),
@@ -253,24 +250,26 @@ const OffshoreEnquiry: React.FC = () => {
 //     }, [enquiryNo, lookups.customers.length]);
 
 //     useEffect(() => {
-//         if (!isEditMode) return;
-//         if (!form.customerId) return;
-
+//       //  if (!isEditMode) return;
+//         if (!form.customerId) return; 
 //         fetchCustomerLocations(form.customerId);
 //     }, [form.customerId]);
 
 //     useEffect(() => {
-//         if (!isEditMode) return;
+//        // if (!isEditMode) return;
+//          if (!form.locationId) return; 
 //         if (!form.customerId || !form.locationId) return;
 
 //         fetchCustomerContacts(form.customerId, form.locationId);
 //     }, [form.locationId]);
 
 //     useEffect(() => {
-//         if (!isEditMode) return;
+//        // if (!isEditMode) return;
+//          if (!form.contactName) return; 
+//         if (!form.contactName) return;
 //         if (lookups.Contacts.length === 0) return;
 
-//         const selected = lookups.Contacts.find(x => x.contact_id == form.contactName);
+//         const selected = lookups.Contacts.find(x => x.contact_id.toString() == form.contactName.toString());
 //         if (!selected) return;
 
 //         setForm(prev => ({
@@ -278,7 +277,7 @@ const OffshoreEnquiry: React.FC = () => {
 //             email11: selected.email11 ?? "",
 //             address: selected.address ?? "",
 //         }));
-//     }, [lookups.Contacts]);
+//     }, [lookups.Contacts,form.contactName]);
 
 
 //     useEffect(() => {
@@ -435,7 +434,7 @@ const OffshoreEnquiry: React.FC = () => {
 //                 ...updatedForm,
 //                 locationId: "",
 //                 contactName: "",
-//                 statename: form.statename,
+//                 state: form.state,
 //             };
 //             setForm(updatedForm);
 //             await fetchCustomerLocations(value);
@@ -450,7 +449,7 @@ const OffshoreEnquiry: React.FC = () => {
 //                 locationId: value,
 //                 contactName: "",
 //                 address: selectedLoc?.address ?? "",
-//                 statename: form.statename,
+//                 state: form.state,
 //             };
 //             setForm(updatedForm);
 //             setAddress(selectedLoc?.address ?? "");
@@ -466,7 +465,7 @@ const OffshoreEnquiry: React.FC = () => {
 //                     ...updatedForm,
 //                     contactName: value,
 //                     address: contact.address && contact.address.trim() !== "" ? contact.address : form.address,
-//                     statename: form.statename,
+//                     state: form.state,
 //                 };
 //                 setAddress(contact.address && contact.address.trim() !== "" ? contact.address : form.address);
 //                 setEmail11(contact.email11 ?? "");
@@ -855,13 +854,10 @@ const OffshoreEnquiry: React.FC = () => {
 //                     </Grid>
 //                     <Grid  xs={6}>
 //                         <SelectControl
-//                             name="statename"
+//                             name="state"
 //                             label="State"
-//                             value={form.statename}
-//                             options={lookups.States.map((s) => ({
-//                                 value: String(s.statename).trim(),
-//                                 label: s.statename,
-//                             }))}
+//                             value={form.state}
+//                             options={lookups.States.map((s) => ({value: String(s.id).trim(),label: s.state,}))}
 //                             onChange={handleChange}
 //                             required
 //                             width="200px"
@@ -1267,5 +1263,5 @@ const OffshoreEnquiry: React.FC = () => {
 //         </Card>
 
 //     );
-  };
+   };
 export default OffshoreEnquiry;
