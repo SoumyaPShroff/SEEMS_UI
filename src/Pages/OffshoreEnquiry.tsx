@@ -1,5 +1,5 @@
 //import React from "react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, ChangeEvent  } from "react";
 import {
    Grid, FormGroup, TextField, Button, Card, CardContent, Typography, Box, ToggleButtonGroup,
    FormControlLabel, Checkbox, RadioGroup, Radio,
@@ -10,7 +10,6 @@ import SelectControl from "../components/ReusablePageControls/SelectControl";
 import { RiTextSpacing } from "react-icons/ri";
 import { ContactEmergency, Email } from "@mui/icons-material";
 import { ToastContainer, toast } from "react-toastify";
-//import "react-toastify/dist/ReactToastify.css";
 import { useParams, useNavigate } from "react-router-dom";
 
 interface Customer { itemno: string; customer: string; }
@@ -23,7 +22,7 @@ interface Location { location_id: string; location: string; address?: string; }
 
 interface Contact { contact_id: string; contactName: string; email11?: string; location_id?: string; customer_id?: string; address?: string; }
 
-interface State { id: string; state: string; }
+interface State { state: string; }
 
 interface LookupData {
    customers: Customer[];
@@ -41,7 +40,6 @@ interface LookupData {
 
 interface EnquiryForm {
    enquirytype: string;
-   //customerId: BigInteger | string;
    customerId: string;
    jobnames: string;
    contactName: string;
@@ -71,6 +69,8 @@ interface EnquiryForm {
    state: string;
    email11: string;
    address?: string;
+   completeResp?: string; //edit
+   uploadedfilename?: string; //edit
 }
 
 const OffshoreEnquiry: React.FC = () => {
@@ -110,10 +110,13 @@ const OffshoreEnquiry: React.FC = () => {
       locationId: "",
       createdBy: loginUser,
       status: "Open",
-      uploadedfilename: "test",
+      uploadedfilename: "",
       email11: "",
       state: "",
+      completeResp: "", //edit
    });
+
+   const isInitialLoad = useRef(true); //edit
 
    const [lookups, setLookups] = useState<LookupData>({
       customers: [],
@@ -132,6 +135,7 @@ const OffshoreEnquiry: React.FC = () => {
    const [loading, setLoading] = useState(false);
 
    // fields backend requires, but UI does not collect
+   //state: "-" -removed uploadedfilename: file ? file.name : "test",
    const dtoBlankDefaults = {
       layoutbyid: "", npibyid: "", analysisbyid: "", NPINewbyid: "",
       pi: "NO", si: "NO", dfa: "NO", dfm: "NO", fpg: "NO", asmb: "NO", pcba: "NO", qacam: "NO",
@@ -141,7 +145,7 @@ const OffshoreEnquiry: React.FC = () => {
       NPINew_Fab: "NO", NPINew_Testing: "NO", NPINew_Assbly: "NO", NPINew_BOMProc: "NO",
       npinew_jobwork: "NO", tool: "", software: "NO", analysis_others: "NO", status: "Open",
       quotation_request_lastdate: new Date().toISOString(), createdOn: new Date().toISOString(), enquiryno: "AUTO",
-      uploadedfilename: file ? file.name : "test", state: "-", remarks: "", referenceBy: "",
+       remarks: "", referenceBy: "",
    };
 
 
@@ -197,6 +201,10 @@ const OffshoreEnquiry: React.FC = () => {
       if (!isEditMode) return;
       if (lookups.customers.length === 0) return;
 
+      
+     if (!lookups.customers.length) return; //edit
+     if (!isInitialLoad.current) return; // do not reload //edit
+
       const loadEnquiry = async () => {
          try {
             const res = await fetch(`${baseUrl}/api/Sales/EnquiryDetailsByEnquiryno/${enquiryNo}`);
@@ -210,43 +218,51 @@ const OffshoreEnquiry: React.FC = () => {
             await fetchCustomerLocations(enquiry.customer_id);
             await fetchCustomerContacts(enquiry.customer_id, enquiry.location_id);
 
-            // Find contact to get email/address
+            // Find contact to get emailaddress
             const selectedContact = lookups.Contacts.find(
                (c) => c.contact_id.toString() === enquiry.contact_id.toString()
             );
-
+            
+            //based on location, address filled
+            const selectedLoc = lookups.Locations.find(
+               (l) => l.location_id.toString() === enquiry.location_id.toString()
+            );
+            
             // 🔹 THEN set your form
             setForm((prev) => ({
                ...prev,
                // enquirytype: data.enquirytype,
                enquirytype: enquiry.enquirytype || "OFFSHORE",
-               customerId: String(data.customer_id),
-               locationId: String(data.location_id),
-               contactName: String(data.contact_id),
-               jobnames: data.jobnames || "",
-               inputreceivedthru: data.inputreceivedthru || "",
-               tm: data.tm || "",
-               type: data.type || "Export",
-               currency: Number(data.currency_id) || 1,
-               tool: data.tool || "",
-               quotation_request_lastdate: data.quotation_request_lastdate?.substring(0, 10),
-               govt_tender: data.govt_tender || "NO",
-               completeresponsibilityid: data.completeresponsibilityid || "",
-               salesresponsibilityid: data.salesresponsibilityid || "",
-               remarks: data.remarks || "",
-               referenceBy: data.referenceBy || "",
-               state: data.state || "",
+               customerId: String(enquiry.customer_id),
+               locationId: String(enquiry.location_id),
+               contactName: String(enquiry.contact_id),
+               jobnames: enquiry.jobnames || "",
+               inputreceivedthru: enquiry.inputreceivedthru || "",
+               tm: enquiry.tm || "",
+               type: enquiry.type || "Export",
+               currency: Number(enquiry.currency_id) || 1,
+               tool: enquiry.tool || "",
+               quotation_request_lastdate: enquiry.quotation_request_lastdate?.substring(0, 10),
+               govt_tender: enquiry.govt_tender || "NO",
+               completeresponsibilityid: enquiry.completeresponsibilityid || "",
+               salesresponsibilityid: enquiry.salesresponsibilityid || "",
+               remarks: enquiry.remarks || "",
+               referenceBy: enquiry.referenceBy || "",
+               state: enquiry.state || enquiry.statename || "",
                email11: selectedContact?.email11 || "",
-               address: data.address || form.address || "",
+               address: selectedLoc?.address || "",
+               //email11: enquiry.email11 || "",
+              // address: enquiry.address || "",
                // Scope sections mapped using helper
-               layout: getCheckedArrayFromAPI(data, "layout"),
-               analysis: getCheckedArrayFromAPI(data, "analysis"),
-               va: getCheckedArrayFromAPI(data, "va"),
-               npi: getCheckedArrayFromAPI(data, "npi"),
-               layoutbyid: data.layoutbyid || "",
-               analysisbyid: data.analysisbyid || "",
-               npibyid: data.npibyid || "",
-               NPINewbyid: data.NPINewbyid || "",
+               layout: getCheckedArrayFromAPI(enquiry, "layout"),
+               analysis: getCheckedArrayFromAPI(enquiry, "analysis"),
+               va: getCheckedArrayFromAPI(enquiry, "va"),
+               npi: getCheckedArrayFromAPI(enquiry, "npi"),
+               layoutbyid: enquiry.layoutbyid || "",
+               analysisbyid: enquiry.analysisbyid || "",
+               npibyid: enquiry.npibyid || "",
+               NPINewbyid: enquiry.NPINewbyid || "",
+               uploadedfilename: enquiry.uploadedfilename,
             }));
 
          } catch (err) {
@@ -275,14 +291,15 @@ const OffshoreEnquiry: React.FC = () => {
    useEffect(() => {
       if (!form.contactName) return;
       const selected = lookups.Contacts.find(x => x.contact_id.toString() === form.contactName);
-      if (selected) {
-         setForm(prev => ({
-            ...prev,
-            email11: selected.email11 ?? "",
-            address: selected.address ?? "",
-         }));
-      }
-   }, [lookups.Contacts, form.contactName]);
+      if (!selected) return;
+      // ✔ Email comes from contact
+      // ❌ Address should NEVER come from contact
+      setForm(prev => ({
+         ...prev,
+         email11: selected.email11 ?? "",
+         address: prev.address,   // KEEP LOCATION ADDRESS ALWAYS
+      }));
+   }, [form.contactName]);   
 
    useEffect(() => {
       const combined = [
@@ -301,7 +318,9 @@ const OffshoreEnquiry: React.FC = () => {
       try {
          const res = await fetch(`${baseUrl}/api/Sales/customerlocations?customerId=${customerId}`);
          const data = await res.json();
-         setLookups((prev) => ({ ...prev, Locations: data, Contacts: [] }));
+        // setLookups((prev) => ({ ...prev, Locations: data, Contacts: [] }));
+        //edit mode contact was not appearing in first load
+        setLookups((prev) => ({...prev, Locations: data, Contacts: isEditMode ? prev.Contacts : [] }));  // 👈 keep contacts while editing
       } catch (err) {
          console.error(err);
          setLookups((prev) => ({ ...prev, Locations: [], Contacts: [] }));
@@ -313,6 +332,19 @@ const OffshoreEnquiry: React.FC = () => {
          const res = await fetch(`${baseUrl}/api/Sales/customercontacts?customer_id=${customerId}&location_id=${locationId}`);
          const data = await res.json();
          setLookups((prev) => ({ ...prev, Contacts: data }));
+
+         // 🔥 FIX: When only one contact exists, auto-select it AND fill address + email
+         if (!isEditMode && data.length === 1) {
+            const c = data[0];
+
+            setForm(prev => ({
+               ...prev,
+               contactName: c.contact_id.toString(),
+               email11: c.email11 || "",
+               //address: c.address || "",
+               address: prev.address,   // keep location address ALWAYS
+            }));
+         }
       } catch (err) {
          console.error(err);
          setLookups((prev) => ({ ...prev, Contacts: [] }));
@@ -369,7 +401,7 @@ const OffshoreEnquiry: React.FC = () => {
             qacam: "QA/CAM",
             dfa: "DFA",
             dfm: "DFM",
-            asmb: "Fabrication",
+            layout_fab: "Fabrication",
             layout_testing: "Testing",
             layout_others: "Others",
          },
@@ -383,10 +415,12 @@ const OffshoreEnquiry: React.FC = () => {
             analysis_others: "Others",
          },
          va: {
-            VA_Assembly: "Assembly",
+            npi_fab: "Fabrication",
+            asmb: "Assembly",
             hardware: "Hardware",
             software: "Software",
-            fpga: "FPGA",
+            fpg: "FPGA",
+            npi_testing: "Testing",
             npi_others: "Others",
             DesignOutSource: "Design Outsourced",
          },
@@ -433,39 +467,62 @@ const OffshoreEnquiry: React.FC = () => {
                return;
             }
          }
-
-         setForm({
-            ...form,
+         //avoid using form, use prev
+         // setForm({
+         //    ...form,
+         //    customerId: value,
+         //    locationId: "",
+         //    contactName: "",
+         //    email11: "",
+         //    address: "",
+         // });
+         setForm(prev => ({
+            ...prev,
             customerId: value,
             locationId: "",
             contactName: "",
             email11: "",
             address: "",
-         });
+         }));
          await fetchCustomerLocations(value);
-         toast.info("Customer changed — dependent fields cleared");
+        // toast.info("Customer changed — dependent fields cleared");
          return;
       }
 
+      // if (name === "locationId") {
+      //    setForm({
+      //       ...form,
+      //       locationId: value,
+      //      // contactName: "", // in edit mode the contact name was getting reset
+      //       email11: "",
+      //       address: "",
+      //    });
+      //    await fetchCustomerContacts(form.customerId, value);
+      //  //  toast.info("Location changed — contact fields cleared")
+      //    return;
+      // }
       if (name === "locationId") {
-         if (isEditMode && form.locationId && form.locationId !== value) {
-            const confirmChange = window.confirm(
-               "Changing the location will reset Contact, Email, and Address. Continue?"
-            );
-            if (!confirmChange) {
-               toast.info("Location change cancelled");
-               return;
-            }
-         }
-         setForm({
-            ...form,
+         const loc = lookups.Locations.find(
+            (l) => l.location_id.toString() === value.toString()
+         );
+
+         // setForm({
+         //    ...form,
+         //    locationId: value,
+         //    // contactName: "",   //in edit mode the contact name was getting reset
+         //  //  contactName: form.contactName, // keep selected contact in edit mode
+         //    email11: "",
+         //    address: loc?.address || "",   // 🔥 set address from Locations API response
+         // });
+         setForm(prev => ({
+            ...prev,
             locationId: value,
+            address: loc?.address || "",   // ✔ address comes from location
             contactName: "",
             email11: "",
-            address: "",
-         });
+         }));
+
          await fetchCustomerContacts(form.customerId, value);
-         toast.info("Location changed — contact fields cleared")
          return;
       }
 
@@ -473,12 +530,22 @@ const OffshoreEnquiry: React.FC = () => {
          const contact = lookups.Contacts.find(
             (c) => c.contact_id.toString() === value.toString()
          );
-         setForm({
-            ...form,
+         // setForm({
+         //    ...form,
+         //    contactName: value,
+         //    // email11: contact?.email11 || "",
+         //    // address: contact?.address || "",
+         //    email11: contact?.email11,   // ✔ Do NOT reset email
+         //    address: contact?.address || prev.address,   // ✔ Do NOT reset address
+         // });
+         setForm(prev => ({
+            ...prev,
             contactName: value,
             email11: contact?.email11 || "",
-            address: contact?.address || "",
-         });
+            // DO NOT TOUCH ADDRESS HERE
+            // address: contact?.address || prev.address,   // ✔ Do NOT reset address
+            address: prev.address,   // 🔥 keep the location-based address
+         }));
          return;
       }
 
@@ -676,15 +743,15 @@ const OffshoreEnquiry: React.FC = () => {
 
          // VA
          const vaMap: any = {
-            Fabrication: "VA_Assembly",
-            Assembly: "VA_Assembly",
+            Fabrication: "npi_fab",
+            Assembly: "asmb",
             "Design Outsourced": "DesignOutSource",
             Others: "npi_others",
             Hardware: "hardware",
             Software: "software",
-            //FPGA: "fpg",
-            FPGA: "fpga",
-            Testing: "hardware_testing",
+            FPGA: "fpg",
+          //  FPGA: "fpga",
+            Testing: "npi_testing",
          };
          Object.entries(vaMap).forEach(([label, field]) => {
             postPayload[field] = form.va.includes(label) ? "YES" : "NO";
@@ -738,7 +805,8 @@ const OffshoreEnquiry: React.FC = () => {
          formData.append("referenceBy", postPayload.referenceBy || "");
          formData.append("appendreq", postPayload.appendreq);
          formData.append("Remarks", postPayload.remarks || "");
-         formData.append("state", postPayload.state || "");
+         //formData.append("state", postPayload.state || "");
+         formData.append("statename", postPayload.state || "");
          formData.append("tm", postPayload.tm || "");
 
          if (isEditMode) formData.append("enquiryno", enquiryNo);
@@ -767,9 +835,15 @@ const OffshoreEnquiry: React.FC = () => {
          });
 
          // 8️⃣ Append file if selected
-         if (file) formData.append("file", file);
-
-         const url = isEditMode ? `${baseUrl}/api/Sales/UpdateEnquiryData` : `${baseUrl}/api/Sales/AddEnquiryData`;
+        // if (file) formData.append("file", file);
+         // FILE UPLOAD
+         if (file) {
+            formData.append("file", file);
+            formData.append("uploadedfilename", file.name);
+         } else {
+            formData.append("uploadedfilename", "");
+         }
+         const url = isEditMode ? `${baseUrl}/api/Sales/EditEnquiryData` : `${baseUrl}/api/Sales/AddEnquiryData`;
 
          // 9️⃣ POST to backend
          const res = await fetch(url, {
@@ -787,7 +861,8 @@ const OffshoreEnquiry: React.FC = () => {
                   >
                      Return to ViewAllEnquiries
                   </Button>
-               </div>
+               </div>,
+                { autoClose: false }   // 🔥 toast stays until user closes or clicks button
             );
          } else {
             const err = await res.text();
@@ -865,7 +940,8 @@ const OffshoreEnquiry: React.FC = () => {
                      name="state"
                      label="State"
                      value={form.state}
-                     options={lookups.States.map((s) => ({ value: String(s.id).trim(), label: s.state, }))}
+                     //options={lookups.States.map((s) => ({ value: String(s.state).trim(), label: s.state, }))}
+                     options={lookups.States.map(s => ({value: s.state, label: s.state}))}
                      onChange={handleChange}
                      required
                      width="200px"
@@ -900,18 +976,20 @@ const OffshoreEnquiry: React.FC = () => {
                   />
                </Grid>
 
-               <Grid xs={6}>
+            <Grid xs={6}>
                   <TextField
                      label="Address"
                      name="address"
-                     value={form.address ?? ""}
-                     //  onChange={handleChange}
+                     value={form.address}
                      multiline
                      rows={2}
                      fullWidth
                      disabled={true}
+                     InputLabelProps={{ shrink: true }} 
+                  //   InputProps={{ readOnly: true }}   // instead of disabled
                   />
-               </Grid>
+               </Grid>  
+               
                {/* Row 2 */}
                <Grid xs={12} md={2}>
                   <TextField
@@ -1180,8 +1258,10 @@ const OffshoreEnquiry: React.FC = () => {
                      value={form.salesresponsibilityid}
                      onChange={handleChange}
                      options={lookups.SalesManagers.map((e) => ({
-                        value: e.hopC1ID,
-                        label: e.hopC1NAME,
+                      //  value: e.hopC1ID,
+                        //label: e.hopC1NAME,
+                        value: e.id,
+                        label: e.name,
                      }))}
                      fullWidth
                      width="200px"
@@ -1233,8 +1313,15 @@ const OffshoreEnquiry: React.FC = () => {
                      onClick={() => document.getElementById("fileInput")?.click()}
                   >
                      <CloudUploadIcon sx={{ fontSize: 40, color: "#2196f3" }} />
-                     <Typography variant="body1" sx={{ mt: 1 }}>
+                     {/* <Typography variant="body1" sx={{ mt: 1 }}>
                         {file ? file.name : "Click or Drag a file to upload"}
+                     </Typography> */}
+                     <Typography variant="body1" sx={{ mt: 1 }}>
+                        {file
+                           ? file.name
+                           : isEditMode && form.uploadedfilename
+                              ? form.uploadedfilename
+                              : "Click or Drag a file to upload"}
                      </Typography>
                      <input
                         type="file"
