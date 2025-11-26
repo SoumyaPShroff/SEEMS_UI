@@ -1,4 +1,4 @@
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { Box, FormControl, InputLabel, MenuItem, Select, Typography, CircularProgress, Button } from "@mui/material";
 import type { GridColDef } from '@mui/x-data-grid';
@@ -16,7 +16,6 @@ const ViewAllEnquiries = () => {
   const [loading, setLoading] = useState(false);
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
   const loginUserName = sessionStorage.getItem("SessionUserName") || "guestName";
-  //const [salesResponsibilityId, setSalesResponsibilityId] = useState("");
   const [hasSpecialRole, sethasSpecialRole] = useState(false);
 
   //check for access to edit - own enquiry of sesion user
@@ -29,7 +28,7 @@ const ViewAllEnquiries = () => {
   const columns: GridColDef[] = [
     { field: "enquiryno", headerName: "Enquiryno", flex: 1, minWidth: 100 },
     { field: "customer", headerName: "Customer", flex: 1, minWidth: 200 },
-    { field: "createdon", headerName: "Createdon", flex: 1, minWidth:100 },
+    { field: "createdon", headerName: "Createdon", flex: 1, minWidth: 100 },
     { field: "endDate", headerName: "EndDate", flex: 1, minWidth: 100 },
     { field: "salesResponsibility", headerName: "Sales Resp", flex: 1, minWidth: 150 },
 
@@ -54,7 +53,8 @@ const ViewAllEnquiries = () => {
             onClick={(e) => {
               e.preventDefault();
               if (!hasAccess) return;
-              handleEditEnquiry(params.row.enquiryno);
+              // handleEditEnquiry(params.row.enquiryno);
+              handleEditEnquiry(params.row); // in order to recieve multiple no of columns
             }}
           >
             Edit Enquiry
@@ -184,7 +184,7 @@ const ViewAllEnquiries = () => {
       sethasSpecialRole(roleFlag); // ✅ store in state
 
       // Step 3: Set salesResponsibilityId (from loginId)
-     // setSalesResponsibilityId(loginId);
+      // setSalesResponsibilityId(loginId);
 
       // Step 4: Build URL after setting the value
       let url = `${baseUrl}/api/sales/AllEnquiries`;
@@ -228,8 +228,22 @@ const ViewAllEnquiries = () => {
     toast.success("✅ All Enquiries Data exported!", { position: "bottom-right" });
   };
 
-  const handleEditEnquiry = (penquiryno: string) => {
-    navigate(`/Home/OffshoreEnquiry/${penquiryno}`);
+  const handleEditEnquiry = (row: any) => {
+    const enqNo = row.enquiryno;
+    const enqType = row.enquiryType?.toUpperCase() || "";
+
+    if (!enqType) {
+      toast.error("❌ Enquiry type not chosen");
+      return;
+    }
+
+    if (enqType === "OFFSHORE") {
+      navigate(`/Home/OffshoreEnquiry/${enqNo}`);
+    } else if (enqType === "ONSITE") {
+      navigate(`/Home/OnsiteEnquiry/${enqNo}`);
+    } else {
+      toast.error(`❌ Unknown Enquiry Type: ${enqType}`);
+    }
   };
 
   return (
@@ -268,7 +282,7 @@ const ViewAllEnquiries = () => {
           rows={rows}
           columns={columns}
           title="View All Enquiries"
-         // getRowId={(row) => row.Enquiryno} // ✅ alternate approach
+          // getRowId={(row) => row.Enquiryno} // ✅ alternate approach
           loading={loading}
         />
       )}

@@ -1,5 +1,4 @@
-//import React from "react";
-import React, { useEffect, useState, useRef, ChangeEvent  } from "react";
+import React, { useEffect, useState, useRef, ChangeEvent } from "react";
 import {
    Grid, FormGroup, TextField, Button, Card, CardContent, Typography, Box, ToggleButtonGroup,
    FormControlLabel, Checkbox, RadioGroup, Radio,
@@ -74,7 +73,6 @@ interface EnquiryForm {
 }
 
 const OffshoreEnquiry: React.FC = () => {
-   //return (<div>...</div>);
    const loginUser = sessionStorage.getItem("SessionUserName") || "guest";
    const navigate = useNavigate();
    const { enquiryNo } = useParams();
@@ -135,7 +133,6 @@ const OffshoreEnquiry: React.FC = () => {
    const [loading, setLoading] = useState(false);
 
    // fields backend requires, but UI does not collect
-   //state: "-" -removed uploadedfilename: file ? file.name : "test",
    const dtoBlankDefaults = {
       layoutbyid: "", npibyid: "", analysisbyid: "", NPINewbyid: "",
       pi: "NO", si: "NO", dfa: "NO", dfm: "NO", fpg: "NO", asmb: "NO", pcba: "NO", qacam: "NO",
@@ -145,7 +142,7 @@ const OffshoreEnquiry: React.FC = () => {
       NPINew_Fab: "NO", NPINew_Testing: "NO", NPINew_Assbly: "NO", NPINew_BOMProc: "NO",
       npinew_jobwork: "NO", tool: "", software: "NO", analysis_others: "NO", status: "Open",
       quotation_request_lastdate: new Date().toISOString(), createdOn: new Date().toISOString(), enquiryno: "AUTO",
-       remarks: "", referenceBy: "",
+      remarks: "", referenceBy: "",
    };
 
 
@@ -201,9 +198,9 @@ const OffshoreEnquiry: React.FC = () => {
       if (!isEditMode) return;
       if (lookups.customers.length === 0) return;
 
-      
-     if (!lookups.customers.length) return; //edit
-     if (!isInitialLoad.current) return; // do not reload //edit
+
+      if (!lookups.customers.length) return; //edit
+      if (!isInitialLoad.current) return; // do not reload //edit
 
       const loadEnquiry = async () => {
          try {
@@ -222,12 +219,12 @@ const OffshoreEnquiry: React.FC = () => {
             const selectedContact = lookups.Contacts.find(
                (c) => c.contact_id.toString() === enquiry.contact_id.toString()
             );
-            
+
             //based on location, address filled
             const selectedLoc = lookups.Locations.find(
                (l) => l.location_id.toString() === enquiry.location_id.toString()
             );
-            
+
             // 🔹 THEN set your form
             setForm((prev) => ({
                ...prev,
@@ -251,9 +248,6 @@ const OffshoreEnquiry: React.FC = () => {
                state: enquiry.state || enquiry.statename || "",
                email11: selectedContact?.email11 || "",
                address: selectedLoc?.address || "",
-               //email11: enquiry.email11 || "",
-              // address: enquiry.address || "",
-               // Scope sections mapped using helper
                layout: getCheckedArrayFromAPI(enquiry, "layout"),
                analysis: getCheckedArrayFromAPI(enquiry, "analysis"),
                va: getCheckedArrayFromAPI(enquiry, "va"),
@@ -271,7 +265,6 @@ const OffshoreEnquiry: React.FC = () => {
       };
 
       loadEnquiry();
-      //}, [enquiryNo, lookups.customers.length]);
    }, [isEditMode, lookups.customers.length]);
 
    useEffect(() => {
@@ -299,7 +292,7 @@ const OffshoreEnquiry: React.FC = () => {
          email11: selected.email11 ?? "",
          address: prev.address,   // KEEP LOCATION ADDRESS ALWAYS
       }));
-   }, [form.contactName]);   
+   }, [form.contactName]);
 
    useEffect(() => {
       const combined = [
@@ -318,9 +311,9 @@ const OffshoreEnquiry: React.FC = () => {
       try {
          const res = await fetch(`${baseUrl}/api/Sales/customerlocations?customerId=${customerId}`);
          const data = await res.json();
-        // setLookups((prev) => ({ ...prev, Locations: data, Contacts: [] }));
-        //edit mode contact was not appearing in first load
-        setLookups((prev) => ({...prev, Locations: data, Contacts: isEditMode ? prev.Contacts : [] }));  // 👈 keep contacts while editing
+         // setLookups((prev) => ({ ...prev, Locations: data, Contacts: [] }));
+         //edit mode contact was not appearing in first load
+         setLookups((prev) => ({ ...prev, Locations: data, Contacts: isEditMode ? prev.Contacts : [] }));  // 👈 keep contacts while editing
       } catch (err) {
          console.error(err);
          setLookups((prev) => ({ ...prev, Locations: [], Contacts: [] }));
@@ -341,7 +334,6 @@ const OffshoreEnquiry: React.FC = () => {
                ...prev,
                contactName: c.contact_id.toString(),
                email11: c.email11 || "",
-               //address: c.address || "",
                address: prev.address,   // keep location address ALWAYS
             }));
          }
@@ -468,14 +460,6 @@ const OffshoreEnquiry: React.FC = () => {
             }
          }
          //avoid using form, use prev
-         // setForm({
-         //    ...form,
-         //    customerId: value,
-         //    locationId: "",
-         //    contactName: "",
-         //    email11: "",
-         //    address: "",
-         // });
          setForm(prev => ({
             ...prev,
             customerId: value,
@@ -485,35 +469,14 @@ const OffshoreEnquiry: React.FC = () => {
             address: "",
          }));
          await fetchCustomerLocations(value);
-        // toast.info("Customer changed — dependent fields cleared");
+         // toast.info("Customer changed — dependent fields cleared");
          return;
       }
 
-      // if (name === "locationId") {
-      //    setForm({
-      //       ...form,
-      //       locationId: value,
-      //      // contactName: "", // in edit mode the contact name was getting reset
-      //       email11: "",
-      //       address: "",
-      //    });
-      //    await fetchCustomerContacts(form.customerId, value);
-      //  //  toast.info("Location changed — contact fields cleared")
-      //    return;
-      // }
       if (name === "locationId") {
          const loc = lookups.Locations.find(
             (l) => l.location_id.toString() === value.toString()
          );
-
-         // setForm({
-         //    ...form,
-         //    locationId: value,
-         //    // contactName: "",   //in edit mode the contact name was getting reset
-         //  //  contactName: form.contactName, // keep selected contact in edit mode
-         //    email11: "",
-         //    address: loc?.address || "",   // 🔥 set address from Locations API response
-         // });
          setForm(prev => ({
             ...prev,
             locationId: value,
@@ -530,20 +493,11 @@ const OffshoreEnquiry: React.FC = () => {
          const contact = lookups.Contacts.find(
             (c) => c.contact_id.toString() === value.toString()
          );
-         // setForm({
-         //    ...form,
-         //    contactName: value,
-         //    // email11: contact?.email11 || "",
-         //    // address: contact?.address || "",
-         //    email11: contact?.email11,   // ✔ Do NOT reset email
-         //    address: contact?.address || prev.address,   // ✔ Do NOT reset address
-         // });
          setForm(prev => ({
             ...prev,
             contactName: value,
             email11: contact?.email11 || "",
             // DO NOT TOUCH ADDRESS HERE
-            // address: contact?.address || prev.address,   // ✔ Do NOT reset address
             address: prev.address,   // 🔥 keep the location-based address
          }));
          return;
@@ -750,7 +704,6 @@ const OffshoreEnquiry: React.FC = () => {
             Hardware: "hardware",
             Software: "software",
             FPGA: "fpg",
-          //  FPGA: "fpga",
             Testing: "npi_testing",
          };
          Object.entries(vaMap).forEach(([label, field]) => {
@@ -805,7 +758,6 @@ const OffshoreEnquiry: React.FC = () => {
          formData.append("referenceBy", postPayload.referenceBy || "");
          formData.append("appendreq", postPayload.appendreq);
          formData.append("Remarks", postPayload.remarks || "");
-         //formData.append("state", postPayload.state || "");
          formData.append("statename", postPayload.state || "");
          formData.append("tm", postPayload.tm || "");
 
@@ -835,7 +787,6 @@ const OffshoreEnquiry: React.FC = () => {
          });
 
          // 8️⃣ Append file if selected
-        // if (file) formData.append("file", file);
          // FILE UPLOAD
          if (file) {
             formData.append("file", file);
@@ -844,12 +795,8 @@ const OffshoreEnquiry: React.FC = () => {
             formData.append("uploadedfilename", "");
          }
          const url = isEditMode ? `${baseUrl}/api/Sales/EditEnquiryData` : `${baseUrl}/api/Sales/AddEnquiryData`;
-
-         // 9️⃣ POST to backend
-         const res = await fetch(url, {
-            method: "POST",
-            body: formData,
-         });
+         //for Add - use POST, edit - PUT
+         const res = await fetch(url, { method: isEditMode ? "PUT" : "POST", body: formData, });
 
          if (res.ok) {
             toast.success(
@@ -862,7 +809,7 @@ const OffshoreEnquiry: React.FC = () => {
                      Return to ViewAllEnquiries
                   </Button>
                </div>,
-                { autoClose: false }   // 🔥 toast stays until user closes or clicks button
+               { autoClose: false }   // 🔥 toast stays until user closes or clicks button
             );
          } else {
             const err = await res.text();
@@ -877,486 +824,487 @@ const OffshoreEnquiry: React.FC = () => {
 
    };
    return (
-      <Card
+      <Box
          sx={{
-            width: "110%",
-            m: "auto",
-            mt: 3,
-            p: 4,
-            boxShadow: 6,
-            borderRadius: 3,
-            maxHeight: "200vh",
+            maxWidth: "1100px",   // prevents horizontal stretching
+            margin: "0 auto",     // centers the card
+            padding: "40px",
+            mt: 4,
          }}
       >
-         <CardContent>
-            <Typography
-               variant="h5"
-               sx={{
-                  textAlign: "center",
-                  mb: 3,
-                  fontWeight: 700,
-                  color: "#1565c0",
-               }}
-            >
-               {isEditMode ? "Edit OFFSHORE Enquiry" : "Add OFFSHORE Enquiry"}
-            </Typography>
+         <Card
+            sx={{
+               width: "110%",
+               m: "auto",
+               mt: 3,
+               p: 4,
+               boxShadow: 6,
+               borderRadius: 3,
+               maxHeight: "200vh",
+            }}
+         >
+            <CardContent>
+               <Typography
+                  variant="h5"
+                  sx={{
+                     textAlign: "center",
+                     mb: 3,
+                     fontWeight: 700,
+                     color: "#1565c0",
+                  }}
+               >
+                  {isEditMode ? "Edit OFFSHORE Enquiry" : "Add OFFSHORE Enquiry"}
+               </Typography>
 
-            {/* --- Main Form Grid --- */}
-            <Grid
-               container
-               spacing={2}
-               alignItems="center"
-            >
-               {/* Row 1 */}
-               <Grid xs={6} md={3}>
-                  <SelectControl
-                     name="customerId"
-                     label="Customer"
-                     value={form.customerId}
-                     options={lookups.customers.map((c) => ({
-                        value: String(c.itemno).trim(),
-                        label: c.customer,
-                     }))}
-                     onChange={handleChange}
-                     required
-                     width="200px"
-                  />
-               </Grid>
-
-               <Grid xs={6} md={3}>
-                  <SelectControl
-                     name="locationId"
-                     label="Location"
-                     value={form.locationId}
-                     options={lookups.Locations.map(l => ({ value: l.location_id.toString(), label: l.location }))}
-                     onChange={handleChange}
-                     required
-                     disabled={!form.customerId}
-                     width="200px"
-                  />
-               </Grid>
-               <Grid xs={6}>
-                  <SelectControl
-                     name="state"
-                     label="State"
-                     value={form.state}
-                     //options={lookups.States.map((s) => ({ value: String(s.state).trim(), label: s.state, }))}
-                     options={lookups.States.map(s => ({value: s.state, label: s.state}))}
-                     onChange={handleChange}
-                     required
-                     width="200px"
-                  />
-               </Grid>
-               <Grid xs={6}>
-                  <SelectControl
-                     name="contactName"
-                     label="Contact Name"
-                     value={form.contactName}
-                     options={lookups.Contacts.map((c) => ({
-                        value: c.contact_id.toString(),
-                        label: c.contactName,
-
-                     }))}
-                     onChange={handleChange}
-                     required
-                     width="200px"
-                     disabled={!form.locationId}
-                  />
-               </Grid>
-
-               <Grid xs={6}>
-                  <TextField
-                     name="emailAddress"
-                     label="Email Address"
-                     value={form.email11}
-                     //onChange={handleChange}
-                     fullWidth
-                     disabled={true}
-                     InputLabelProps={{ shrink: true }} // To keep label above even if empty and avoid overlapping pf placeholder or label with value
-                  />
-               </Grid>
-
-            <Grid xs={6}>
-                  <TextField
-                     label="Address"
-                     name="address"
-                     value={form.address}
-                     multiline
-                     rows={2}
-                     fullWidth
-                     disabled={true}
-                     InputLabelProps={{ shrink: true }} 
-                  //   InputProps={{ readOnly: true }}   // instead of disabled
-                  />
-               </Grid>  
-               
-               {/* Row 2 */}
-               <Grid xs={12} md={2}>
-                  <TextField
-                     label="Board Ref"
-                     name="jobnames"
-                     value={form.jobnames}
-                     onChange={handleChange}
-                     size="small"
-                     fullWidth
-                  />
-               </Grid>
-               <Grid xs={12} md={3}>
-                  <SelectControl
-                     name="inputreceivedthru"
-                     label="Input Received Thru"
-                     value={form.inputreceivedthru || ""}
-                     onChange={handleChange}
-                     options={[
-                        { value: "Email", label: "Email" },
-                        { value: "FTP", label: "FTP" },
-                        { value: "Other", label: "Other" },
-                     ]}
-                     height={40}
-                     required
-                     width="200px"
-                  />
-               </Grid>
-
-               <Grid xs={12} md={3}>
-                  <Box
-                     sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        px: 1,
-                        py: 0.5,
-                     }}
-                  >
-                     <RadioGroup
-                        row
-                        name="currency"
-                        value={form.currency}
+               {/* --- Main Form Grid --- */}
+               <Grid
+                  container
+                  spacing={2}
+                  alignItems="center"
+               >
+                  {/* Row 1 */}
+                  <Grid xs={6} md={3}>
+                     <SelectControl
+                        name="customerId"
+                        label="Customer"
+                        value={form.customerId}
+                        options={lookups.customers.map((c) => ({
+                           value: String(c.itemno).trim(),
+                           label: c.customer,
+                        }))}
                         onChange={handleChange}
+                        required
+                        width="200px"
+                     />
+                  </Grid>
+
+                  <Grid xs={6} md={3}>
+                     <SelectControl
+                        name="locationId"
+                        label="Location"
+                        value={form.locationId}
+                        options={lookups.Locations.map(l => ({ value: l.location_id.toString(), label: l.location }))}
+                        onChange={handleChange}
+                        required
+                        disabled={!form.customerId}
+                        width="200px"
+                     />
+                  </Grid>
+                  <Grid xs={6}>
+                     <SelectControl
+                        name="state"
+                        label="State"
+                        value={form.state}
+                        //options={lookups.States.map((s) => ({ value: String(s.state).trim(), label: s.state, }))}
+                        options={lookups.States.map(s => ({ value: s.state, label: s.state }))}
+                        onChange={handleChange}
+                        required
+                        width="200px"
+                     />
+                  </Grid>
+                  <Grid xs={6}>
+                     <SelectControl
+                        name="contactName"
+                        label="Contact Name"
+                        value={form.contactName}
+                        options={lookups.Contacts.map((c) => ({
+                           value: c.contact_id.toString(),
+                           label: c.contactName,
+
+                        }))}
+                        onChange={handleChange}
+                        required
+                        width="200px"
+                        disabled={!form.locationId}
+                     />
+                  </Grid>
+
+                  <Grid xs={6}>
+                     <TextField
+                        name="emailAddress"
+                        label="Email Address"
+                        value={form.email11}
+                        fullWidth
+                        disabled={true}
+                        InputLabelProps={{ shrink: true }} // To keep label above even if empty and avoid overlapping pf placeholder or label with value
+                     />
+                  </Grid>
+
+                  <Grid xs={6}>
+                     <TextField
+                        label="Address"
+                        name="address"
+                        value={form.address}
+                        multiline
+                        rows={2}
+                        fullWidth
+                        disabled={true}
+                        InputLabelProps={{ shrink: true }}
+                     />
+                  </Grid>
+
+                  {/* Row 2 */}
+                  <Grid xs={12} md={2}>
+                     <TextField
+                        label="Board Ref"
+                        name="jobnames"
+                        value={form.jobnames}
+                        onChange={handleChange}
+                        size="small"
+                        fullWidth
+                     />
+                  </Grid>
+                  <Grid xs={12} md={3}>
+                     <SelectControl
+                        name="inputreceivedthru"
+                        label="Input Received Thru"
+                        value={form.inputreceivedthru || ""}
+                        onChange={handleChange}
+                        options={[
+                           { value: "Email", label: "Email" },
+                           { value: "FTP", label: "FTP" },
+                           { value: "Other", label: "Other" },
+                        ]}
+                        height={40}
+                        required
+                        width="200px"
+                     />
+                  </Grid>
+
+                  <Grid xs={12} md={3}>
+                     <Box
+                        sx={{
+                           display: "flex",
+                           flexDirection: "column",
+                           px: 1,
+                           py: 0.5,
+                        }}
+                     >
+                        <RadioGroup
+                           row
+                           name="currency"
+                           value={form.currency}
+                           onChange={handleChange}
+                           sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              height: 50,
+                              border: "1px solid #ccc",
+                              borderRadius: "8px",
+                              padding: "4px",
+                           }}
+                        >
+                           <FormControlLabel value="1" control={<Radio />} label="INR" />
+                           <FormControlLabel value="2" control={<Radio />} label="USD" />
+                           <FormControlLabel value="3" control={<Radio />} label="EURO" />
+                        </RadioGroup>
+                     </Box>
+                  </Grid>
+
+                  {/* Row 3 */}
+                  <Grid xs={12} md={3}>
+                     <Box
+                        sx={{
+                           display: "flex",
+                           flexDirection: "column",
+                           px: 1,
+                           py: 0.5,
+                        }}
+                     >
+                        <RadioGroup
+                           row
+                           name="type"
+                           value={form.type}
+                           onChange={handleChange}
+                           sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              height: 50,
+                              border: "1px solid #ccc",
+                              borderRadius: "8px",
+                              padding: "4px",
+                           }}
+                        >
+                           <FormControlLabel value="Export" control={<Radio />} label="Export" />
+                           <FormControlLabel
+                              value="Domestic"
+                              control={<Radio />}
+                              label="Domestic"
+                           />
+                        </RadioGroup>
+                     </Box>
+                  </Grid>
+
+                  <Grid xs={12} md={3}>
+                     <SelectControl
+                        name="tm"
+                        label="Billing Type"
+                        value={form.tm || ""}
+                        onChange={handleChange}
+                        options={[
+                           { value: "Fixed-Cost", label: "Fixed-Cost" },
+                           { value: "Time and Material", label: "Time and Material" },
+                        ]}
+                        height={40}
+                        required
+                        width="200px"
+                     />
+                  </Grid>
+
+                  <Grid xs={12} md={3}>
+                     <SelectControl
+                        name="tool"
+                        label="PCB Tool"
+                        value={form.tool || ""}
+                        onChange={handleChange}
+                        options={lookups.PCBTools.map((tool: string, index: number) => ({
+                           value: tool,
+                           label: tool,
+                        }))}
+                        height={40}
+                        required
+                        width="200px"
+                     />
+                  </Grid>
+                  <Grid xs={12}>
+                     <Box
                         sx={{
                            display: "flex",
                            alignItems: "center",
-                           height: 50,
-                           border: "1px solid #ccc",
-                           borderRadius: "8px",
-                           padding: "4px",
+                           mt: 3,
+                           mb: 1,
                         }}
                      >
-                        <FormControlLabel value="1" control={<Radio />} label="INR" />
-                        <FormControlLabel value="2" control={<Radio />} label="USD" />
-                        <FormControlLabel value="3" control={<Radio />} label="EURO" />
-                     </RadioGroup>
-                  </Box>
-               </Grid>
+                        <Box sx={{ flex: 1, borderTop: "1px solid #ccc" }} />
+                        <Typography
+                           variant="subtitle2"
+                           sx={{
+                              mx: 55,
+                              color: "#666",
+                              fontSize: 20,
+                              fontWeight: 600,
+                           }}
+                        >
+                           SCOPE DETAILS
+                        </Typography>
+                        <Box sx={{ flex: 1, borderTop: "1px solid #ccc" }} />
+                     </Box>
+                  </Grid>
+                  {scopeConfig.map((cfg) => {
+                     const lowerField = cfg.field;
+                     const respField = cfg.responsibilityField;
 
-               {/* Row 3 */}
-               <Grid xs={12} md={3}>
-                  <Box
-                     sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        px: 1,
-                        py: 0.5,
-                     }}
-                  >
-                     <RadioGroup
-                        row
-                        name="type"
-                        value={form.type}
-                        onChange={handleChange}
-                        sx={{
-                           display: "flex",
-                           alignItems: "center",
-                           height: 50,
-                           border: "1px solid #ccc",
-                           borderRadius: "8px",
-                           padding: "4px",
-                        }}
-                     >
-                        <FormControlLabel value="Export" control={<Radio />} label="Export" />
-                        <FormControlLabel
-                           value="Domestic"
-                           control={<Radio />}
-                           label="Domestic"
-                        />
-                     </RadioGroup>
-                  </Box>
-               </Grid>
+                     return (
+                        <Grid xs={12} key={cfg.section}>
+                           {/* alignItems="flex-start"  */}
+                           <Grid container alignItems="center" justifyContent="space-between" sx={{ borderBottom: "1px dashed #ddd", pb: 1, mb: 1 }}>
+                              {/* Checkbox section */}
+                              <Grid xs={10}>
+                                 <Typography sx={{ fontWeight: 600, mb: 0.5 }}>{cfg.section}</Typography>
+                                 <FormGroup row>
+                                    {cfg.checkboxes.map((item) => (
+                                       <FormControlLabel
+                                          key={item}
+                                          control={
+                                             <Checkbox
+                                                checked={form[lowerField]?.includes(item)}
+                                                onChange={(e) => handleCheckboxChange(lowerField, item, e.target.checked)}
+                                             />
+                                          }
+                                          label={item}
+                                       />
+                                    ))}
+                                 </FormGroup>
+                              </Grid>
 
-               <Grid xs={12} md={3}>
-                  <SelectControl
-                     name="tm"
-                     label="Billing Type"
-                     value={form.tm || ""}
-                     onChange={handleChange}
-                     options={[
-                        { value: "Fixed-Cost", label: "Fixed-Cost" },
-                        { value: "Time and Material", label: "Time and Material" },
-                     ]}
-                     height={40}
-                     required
-                     width="200px"
-                  />
-               </Grid>
-
-               <Grid xs={12} md={3}>
-                  <SelectControl
-                     name="tool"
-                     label="PCB Tool"
-                     value={form.tool || ""}
-                     onChange={handleChange}
-                     options={lookups.PCBTools.map((tool: string, index: number) => ({
-                        value: tool,
-                        label: tool,
-                     }))}
-                     height={40}
-                     required
-                     width="200px"
-                  />
-               </Grid>
-               <Grid xs={12}>
-                  <Box
-                     sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        mt: 3,
-                        mb: 1,
-                     }}
-                  >
-                     <Box sx={{ flex: 1, borderTop: "1px solid #ccc" }} />
-                     <Typography
-                        variant="subtitle2"
-                        sx={{
-                           mx: 55,
-                           color: "#666",
-                           fontSize: 20,
-                           fontWeight: 600,
-                        }}
-                     >
-                        SCOPE DETAILS
-                     </Typography>
-                     <Box sx={{ flex: 1, borderTop: "1px solid #ccc" }} />
-                  </Box>
-               </Grid>
-               {scopeConfig.map((cfg) => {
-                  const lowerField = cfg.field;
-                  const respField = cfg.responsibilityField;
-
-                  return (
-                     <Grid xs={12} key={cfg.section}>
-                        {/* alignItems="flex-start"  */}
-                        <Grid container alignItems="center" justifyContent="space-between" sx={{ borderBottom: "1px dashed #ddd", pb: 1, mb: 1 }}>
-                           {/* Checkbox section */}
-                           <Grid xs={10}>
-                              <Typography sx={{ fontWeight: 600, mb: 0.5 }}>{cfg.section}</Typography>
-                              <FormGroup row>
-                                 {cfg.checkboxes.map((item) => (
-                                    <FormControlLabel
-                                       key={item}
-                                       control={
-                                          <Checkbox
-                                             checked={form[lowerField]?.includes(item)}
-                                             onChange={(e) => handleCheckboxChange(lowerField, item, e.target.checked)}
-                                          />
-                                       }
-                                       label={item}
+                              {/* Responsibility SelectControl: render only if at least one checkbox selected */}
+                              <Grid xs={2} sx={{ display: "flex", justifyContent: "flex-end" }}>
+                                 {form[lowerField]?.length > 0 && (
+                                    <SelectControl
+                                       name={respField}
+                                       label={`${cfg.section} Responsibility`}
+                                       value={form[respField] || ""}
+                                       onChange={handleChange}
+                                       options={cfg.responsibilityOptions.map((opt: any) =>
+                                          cfg.isManager
+                                             ? { value: opt.hopC1ID, label: opt.hopC1NAME }
+                                             : { value: opt.iDno, label: opt.name }
+                                       )}
+                                       fullWidth={false}
+                                       width="220px"
+                                       required
                                     />
-                                 ))}
-                              </FormGroup>
-                           </Grid>
-
-                           {/* Responsibility SelectControl: render only if at least one checkbox selected */}
-                           <Grid xs={2} sx={{ display: "flex", justifyContent: "flex-end" }}>
-                              {form[lowerField]?.length > 0 && (
-                                 <SelectControl
-                                    name={respField}
-                                    label={`${cfg.section} Responsibility`}
-                                    value={form[respField] || ""}
-                                    onChange={handleChange}
-                                    options={cfg.responsibilityOptions.map((opt: any) =>
-                                       cfg.isManager
-                                          ? { value: opt.hopC1ID, label: opt.hopC1NAME }
-                                          : { value: opt.iDno, label: opt.name }
-                                    )}
-                                    fullWidth={false}
-                                    width="220px"
-                                    required
-                                 />
-                              )}
+                                 )}
+                              </Grid>
                            </Grid>
                         </Grid>
-                     </Grid>
-                  );
-               })}
+                     );
+                  })}
 
-               <Grid xs={12}>
-                  <Box
-                     sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        mt: 3,
-                        mb: 1,
-                     }}
-                  >
-                     <Box sx={{ flex: 1, borderTop: "1px solid #ccc" }} />
-                     <Typography
-                        variant="subtitle2"
+                  <Grid xs={12}>
+                     <Box
+                        sx={{
+                           display: "flex",
+                           alignItems: "center",
+                           mt: 3,
+                           mb: 1,
+                        }}
                      >
-                        ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-                     </Typography>
-                     <Box sx={{ flex: 1, borderTop: "1px solid #ccc" }} />
-                  </Box>
-               </Grid>
-               {/* --- Quotation & Tender --- */}
-               <Grid xs={12} md={3}>
-                  <TextField
-                     type="date"
-                     label="Quotation Request Last Date"
-                     name="quotation_request_lastdate"
-                     value={form.quotation_request_lastdate || ""}
-                     onChange={(e) => {
-                        const value = e.target.value; // always yyyy-mm-dd from <input type="date">
-                        setForm((p) => ({ ...p, quotation_request_lastdate: value }));
-                     }}
-                     InputLabelProps={{ shrink: true }}
-                     fullWidth
-                     required
-                  />
-               </Grid>
-
-               <Grid xs={12} md={3}>
-                  <FormControlLabel
-                     control={
-                        <Checkbox
-                           // checked={form.govtTender}
-                           checked={form.govt_tender === "YES"}
-                           onChange={(e) =>
-                              setForm((p) => ({ ...p, govt_tender: e.target.checked ? "YES" : "NO" }))
-                           }
-                        />
-                     }
-                     label="Govt Tender?"
-                  />
-               </Grid>
-
-               {/* --- Responsibilities --- */}
-               <Grid xs={12} md={3}>
-                  <SelectControl
-                     name="completeresponsibilityid"
-                     label="Complete Responsibility"
-                     value={form.completeresponsibilityid}
-                     onChange={handleChange}
-                     options={getCompleteRespOptions()}
-                     fullWidth
-                     width="220px"
-                     required
-                  />
-               </Grid>
-               <Grid xs={12} md={3}>
-                  <SelectControl
-                     name="salesresponsibilityid"
-                     label="Sales Responsibility"
-                     value={form.salesresponsibilityid}
-                     onChange={handleChange}
-                     options={lookups.SalesManagers.map((e) => ({
-                      //  value: e.hopC1ID,
-                        //label: e.hopC1NAME,
-                        value: e.id,
-                        label: e.name,
-                     }))}
-                     fullWidth
-                     width="200px"
-                     required
-                  />
-               </Grid>
-
-               {/* --- Reference   */}
-               <Grid xs={12} md={3}>
-                  <SelectControl
-                     name="referenceBy"
-                     label="Reference By"
-                     value={form.referenceBy}
-                     onChange={handleChange}
-                     options={lookups.AllActiveEmployees.map((e) => ({
-                        value: e.name,
-                        label: e.name,
-                     }))}
-                     fullWidth
-                     width="200px"
-                  />
-               </Grid>
-
-               <Grid xs={12} md={9}>
-                  <TextField
-                     label="Remarks"
-                     fullWidth
-                     multiline
-                     rows={2}
-                     name="remarks"
-                     value={form.remarks}
-                     onChange={handleChange}
-                     size="small"
-                     InputLabelProps={{ shrink: true }}
-                  />
-               </Grid>
-
-               {/* --- File Upload --- */}
-               <Grid xs={12} md={9}>
-                  <Box
-                     sx={{
-                        border: "2px dashed #90caf9",
-                        borderRadius: 2,
-                        p: 3,
-                        textAlign: "center",
-                        bgcolor: "#f8faff",
-                        cursor: "pointer",
-                     }}
-                     onClick={() => document.getElementById("fileInput")?.click()}
-                  >
-                     <CloudUploadIcon sx={{ fontSize: 40, color: "#2196f3" }} />
-                     {/* <Typography variant="body1" sx={{ mt: 1 }}>
-                        {file ? file.name : "Click or Drag a file to upload"}
-                     </Typography> */}
-                     <Typography variant="body1" sx={{ mt: 1 }}>
-                        {file
-                           ? file.name
-                           : isEditMode && form.uploadedfilename
-                              ? form.uploadedfilename
-                              : "Click or Drag a file to upload"}
-                     </Typography>
-                     <input
-                        type="file"
-                        id="fileInput"
-                        style={{ display: "none" }}
-                        onChange={handleFileChange}
+                        <Box sx={{ flex: 1, borderTop: "1px solid #ccc" }} />
+                        <Typography
+                           variant="subtitle2"
+                        >
+                           ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                        </Typography>
+                        <Box sx={{ flex: 1, borderTop: "1px solid #ccc" }} />
+                     </Box>
+                  </Grid>
+                  {/* --- Quotation & Tender --- */}
+                  <Grid xs={12} md={3}>
+                     <TextField
+                        type="date"
+                        label="Quotation Request Last Date"
+                        name="quotation_request_lastdate"
+                        value={form.quotation_request_lastdate || ""}
+                        onChange={(e) => {
+                           const value = e.target.value; // always yyyy-mm-dd from <input type="date">
+                           setForm((p) => ({ ...p, quotation_request_lastdate: value }));
+                        }}
+                        InputLabelProps={{ shrink: true }}
+                        fullWidth
+                        required
                      />
-                  </Box>
-                  <Typography
-                     variant="caption"
-                     color="text.secondary"
-                     sx={{ mt: 1, display: "block", textAlign: "center" }}
-                  >
-                     If you have multiple files, please zip and upload.
-                  </Typography>
-               </Grid>
+                  </Grid>
 
-               {/* --- Submit Button --- */}
-               <Grid xs={12} md={3} textAlign="center" sx={{ mt: 3 }}>
-                  <Button
-                     variant="contained"
-                     color="primary"
-                     onClick={handleSubmit}
-                     disabled={!isResponsibilitySelected || loading} // if none of the responsibility fields are selected
-                     sx={{ px: 6, height: 45 }}
-                  >
-                     {/* {loading ? "Saving..." : "ADD"} */}
-                     {isEditMode ? "EDIT" : "ADD"}
-                  </Button>
-               </Grid>
-            </Grid>
-         </CardContent>
-         <ToastContainer position="top-right" autoClose={2500} theme="colored" />
-      </Card>
+                  <Grid xs={12} md={3}>
+                     <FormControlLabel
+                        control={
+                           <Checkbox
+                              // checked={form.govtTender}
+                              checked={form.govt_tender === "YES"}
+                              onChange={(e) =>
+                                 setForm((p) => ({ ...p, govt_tender: e.target.checked ? "YES" : "NO" }))
+                              }
+                           />
+                        }
+                        label="Govt Tender?"
+                     />
+                  </Grid>
 
+                  {/* --- Responsibilities --- */}
+                  <Grid xs={12} md={3}>
+                     <SelectControl
+                        name="completeresponsibilityid"
+                        label="Complete Responsibility"
+                        value={form.completeresponsibilityid}
+                        onChange={handleChange}
+                        options={getCompleteRespOptions()}
+                        fullWidth
+                        width="220px"
+                        required
+                     />
+                  </Grid>
+                  <Grid xs={12} md={3}>
+                     <SelectControl
+                        name="salesresponsibilityid"
+                        label="Sales Responsibility"
+                        value={form.salesresponsibilityid}
+                        onChange={handleChange}
+                        options={lookups.SalesManagers.map((e) => ({
+                           value: e.id,
+                           label: e.name,
+                        }))}
+                        fullWidth
+                        width="200px"
+                        required
+                     />
+                  </Grid>
+
+                  {/* --- Reference   */}
+                  <Grid xs={12} md={3}>
+                     <SelectControl
+                        name="referenceBy"
+                        label="Reference By"
+                        value={form.referenceBy}
+                        onChange={handleChange}
+                        options={lookups.AllActiveEmployees.map((e) => ({
+                           value: e.name,
+                           label: e.name,
+                        }))}
+                        fullWidth
+                        width="200px"
+                     />
+                  </Grid>
+
+                  <Grid xs={12} md={9}>
+                     <TextField
+                        label="Remarks"
+                        fullWidth
+                        multiline
+                        rows={2}
+                        name="remarks"
+                        value={form.remarks}
+                        onChange={handleChange}
+                        size="small"
+                        InputLabelProps={{ shrink: true }}
+                     />
+                  </Grid>
+
+                  {/* --- File Upload --- */}
+                  <Grid xs={12} md={9}>
+                     <Box
+                        sx={{
+                           border: "2px dashed #90caf9",
+                           borderRadius: 2,
+                           p: 3,
+                           textAlign: "center",
+                           bgcolor: "#f8faff",
+                           cursor: "pointer",
+                        }}
+                        onClick={() => document.getElementById("fileInput")?.click()}
+                     >
+                        <CloudUploadIcon sx={{ fontSize: 40, color: "#2196f3" }} />
+                        <Typography variant="body1" sx={{ mt: 1 }}>
+                           {file
+                              ? file.name
+                              : isEditMode && form.uploadedfilename
+                                 ? form.uploadedfilename
+                                 : "Click or Drag a file to upload"}
+                        </Typography>
+                        <input
+                           type="file"
+                           id="fileInput"
+                           style={{ display: "none" }}
+                           onChange={handleFileChange}
+                        />
+                     </Box>
+                     <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mt: 1, display: "block", textAlign: "center" }}
+                     >
+                        If you have multiple files, please zip and upload.
+                     </Typography>
+                  </Grid>
+
+                  {/* --- Submit Button --- */}
+                  <Grid xs={12} md={3} textAlign="center" sx={{ mt: 3 }}>
+                     <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleSubmit}
+                        disabled={!isResponsibilitySelected || loading} // if none of the responsibility fields are selected
+                        sx={{ px: 6, height: 45 }}
+                     >
+                        {/* {loading ? "Saving..." : "ADD"} */}
+                        {isEditMode ? "EDIT" : "ADD"}
+                     </Button>
+                  </Grid>
+               </Grid>
+            </CardContent>
+            <ToastContainer position="top-right" autoClose={2500} theme="colored" />
+         </Card>
+      </Box>
    );
 };
 
