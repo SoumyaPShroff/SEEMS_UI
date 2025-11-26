@@ -29,7 +29,6 @@ const AddEnquiry: React.FC = () => {
       <Card
         sx={{
           p: 1,
-          mb: 3,
           boxShadow: 3,
           borderRadius: 2,
           bgcolor: "#f5f9ff",
@@ -49,7 +48,7 @@ const AddEnquiry: React.FC = () => {
       </Card>
 
       {/* 🔹 Dynamic Form Panel */}
-      <Box sx={{ width: "100%", maxWidth: 1100 }}>
+      <Box sx={{ width: "100%", maxWidth: 1100}}>
         {renderForm()}
       </Box>
     </Box>
