@@ -6,13 +6,15 @@ import CustomDataGrid from "../../components/common/CustomerDataGrid";
 import { baseUrl } from "../../const/BaseUrl";
 import { exporttoexcel } from "../../components/utils/exporttoexcel";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 export default function ViewEnquiryReport() {
     const [rows, setRows] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [startDate, setStartDate] = useState<string>("");
     const [endDate, setEndDate] = useState<string>("");
-
+    const navigate = useNavigate();
+    const loginId = sessionStorage.getItem("SessionUserID") || "guest";
 
     const columns: GridColDef[] = [
         { field: "enquiryno", headerName: "enquiryno", width: 100 },
@@ -24,6 +26,27 @@ export default function ViewEnquiryReport() {
         { field: "remarks", headerName: "remarks", width: 200 },
         { field: "cancelledremarks", headerName: "cancelledremarks", width: 100 },
     ];
+
+    const checkAccess = async () => {
+        try {
+            // Step 1: Get user role
+            const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
+            const userRole = userRoleRes.data;
+
+            // Step 2: Verify internal rights
+            const roleCheck = await axios.get<boolean>(
+                `${baseUrl}/UserRoleInternalRights/${userRole}/ViewEnquiryReport`
+            );
+
+            // Step 3: If not authorized, redirect
+            if (!roleCheck.data) {
+                navigate("/blank");
+            }
+        } catch (error) {
+            console.error("Error checking role:", error);
+            navigate("/blank");
+        }
+    };
 
     const fetchData = async () => {
         setLoading(true);
@@ -62,9 +85,11 @@ export default function ViewEnquiryReport() {
         toast.success("✅ View Enquiry Report exported!", { position: "bottom-right" });
     };
 
+    
     useEffect(() => {
+        checkAccess();
         fetchData();
-    }, []);
+    }, [navigate, baseUrl, loginId]);
 
     return (
         <Box sx={{ padding: "100px", mt: "30px", ml: "20px" }}>

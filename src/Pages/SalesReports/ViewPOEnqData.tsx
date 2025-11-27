@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useEffect, useState } from "react";
 import axios from "axios";
 import type { GridColDef } from '@mui/x-data-grid';
 import { Box, Button } from "@mui/material";
@@ -6,10 +6,14 @@ import CustomDataGrid from "../../components/common/CustomerDataGrid";
 import { baseUrl } from "../../const/BaseUrl";
 import { exporttoexcel } from "../../components/utils/exporttoexcel";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+
 
 export default function ViewPOEnqData() {
     const [rows, setRows] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
+    const navigate = useNavigate();
+    const loginId = sessionStorage.getItem("SessionUserID") || "guest";
 
     const columns: GridColDef[] = [
         { field: "penquiryno", headerName: "Enquiryno"},
@@ -49,6 +53,26 @@ export default function ViewPOEnqData() {
         { field: "pupdatedon", headerName: "updatedon" },
  
     ];
+const checkAccess = async () => {
+      try {
+        // Step 1: Get user role
+        const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
+        const userRole = userRoleRes.data;
+
+        // Step 2: Verify internal rights
+        const roleCheck = await axios.get<boolean>(
+          `${baseUrl}/UserRoleInternalRights/${userRole}/salesmgmtdashboard`
+        );
+
+        // Step 3: If not authorized, redirect
+        if (!roleCheck.data) {
+          navigate("/blank");
+        }
+      } catch (error) {
+        console.error("Error checking role:", error);
+        navigate("/blank");
+      }
+    };
 
     const fetchData = async () => {
         setLoading(true);
@@ -79,9 +103,10 @@ export default function ViewPOEnqData() {
         toast.success("✅ View PO Enquiry Data exported!", { position: "bottom-right" });
     };
 
-    // useEffect(() => {
-    //     fetchData();
-    // }, []);
+    useEffect(() => {
+        checkAccess();
+       // fetchData();
+    }, [navigate, baseUrl, loginId]);
 
     return (
         <Box sx={{ padding: "100px", mt: "30px", ml: "20px" }}>

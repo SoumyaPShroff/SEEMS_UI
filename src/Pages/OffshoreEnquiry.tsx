@@ -10,6 +10,7 @@ import { RiTextSpacing } from "react-icons/ri";
 import { ContactEmergency, Email } from "@mui/icons-material";
 import { ToastContainer, toast } from "react-toastify";
 import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 interface Customer { itemno: string; customer: string; }
 
@@ -74,6 +75,7 @@ interface EnquiryForm {
 
 const OffshoreEnquiry: React.FC = () => {
    const loginUser = sessionStorage.getItem("SessionUserName") || "guest";
+   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
    const navigate = useNavigate();
    const { enquiryNo } = useParams();
    const isEditMode = Boolean(enquiryNo);
@@ -609,6 +611,45 @@ const OffshoreEnquiry: React.FC = () => {
 
    const isResponsibilitySelected = !!(form.layoutbyid || form.analysisbyid || form.npibyid || form.NPINewbyid);
 
+   const buildEmailRecipientList = () => {
+   const respIds = [
+      form.layoutbyid,
+      form.analysisbyid,
+      form.npibyid,
+      form.NPINewbyid,
+   ].filter(Boolean);
+
+   const allUsers = [
+      ...lookups.designMngrs,
+      ...lookups.AnalysisManagers,
+      ...lookups.salesnpiusers,
+      ...lookups.AllActiveEmployees,
+      ...lookups.SalesManagers,
+   ];
+
+   const emails = respIds.map(id => {
+      const user = allUsers.find(u => {
+         const userId =
+            u.hopC1ID ?? u.HOPC1ID ??
+            u.iDno ?? u.IDno ??
+            u.id ?? u.Id ?? u.ID;
+
+         return String(userId) === String(id);
+      });
+
+      if (!user) return null;
+
+      const email =
+         user.emailID ?? user.EmailID ??
+         user.emailId ?? user.EmailId ??
+         user.email ?? user.Email;
+
+      return email || null;
+   }).filter(e => e);
+
+   return [...new Set(emails)];
+};
+
    const handleSubmit = async () => {
       try {
          setLoading(true);
@@ -786,7 +827,34 @@ const OffshoreEnquiry: React.FC = () => {
             }
          });
 
-         // 8️⃣ Append file if selected
+        // email trigger lists
+         const toList = buildEmailRecipientList();
+         formData.append("ToMailList", JSON.stringify(toList));  // send array as JSON
+       
+         // Optional CC list e.g. referenceBy or createdBy
+       // 1️⃣ Collect Login IDs (not emails)
+         const otherResp: string[] = [];
+
+         if (form.completeResp) {
+            otherResp.push(...form.completeResp.split(","));  // split multiple IDs
+         }
+
+         if (loginId) {
+            otherResp.push(loginId);
+         }
+
+         // 2️⃣ Remove empty, whitespace and duplicates
+         const uniqueOtherResp = [...new Set(otherResp.map(id => id.trim()).filter(Boolean))];
+
+         // 3️⃣ Call API with comma-separated LoginIDs
+         const { data: emailList } = await axios.get(`${baseUrl}/EmailId/${uniqueOtherResp.join(",")}`);
+
+         // 4️⃣ Normalize result (API may return single string or array)
+         const ccList = Array.isArray(emailList) ? emailList : [emailList];
+
+         // 5️⃣ Append to formData
+         formData.append("CCMailList", JSON.stringify(ccList));
+
          // FILE UPLOAD
          if (file) {
             formData.append("file", file);
@@ -830,11 +898,12 @@ const OffshoreEnquiry: React.FC = () => {
             margin: "0 auto",     // centers the card
             padding: "40px",
             mt: 4,
+            ml: -6,
          }}
       >
          <Card
             sx={{
-               width: "110%",
+               width: "115%",
                m: "auto",
                mt: 3,
                p: 4,
