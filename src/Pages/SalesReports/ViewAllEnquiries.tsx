@@ -183,19 +183,21 @@ const ViewAllEnquiries = () => {
       const roleFlag = roleCheck.data === true;
       sethasSpecialRole(roleFlag); // ✅ store in state
 
-      // Step 3: Set salesResponsibilityId (from loginId)
-      // setSalesResponsibilityId(loginId);
-
       // Step 4: Build URL after setting the value
       let url = `${baseUrl}/api/sales/AllEnquiries`;
 
+      let finalStatus = status;
+
+      if (status === "All") {
+        finalStatus = "Open,Tentative,Confirmed"; //  multiple statuses
+      }
+
       // If user does NOT have complete rights → include their ID
-      // if (!hasSpecialRole) {
       if (!roleFlag) {
-        url += `?salesResponsibilityId=${loginId}&status=${status}`;
+        url += `?salesResponsibilityId=${loginId}&status=${finalStatus}`;
       } else {
         // User has complete rights → only pass default status
-        url += `?status=${status}`;
+        url += `?status=${finalStatus}`;
       }
 
       // Step 5: Call API
@@ -258,6 +260,7 @@ const ViewAllEnquiries = () => {
           <MenuItem value="Cancelled">Cancelled</MenuItem>
           <MenuItem value="Rejected By Customer">Rejected By Customer</MenuItem>
           <MenuItem value="Rejected By Sienna">Rejected By Sienna</MenuItem>
+          <MenuItem value="All">All</MenuItem>
         </Select>
       </FormControl>
       <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "left", gap: 2, mb: 2, }}>
