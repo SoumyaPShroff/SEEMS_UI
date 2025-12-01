@@ -4,7 +4,8 @@ import styled from "styled-components";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import * as FaIcons from "react-icons/fa";
 import * as AiIcons from "react-icons/ai";
-import { SidebarData } from "./SidebarData";
+ //import { SidebarData } from "./SidebarData";
+  import { useSideBarData } from "./SidebarData";
 import SubMenu from "./SubMenu";
 import { IconContext } from "react-icons/lib";
 import axios from "axios";
@@ -65,6 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const showSidebar = () => setSidebar(!sidebar);
+    const menu = useSideBarData(); 
 
     const handleLogout = (e: React.MouseEvent<HTMLElement>) => {
         e.preventDefault();
@@ -75,7 +77,6 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID }) => {
     useEffect(() => {
         const fetchUserName = async () => {
             try {
-                // const response = await axios.get<string>(`${baseUrl}/UserName?pLoginId=${sessionUserID}`);
                 const response = await axios.get<string>(`${baseUrl}/UserName/${sessionUserID}`);
                 setUserName(response.data || "");
             } catch (error) {
@@ -148,7 +149,8 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID }) => {
                                     <AiIcons.AiOutlineClose onClick={showSidebar} />
                                 </NavIcon>
 
-                                {SidebarData.map((item, index) => (
+                              {/* {SideBarData.map((item, index) => (   */}
+                                    {menu.map((item, index) => (
                                     <SubMenu
                                         key={index}
                                         item={item}

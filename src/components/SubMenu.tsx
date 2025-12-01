@@ -1,4 +1,3 @@
-// SubMenu.tsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
@@ -17,7 +16,7 @@ interface SubMenuProps {
   item: SubMenuItem;
   activeMenu?: string | null;
   setActiveMenu?: React.Dispatch<React.SetStateAction<string | null>>;
-  closeSidebar?: () => void; // ✅ optional callback
+  closeSidebar?: () => void;
 }
 
 interface SidebarLinkProps {
@@ -30,7 +29,6 @@ const SidebarLink = styled(Link) <SidebarLinkProps>`
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
-  list-style: none;
   height: 50px;
   text-decoration: none;
   font-size: 15px;
@@ -71,36 +69,44 @@ const DropdownLink = styled(Link)`
   }
 `;
 
-const SubMenu: React.FC<SubMenuProps> = ({
-  item,
-  activeMenu,
-  setActiveMenu,
-  closeSidebar,
-}) => {
+const SubMenu: React.FC<SubMenuProps> = ({ item, closeSidebar }) => {
   const [subnav, setSubnav] = useState(false);
 
   const toggleSubnav = () => setSubnav((prev) => !prev);
+  // FIX: If submenu contains only 1 item and title matches parent, flatten it
+  //ex: Reports is part of mainmenu and submenu , hence treat it as mainmenu or submenu and display once
+  const effectiveSubNav =
+    item.subNav &&
+      item.subNav.length === 1 &&
+      item.subNav[0].title === item.title &&
+      item.subNav[0].subNav
+      ? item.subNav[0].subNav   // use inner pages directly
+      : item.subNav;
 
   return (
     <>
       <SidebarLink
         to={item.path || "#"}
-        onClick={() => {
-          if (item.subNav) toggleSubnav();
-          else closeSidebar?.(); // ✅ call only if provided
+        onClick={(e) => {
+          if (effectiveSubNav) {
+            e.preventDefault(); // prevent navigation for parent categories
+            toggleSubnav();
+          } else if (!item.path) {
+            e.preventDefault(); // do nothing if route is null
+          } else {
+            closeSidebar?.(); // navigate & close
+          }
         }}
       >
         <div>
           {item.icon}
           <SidebarLabel>{item.title}</SidebarLabel>
         </div>
-        <div>
-          {item.subNav && (subnav ? item.iconOpened : item.iconClosed)}
-        </div>
+        <div>{item.subNav && (subnav ? item.iconOpened : item.iconClosed)}</div>
       </SidebarLink>
 
       <AnimatePresence initial={false}>
-        {subnav && item.subNav && (
+        {subnav && effectiveSubNav && (
           <DropdownContainer
             key="submenu"
             initial={{ height: 0, opacity: 0 }}
@@ -108,18 +114,22 @@ const SubMenu: React.FC<SubMenuProps> = ({
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
-            {item.subNav.map((subItem: SubMenuItem, index: number) =>
+            {effectiveSubNav.map((subItem: SubMenuItem, index: number) =>
               subItem.subNav ? (
-                // ✅ Recursive rendering
                 <SubMenu
                   key={index}
                   item={subItem}
-                  activeMenu={activeMenu}
-                  setActiveMenu={setActiveMenu}
                   closeSidebar={closeSidebar}
                 />
               ) : (
-                <DropdownLink to={subItem.path ?? "#"} key={index}>
+                <DropdownLink
+                  key={index}
+                  to={subItem.path ?? "#"}
+                  onClick={(e) => {
+                    if (!subItem.path) e.preventDefault(); // prevent closing if no route
+                    else closeSidebar?.();
+                  }}
+                >
                   {subItem.icon}
                   <SidebarLabel>{subItem.title}</SidebarLabel>
                 </DropdownLink>
