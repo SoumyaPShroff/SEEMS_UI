@@ -4,13 +4,12 @@ import styled from "styled-components";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import * as FaIcons from "react-icons/fa";
 import * as AiIcons from "react-icons/ai";
- //import { SidebarData } from "./SidebarData";
-  import { useSideBarData } from "./SidebarData";
+import { useSideBarData } from "./SideBarData";
 import SubMenu from "./SubMenu";
 import { IconContext } from "react-icons/lib";
 import axios from "axios";
 import { baseUrl } from "../const/BaseUrl";
-import { motion, AnimatePresence } from "framer-motion"; // ✅ Added
+import { motion, AnimatePresence } from "framer-motion";
 
 interface SidebarProps {
     sessionUserID: string;

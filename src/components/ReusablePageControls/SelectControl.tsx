@@ -24,6 +24,7 @@ interface SelectControlProps {
   error?: boolean;
   helperText?: string;
   sx?: object;
+  disabled?: boolean; // maybe present or missing
 }
 
 const SelectControl: React.FC<SelectControlProps> = ({

@@ -24,11 +24,12 @@ interface SidebarItem {
         if (!designationId) return;
 
         const res = await axios.get(`${baseUrl}/SideBarAccessMenus/${designationId}`);
-        const raw = res.data; // adjust if API wraps data differently
-
+       // const raw = res.data; // adjust if API wraps data differently
+        const raw = res.data as any[];
         const structured: SidebarItem[] = [];
 
-        raw.forEach((item: any) => {
+       // raw.forEach((item: any) => {
+        raw.forEach((item) => {
           // Main menu
           let main = structured.find((m) => m.title === item.mainmenu);
           if (!main) {

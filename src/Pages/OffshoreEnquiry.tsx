@@ -1,22 +1,19 @@
-import React, { useEffect, useState, useRef, ChangeEvent } from "react";
-import {
-   Grid, FormGroup, TextField, Button, Card, CardContent, Typography, Box, ToggleButtonGroup,
-   FormControlLabel, Checkbox, RadioGroup, Radio,
+import React, { useEffect, useState, useRef } from "react";
+import type { ChangeEvent } from "react";
+import { FormGroup, TextField, Button, Card, CardContent, Typography, Box, FormControlLabel, Checkbox, RadioGroup, Radio,
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { baseUrl } from "../const/BaseUrl";
 import SelectControl from "../components/ReusablePageControls/SelectControl";
-import { RiTextSpacing } from "react-icons/ri";
-import { ContactEmergency, Email } from "@mui/icons-material";
 import { ToastContainer, toast } from "react-toastify";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 interface Customer { itemno: string; customer: string; }
 
-interface Employee { iDno: string; name: string; }
+interface Employee { iDno: string; name: string; emailId?: string; }
 
-interface Manager { HOPC1ID: string; HOPC1NAME: string; }
+interface Manager { HOPC1ID: string; HOPC1NAME: string; emailID?: string; }
 
 interface Location { location_id: string; location: string; address?: string; }
 
@@ -24,11 +21,14 @@ interface Contact { contact_id: string; contactName: string; email11?: string; l
 
 interface State { state: string; }
 
+interface SalesManager { id: string; name: string; emailID?: string; }
+
 interface LookupData {
    customers: Customer[];
    AllActiveEmployees: Employee[];
    AnalysisManagers: Manager[];
-   SalesManagers: Manager[];
+   // SalesManagers: Manager[];
+   SalesManagers: SalesManager[];
    designMngrs: Manager[];
    salesnpiusers: Employee[];
    tool: string[];
@@ -71,6 +71,19 @@ interface EnquiryForm {
    address?: string;
    completeResp?: string; //edit
    uploadedfilename?: string; //edit
+   [index: string]: any;
+}
+type Option = {
+   value: string;
+   label: string;
+};
+
+function isManager(obj: any): obj is Manager {
+   return obj && "HOPC1ID" in obj;
+}
+
+function isEmployee(obj: any): obj is Employee {
+   return obj && "iDno" in obj;
 }
 
 const OffshoreEnquiry: React.FC = () => {
@@ -79,8 +92,6 @@ const OffshoreEnquiry: React.FC = () => {
    const navigate = useNavigate();
    const { enquiryNo } = useParams();
    const isEditMode = Boolean(enquiryNo);
-   const [address, setAddress] = useState<string>("");
-   const [email11, setEmail11] = useState<string>("");
 
    const [form, setForm] = useState<EnquiryForm>({
       enquirytype: "OFFSHORE",
@@ -126,6 +137,7 @@ const OffshoreEnquiry: React.FC = () => {
       designMngrs: [],
       salesnpiusers: [],
       PCBTools: [],
+      tool: [],
       Locations: [],
       Contacts: [],
       States: [],
@@ -188,6 +200,7 @@ const OffshoreEnquiry: React.FC = () => {
                Locations,
                Contacts,
                States,
+               tool: [],
             });
          } catch (err) {
             console.error("Error fetching lookups:", err);
@@ -364,8 +377,11 @@ const OffshoreEnquiry: React.FC = () => {
 
       const options = selectedIds
          .map((id) => {
-            const emp =
-               allEmployees.find((e) => e.hopC1ID === id || e.iDno === id) || null;
+            // const emp = allEmployees.find((e) => e.hopC1ID === id || e.iDno === id) || null;
+            const emp = allEmployees.find((e) => {
+               if (isManager(e)) return e.HOPC1ID === id;
+               return e.iDno === id;
+            });
 
             if (!emp) {
                console.warn("No matching employee found for ID:", id);
@@ -380,11 +396,14 @@ const OffshoreEnquiry: React.FC = () => {
          .filter((opt) => opt && opt.label && opt.value);
 
       // Remove duplicates
+      const filtered = options.filter((o): o is Option => o !== null);
+
       const unique = Array.from(
-         new Map(options.map((opt) => [opt.value, opt])).values()
+         new Map(filtered.map(opt => [opt.value, opt])).values()
       );
 
-      return unique;
+      //  return unique;
+      return unique as Option[]; //returns (Option|null)[] filter nulls
    };
 
    const getCheckedArrayFromAPI = (data: any, section: string): string[] => {
@@ -437,9 +456,7 @@ const OffshoreEnquiry: React.FC = () => {
       return arr;
    };
 
-   const handleChange = async (
-      e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>
-   ) => {
+   const handleChange = async (e: any) => {
       const { name, value } = e.target as HTMLInputElement;
       // Prepare an updated form object (no state reset yet)
       let updatedForm = { ...form, [name]: value };
@@ -471,7 +488,6 @@ const OffshoreEnquiry: React.FC = () => {
             address: "",
          }));
          await fetchCustomerLocations(value);
-         // toast.info("Customer changed — dependent fields cleared");
          return;
       }
 
@@ -521,9 +537,20 @@ const OffshoreEnquiry: React.FC = () => {
                   ...lookups.salesnpiusers,
                ];
                const emp = allEmps.find(
-                  (e: any) => e.hopC1ID === id || e.iDno === id
+                  //(e: any) => e.hopC1ID === id || e.iDno === id
+                  (e: any) => {
+                     if (isManager(e)) return e.HOPC1ID === id;
+                     if (isEmployee(e)) return e.iDno === id;
+                     return false;
+                  }
                );
-               return emp ? emp.hopC1NAME || emp.name : null;
+               //  return emp ? emp.hopC1NAME || emp.name : null;
+               return {
+                  // value: isManager(emp) ? emp.HOPC1ID : emp.iDno,
+                  // label: isManager(emp) ? emp.HOPC1NAME : emp.name,
+                  value: isManager(emp) ? emp.HOPC1ID : isEmployee(emp) ? emp.iDno : "",
+                  label: isManager(emp) ? emp.HOPC1NAME : isEmployee(emp) ? emp.name : "Unknown"
+               };
             })
             .filter(Boolean);
 
@@ -540,17 +567,16 @@ const OffshoreEnquiry: React.FC = () => {
       if (e.target.files?.length) setFile(e.target.files[0]);
    };
 
-   const handleCheckboxChange = (section: string, item: string, checked: boolean) => {
+   const handleCheckboxChange = (section: string, value: string, checked: boolean) => {
       setForm((prev) => {
-         // Create a new Set to manage selected items
          const items = new Set(prev[section] || []);
-         if (checked) items.add(item);
-         else items.delete(item);
 
-         // Build updated form
+         if (checked) items.add(value);
+         else items.delete(value);
+
          const updated = { ...prev, [section]: Array.from(items) };
 
-         // 🔹 If no checkboxes remain in this section, clear the corresponding responsibility
+         // Clear responsibility if all items are removed
          if (items.size === 0) {
             switch (section) {
                case "layout":
@@ -560,15 +586,14 @@ const OffshoreEnquiry: React.FC = () => {
                   updated.analysisbyid = "";
                   break;
                case "va":
-                  updated.npibyid = "";          // in table we refer npibyid as va by id
+                  updated.npibyid = "";
                   break;
                case "npi":
                   updated.NPINewbyid = "";
                   break;
-               default:
-                  break;
             }
          }
+
          return updated;
       });
    };
@@ -610,45 +635,56 @@ const OffshoreEnquiry: React.FC = () => {
    ];
 
    const isResponsibilitySelected = !!(form.layoutbyid || form.analysisbyid || form.npibyid || form.NPINewbyid);
+   // Utility: normalize email safely without modifying interfaces
+   const getUserEmail = (
+      u: Employee | Manager | SalesManager
+   ): string | null => {
+      const e = u as any;
+      return (
+         e.emailID ??
+         e.EmailID ??
+         e.emailId ??
+         e.EmailId ??
+         e.email ??
+         e.Email ??
+         null
+      );
+   };
 
+   // Main function
    const buildEmailRecipientList = () => {
-   const respIds = [
-      form.layoutbyid,
-      form.analysisbyid,
-      form.npibyid,
-      form.NPINewbyid,
-   ].filter(Boolean);
+      const respIds = [
+         form.layoutbyid,
+         form.analysisbyid,
+         form.npibyid,
+         form.NPINewbyid,
+      ].filter(Boolean);
 
-   const allUsers = [
-      ...lookups.designMngrs,
-      ...lookups.AnalysisManagers,
-      ...lookups.salesnpiusers,
-      ...lookups.AllActiveEmployees,
-      ...lookups.SalesManagers,
-   ];
+      const allUsers: (Employee | Manager | SalesManager)[] = [
+         ...lookups.designMngrs,
+         ...lookups.AnalysisManagers,
+         ...lookups.salesnpiusers,
+         ...lookups.AllActiveEmployees,
+         ...lookups.SalesManagers,
+      ];
 
-   const emails = respIds.map(id => {
-      const user = allUsers.find(u => {
-         const userId =
-            u.hopC1ID ?? u.HOPC1ID ??
-            u.iDno ?? u.IDno ??
-            u.id ?? u.Id ?? u.ID;
+      const emails = respIds
+         .map((id) => {
+            // Identify correct user based on ID field
+            const user = allUsers.find((u) => {
+               if (isManager(u)) return String(u.HOPC1ID) === String(id);
+               if (isEmployee(u)) return String(u.iDno) === String(id);
+               return String((u as any).id) === String(id); // SalesManager
+            });
 
-         return String(userId) === String(id);
-      });
+            if (!user) return null;
 
-      if (!user) return null;
+            return getUserEmail(user);
+         })
+         .filter((e): e is string => Boolean(e));
 
-      const email =
-         user.emailID ?? user.EmailID ??
-         user.emailId ?? user.EmailId ??
-         user.email ?? user.Email;
-
-      return email || null;
-   }).filter(e => e);
-
-   return [...new Set(emails)];
-};
+      return [...new Set(emails)];
+   };
 
    const handleSubmit = async () => {
       try {
@@ -708,7 +744,7 @@ const OffshoreEnquiry: React.FC = () => {
 
          // 4️⃣ Map scope arrays to individual YES/NO fields
          // Layout
-         const layoutMap: any = {
+         const layoutMap: Record<string, string> = {
             Design: "design",
             Library: "library",
             "QA/CAM": "qacam",
@@ -723,7 +759,7 @@ const OffshoreEnquiry: React.FC = () => {
          });
 
          // Analysis
-         const analysisMap: any = {
+         const analysisMap: Record<string, string> = {
             SI: "si",
             PI: "pi",
             "EMI Net Level": "emi_net_level",
@@ -737,7 +773,7 @@ const OffshoreEnquiry: React.FC = () => {
          });
 
          // VA
-         const vaMap: any = {
+         const vaMap: Record<string, string> = {
             Fabrication: "npi_fab",
             Assembly: "asmb",
             "Design Outsourced": "DesignOutSource",
@@ -752,7 +788,7 @@ const OffshoreEnquiry: React.FC = () => {
          });
 
          // NPI
-         const npiMap: any = {
+         const npiMap: Record<string, string> = {
             "BOM Procurement": "NPINew_BOMProc",
             "NPI-Fabrication": "NPINew_Fab",
             "NPI-Assembly": "NPINew_Assbly",
@@ -802,7 +838,8 @@ const OffshoreEnquiry: React.FC = () => {
          formData.append("statename", postPayload.state || "");
          formData.append("tm", postPayload.tm || "");
 
-         if (isEditMode) formData.append("enquiryno", enquiryNo);
+         // if (isEditMode) formData.append("enquiryno", enquiryNo);
+         if (isEditMode) formData.append("enquiryno", enquiryNo ?? "");
 
          // 7️⃣ Append the rest
          Object.entries(postPayload).forEach(([key, value]) => {
@@ -822,17 +859,18 @@ const OffshoreEnquiry: React.FC = () => {
                if (Array.isArray(value)) {
                   value.forEach((v) => formData.append(key, v));
                } else {
-                  formData.append(key, value ?? "");
+                  // formData.append(key, value ?? "");
+                  formData.append(key, value == null ? "" : String(value));
                }
             }
          });
 
-        // email trigger lists
+         // email trigger lists
          const toList = buildEmailRecipientList();
          formData.append("ToMailList", JSON.stringify(toList));  // send array as JSON
-       
+
          // Optional CC list e.g. referenceBy or createdBy
-       // 1️⃣ Collect Login IDs (not emails)
+         // 1️⃣ Collect Login IDs (not emails)
          const otherResp: string[] = [];
 
          if (form.completeResp) {
@@ -897,19 +935,17 @@ const OffshoreEnquiry: React.FC = () => {
             maxWidth: "1100px",   // prevents horizontal stretching
             margin: "0 auto",     // centers the card
             padding: "40px",
-            mt: 4,
-            ml: -6,
+            mt:  5,
          }}
       >
          <Card
             sx={{
-               width: "115%",
+               width: "100%",
                m: "auto",
                mt: 3,
                p: 4,
                boxShadow: 6,
                borderRadius: 3,
-               maxHeight: "200vh",
             }}
          >
             <CardContent>
@@ -926,13 +962,9 @@ const OffshoreEnquiry: React.FC = () => {
                </Typography>
 
                {/* --- Main Form Grid --- */}
-               <Grid
-                  container
-                  spacing={2}
-                  alignItems="center"
-               >
+               <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", md: "repeat(12, 1fr)", }, gap: 2, alignItems: "center", }} >
                   {/* Row 1 */}
-                  <Grid xs={6} md={3}>
+                  <Box sx={{ gridColumn: { xs: "span 2", md: "span 3" } }}>
                      <SelectControl
                         name="customerId"
                         label="Customer"
@@ -943,11 +975,10 @@ const OffshoreEnquiry: React.FC = () => {
                         }))}
                         onChange={handleChange}
                         required
-                        width="200px"
                      />
-                  </Grid>
+                  </Box>
 
-                  <Grid xs={6} md={3}>
+                  <Box sx={{ gridColumn: { xs: "span 2", md: "span 3" } }}>
                      <SelectControl
                         name="locationId"
                         label="Location"
@@ -956,22 +987,21 @@ const OffshoreEnquiry: React.FC = () => {
                         onChange={handleChange}
                         required
                         disabled={!form.customerId}
-                        width="200px"
                      />
-                  </Grid>
-                  <Grid xs={6}>
+                  </Box>
+
+               <Box sx={{ gridColumn: { xs: "span 2", md: "span 3" } }}>
                      <SelectControl
                         name="state"
                         label="State"
                         value={form.state}
-                        //options={lookups.States.map((s) => ({ value: String(s.state).trim(), label: s.state, }))}
                         options={lookups.States.map(s => ({ value: s.state, label: s.state }))}
                         onChange={handleChange}
                         required
-                        width="200px"
                      />
-                  </Grid>
-                  <Grid xs={6}>
+                  </Box>
+
+                  <Box sx={{ gridColumn: { xs: "span 2", md: "span 3" } }}>
                      <SelectControl
                         name="contactName"
                         label="Contact Name"
@@ -983,23 +1013,21 @@ const OffshoreEnquiry: React.FC = () => {
                         }))}
                         onChange={handleChange}
                         required
-                        width="200px"
                         disabled={!form.locationId}
                      />
-                  </Grid>
+                  </Box>
 
-                  <Grid xs={6}>
+                 <Box sx={{ gridColumn: { xs: "span 2", md: "span 3" } }}>
                      <TextField
                         name="emailAddress"
                         label="Email Address"
                         value={form.email11}
-                        fullWidth
                         disabled={true}
                         InputLabelProps={{ shrink: true }} // To keep label above even if empty and avoid overlapping pf placeholder or label with value
                      />
-                  </Grid>
+                  </Box>
 
-                  <Grid xs={6}>
+                <Box sx={{ gridColumn: { xs: "span 2", md: "span 3" } }}>
                      <TextField
                         label="Address"
                         name="address"
@@ -1010,20 +1038,20 @@ const OffshoreEnquiry: React.FC = () => {
                         disabled={true}
                         InputLabelProps={{ shrink: true }}
                      />
-                  </Grid>
+                  </Box>
 
                   {/* Row 2 */}
-                  <Grid xs={12} md={2}>
+                  <Box sx={{ gridColumn: { xs: "span 2", md: "span 3" } }}>
                      <TextField
                         label="Board Ref"
                         name="jobnames"
                         value={form.jobnames}
                         onChange={handleChange}
                         size="small"
-                        fullWidth
                      />
-                  </Grid>
-                  <Grid xs={12} md={3}>
+                  </Box>
+
+                 <Box sx={{ gridColumn: { xs: "span 2", md: "span 3" } }}>
                      <SelectControl
                         name="inputreceivedthru"
                         label="Input Received Thru"
@@ -1034,77 +1062,12 @@ const OffshoreEnquiry: React.FC = () => {
                            { value: "FTP", label: "FTP" },
                            { value: "Other", label: "Other" },
                         ]}
-                        height={40}
                         required
-                        width="200px"
+                        fullWidth
                      />
-                  </Grid>
+                  </Box>
 
-                  <Grid xs={12} md={3}>
-                     <Box
-                        sx={{
-                           display: "flex",
-                           flexDirection: "column",
-                           px: 1,
-                           py: 0.5,
-                        }}
-                     >
-                        <RadioGroup
-                           row
-                           name="currency"
-                           value={form.currency}
-                           onChange={handleChange}
-                           sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              height: 50,
-                              border: "1px solid #ccc",
-                              borderRadius: "8px",
-                              padding: "4px",
-                           }}
-                        >
-                           <FormControlLabel value="1" control={<Radio />} label="INR" />
-                           <FormControlLabel value="2" control={<Radio />} label="USD" />
-                           <FormControlLabel value="3" control={<Radio />} label="EURO" />
-                        </RadioGroup>
-                     </Box>
-                  </Grid>
-
-                  {/* Row 3 */}
-                  <Grid xs={12} md={3}>
-                     <Box
-                        sx={{
-                           display: "flex",
-                           flexDirection: "column",
-                           px: 1,
-                           py: 0.5,
-                        }}
-                     >
-                        <RadioGroup
-                           row
-                           name="type"
-                           value={form.type}
-                           onChange={handleChange}
-                           sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              height: 50,
-                              border: "1px solid #ccc",
-                              borderRadius: "8px",
-                              padding: "4px",
-                           }}
-                        >
-                           <FormControlLabel value="Export" control={<Radio />} label="Export" />
-                           <FormControlLabel
-                              value="Domestic"
-                              control={<Radio />}
-                              label="Domestic"
-                           />
-                        </RadioGroup>
-                     </Box>
-                  </Grid>
-
-                  <Grid xs={12} md={3}>
+                 <Box sx={{ gridColumn: { xs: "span 2", md: "span 3" } }}>
                      <SelectControl
                         name="tm"
                         label="Billing Type"
@@ -1114,122 +1077,143 @@ const OffshoreEnquiry: React.FC = () => {
                            { value: "Fixed-Cost", label: "Fixed-Cost" },
                            { value: "Time and Material", label: "Time and Material" },
                         ]}
-                        height={40}
                         required
-                        width="200px"
+                        fullWidth
                      />
-                  </Grid>
+                  </Box>
 
-                  <Grid xs={12} md={3}>
+                  <Box sx={{ gridColumn: { xs: "span 2", md: "span 2" } }}>
                      <SelectControl
                         name="tool"
                         label="PCB Tool"
                         value={form.tool || ""}
                         onChange={handleChange}
-                        options={lookups.PCBTools.map((tool: string, index: number) => ({
+                        options={lookups.PCBTools.map((tool: string) => ({
                            value: tool,
                            label: tool,
                         }))}
                         height={40}
                         required
-                        width="200px"
                      />
-                  </Grid>
-                  <Grid xs={12}>
-                     <Box
+                  </Box>
+                  <Box sx={{ gridColumn: { xs: "span 2", md: "span 4" } }}>
+                     <RadioGroup
+                        row
                         sx={{
-                           display: "flex",
-                           alignItems: "center",
-                           mt: 3,
-                           mb: 1,
+                           justifyContent: "space-evenly",
+                           border: "1px solid #ccc",
+                           borderRadius: "8px",
+                           padding: "6px",
                         }}
+                        value={form.currency}
                      >
+                        <FormControlLabel value="1"  control={<Radio />} label="INR" />
+                        <FormControlLabel value="2" control={<Radio />} label="USD" />
+                        <FormControlLabel value="3" control={<Radio />} label="EURO" />
+                     </RadioGroup>
+                  </Box>
+
+                  <Box sx={{ gridColumn: { xs: "span 2", md: "span 3" } }}>
+                     <RadioGroup
+                        row
+                        sx={{
+                           justifyContent: "space-evenly",
+                           border: "1px solid #ccc",
+                           borderRadius: "8px",
+                           padding: "6px",
+                        }}
+                        value={form.type}
+                     >
+                        <FormControlLabel value="Export" control={<Radio />} label="Export" />
+                        <FormControlLabel value="Domestic"  control={<Radio />} label="Domestic" />
+                     </RadioGroup>
+                  </Box>
+
+                  {/* ✅ Scope Title */}
+                  <Box sx={{ gridColumn: "1 / -1" }}>
+                     <Box sx={{ display: "flex", alignItems: "center", mt: 3, mb: 1 }}>
                         <Box sx={{ flex: 1, borderTop: "1px solid #ccc" }} />
-                        <Typography
-                           variant="subtitle2"
-                           sx={{
-                              mx: 55,
-                              color: "#666",
-                              fontSize: 20,
-                              fontWeight: 600,
-                           }}
-                        >
+                        <Typography sx={{ mx: 4, fontSize: 20, fontWeight: 600 }}>
                            SCOPE DETAILS
                         </Typography>
                         <Box sx={{ flex: 1, borderTop: "1px solid #ccc" }} />
                      </Box>
-                  </Grid>
+                  </Box>
                   {scopeConfig.map((cfg) => {
                      const lowerField = cfg.field;
                      const respField = cfg.responsibilityField;
 
                      return (
-                        <Grid xs={12} key={cfg.section}>
-                           {/* alignItems="flex-start"  */}
-                           <Grid container alignItems="center" justifyContent="space-between" sx={{ borderBottom: "1px dashed #ddd", pb: 1, mb: 1 }}>
-                              {/* Checkbox section */}
-                              <Grid xs={10}>
-                                 <Typography sx={{ fontWeight: 600, mb: 0.5 }}>{cfg.section}</Typography>
-                                 <FormGroup row>
-                                    {cfg.checkboxes.map((item) => (
-                                       <FormControlLabel
-                                          key={item}
-                                          control={
-                                             <Checkbox
-                                                checked={form[lowerField]?.includes(item)}
-                                                onChange={(e) => handleCheckboxChange(lowerField, item, e.target.checked)}
-                                             />
-                                          }
-                                          label={item}
-                                       />
-                                    ))}
-                                 </FormGroup>
-                              </Grid>
+                        <Box
+                           key={cfg.section}
+                           sx={{
+                              gridColumn: "1 / -1",
+                              display: "grid",
+                              gridTemplateColumns: { xs: "1fr", md: "10fr 2fr" },
+                              alignItems: "center",
+                              borderBottom: "1px dashed #ddd",
+                              pb: 1,
+                              mb: 1,
+                              gap: 2,
+                           }}
+                        >
+                           {/* ✅ LEFT SIDE: SECTION + CHECKBOXES */}
+                           <Box>
+                              <Typography sx={{ fontWeight: 600, mb: 0.5 }}>
+                                 {cfg.section}
+                              </Typography>
 
-                              {/* Responsibility SelectControl: render only if at least one checkbox selected */}
-                              <Grid xs={2} sx={{ display: "flex", justifyContent: "flex-end" }}>
-                                 {form[lowerField]?.length > 0 && (
-                                    <SelectControl
-                                       name={respField}
-                                       label={`${cfg.section} Responsibility`}
-                                       value={form[respField] || ""}
-                                       onChange={handleChange}
-                                       options={cfg.responsibilityOptions.map((opt: any) =>
-                                          cfg.isManager
-                                             ? { value: opt.hopC1ID, label: opt.hopC1NAME }
-                                             : { value: opt.iDno, label: opt.name }
-                                       )}
-                                       fullWidth={false}
-                                       width="220px"
-                                       required
+                              <FormGroup row>
+                                 {cfg.checkboxes.map((item) => (
+                                    <FormControlLabel
+                                       key={item}
+                                       control={
+                                          <Checkbox
+                                             checked={form[lowerField]?.includes(item)}
+                                             onChange={(e) =>
+                                                handleCheckboxChange(
+                                                   lowerField,
+                                                   item,
+                                                   e.target.checked
+                                                )
+                                             }
+                                          />
+                                       }
+                                       label={item}
                                     />
-                                 )}
-                              </Grid>
-                           </Grid>
-                        </Grid>
+                                 ))}
+                              </FormGroup>
+                           </Box>
+
+                           {/* ✅ RIGHT SIDE: RESPONSIBILITY DROPDOWN */}
+                           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                              {form[lowerField]?.length > 0 && (
+                                 <SelectControl
+                                    name={respField}
+                                    label={`${cfg.section} Responsibility`}
+                                    value={form[respField] || ""}
+                                    onChange={handleChange}
+                                    options={cfg.responsibilityOptions.map((opt: any) =>
+                                       cfg.isManager
+                                          ? { value: opt.hopC1ID, label: opt.hopC1NAME }
+                                          : { value: opt.iDno, label: opt.name }
+                                    )}
+                                    width="220px"
+                                    required
+                                 />
+                              )}
+                           </Box>
+                        </Box>
                      );
                   })}
-
-                  <Grid xs={12}>
-                     <Box
-                        sx={{
-                           display: "flex",
-                           alignItems: "center",
-                           mt: 3,
-                           mb: 1,
-                        }}
-                     >
-                        <Box sx={{ flex: 1, borderTop: "1px solid #ccc" }} />
-                        <Typography
-                           variant="subtitle2"
-                        >
-                            -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-                        </Typography>
+                  {/* line divising the scope  */}
+                  <Box sx={{ gridColumn: "1 / -1" }}>
+                     <Box sx={{ display: "flex", alignItems: "center", mt: 2, mb: 1 }}>
                         <Box sx={{ flex: 1, borderTop: "1px solid #ccc" }} />
                      </Box>
-                  </Grid>
+                  </Box>
                   {/* --- Quotation & Tender --- */}
-                  <Grid xs={12} md={3}>
+                  <Box sx={{ gridColumn: { xs: "span 2", md: "span 2" } }}>
                      <TextField
                         type="date"
                         label="Quotation Request Last Date"
@@ -1243,13 +1227,12 @@ const OffshoreEnquiry: React.FC = () => {
                         fullWidth
                         required
                      />
-                  </Grid>
+                  </Box>
 
-                  <Grid xs={12} md={3}>
+                  <Box sx={{ gridColumn: { xs: "span 2", md: "span 2" } }}>
                      <FormControlLabel
                         control={
                            <Checkbox
-                              // checked={form.govtTender}
                               checked={form.govt_tender === "YES"}
                               onChange={(e) =>
                                  setForm((p) => ({ ...p, govt_tender: e.target.checked ? "YES" : "NO" }))
@@ -1258,10 +1241,11 @@ const OffshoreEnquiry: React.FC = () => {
                         }
                         label="Govt Tender?"
                      />
-                  </Grid>
+                  </Box>
 
                   {/* --- Responsibilities --- */}
-                  <Grid xs={12} md={3}>
+                  {/* <Grid item xs={12} md={3}> */}
+                  <Box sx={{ gridColumn: { xs: "span 2", md: "span 3" } }}>
                      <SelectControl
                         name="completeresponsibilityid"
                         label="Complete Responsibility"
@@ -1272,8 +1256,9 @@ const OffshoreEnquiry: React.FC = () => {
                         width="220px"
                         required
                      />
-                  </Grid>
-                  <Grid xs={12} md={3}>
+                  </Box>
+                  {/* <Grid item xs={12} md={3}> */}
+                  <Box sx={{ gridColumn: { xs: "span 2", md: "span 3" } }}>
                      <SelectControl
                         name="salesresponsibilityid"
                         label="Sales Responsibility"
@@ -1287,10 +1272,11 @@ const OffshoreEnquiry: React.FC = () => {
                         width="200px"
                         required
                      />
-                  </Grid>
+                  </Box>
 
                   {/* --- Reference   */}
-                  <Grid xs={12} md={3}>
+                  {/* <Grid item xs={12} md={3}> */}
+                  <Box sx={{ gridColumn: { xs: "span 2", md: "span 3" } }}>
                      <SelectControl
                         name="referenceBy"
                         label="Reference By"
@@ -1303,9 +1289,10 @@ const OffshoreEnquiry: React.FC = () => {
                         fullWidth
                         width="200px"
                      />
-                  </Grid>
+                  </Box>
 
-                  <Grid xs={12} md={9}>
+                  {/* <Grid item xs={12} md={9}> */}
+                  <Box sx={{ gridColumn: { xs: "span 2", md: "span 3" } }}>
                      <TextField
                         label="Remarks"
                         fullWidth
@@ -1317,10 +1304,11 @@ const OffshoreEnquiry: React.FC = () => {
                         size="small"
                         InputLabelProps={{ shrink: true }}
                      />
-                  </Grid>
+                  </Box>
 
                   {/* --- File Upload --- */}
-                  <Grid xs={12} md={9}>
+                  {/* <Grid item xs={12} md={9}> */}
+                  <Box sx={{ gridColumn: { xs: "span 2", md: "span 3" } }}>
                      <Box
                         sx={{
                            border: "2px dashed #90caf9",
@@ -1354,10 +1342,10 @@ const OffshoreEnquiry: React.FC = () => {
                      >
                         If you have multiple files, please zip and upload.
                      </Typography>
-                  </Grid>
+                  </Box>
 
                   {/* --- Submit Button --- */}
-                  <Grid xs={12} md={3} textAlign="center" sx={{ mt: 3 }}>
+                  <Box sx={{ gridColumn: { xs: "span 2", md: "span 2" }, textAlign: "center", mt: 3, }} >
                      <Button
                         variant="contained"
                         color="primary"
@@ -1365,16 +1353,14 @@ const OffshoreEnquiry: React.FC = () => {
                         disabled={!isResponsibilitySelected || loading} // if none of the responsibility fields are selected
                         sx={{ px: 6, height: 45 }}
                      >
-                        {/* {loading ? "Saving..." : "ADD"} */}
                         {isEditMode ? "EDIT" : "ADD"}
                      </Button>
-                  </Grid>
-               </Grid>
+                  </Box>
+               </Box>
             </CardContent>
             <ToastContainer position="top-right" autoClose={2500} theme="colored" />
          </Card>
       </Box>
    );
 };
-
 export default OffshoreEnquiry;
