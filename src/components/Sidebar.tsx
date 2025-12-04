@@ -26,6 +26,7 @@ const Nav = styled.div`
   top: 0;
   width: 100%;
   z-index: 1000;
+  left: 1px;
 `;
 
 const NavIcon = styled(Link)`

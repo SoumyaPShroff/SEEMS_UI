@@ -281,7 +281,7 @@ const ViewAllEnquiries = () => {
         </Typography>
       ) : (
         <CustomDataGrid
-          autoHeight
+         // autoHeight
           rows={rows}
           columns={columns}
           title="View All Enquiries"

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, CircularProgress, FormControl, InputLabel } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import { useBillingData } from "../../components/hooks/useBillingData";
 import { useManagers } from "../../components/hooks/useManagers";
 import { getCurrentMonthDates } from "../../components/utils/DateUtils";
@@ -16,6 +16,7 @@ import { baseUrl } from "../../const/BaseUrl";
 import { exporttoexcel } from "../../components/utils/exporttoexcel";
 import ExportButton from "../../components/ReusablePageControls/ExportButton";
 import CustomDataGrid from "../../components/common/CustomerDataGrid";
+import SelectControl from "../../components/ReusablePageControls/SelectControl";
 
 // ✅ Types
 interface BillingData {
@@ -503,34 +504,46 @@ const RptBillingPlanner: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: "120px", textAlign: "center" }}>
-      {/* Manager Selection */}
-      <InputLabel style={{ textAlign: "left" }}>Select Manager</InputLabel>
-      <FormControl fullWidth style={{ marginBottom: "20px" }}>
-        <select
-          style={{ width: "200px", padding: "10px", fontSize: "12px", textAlign: "left" }}
-          value={selectedManager?.costcenter ?? "All"}
-          onChange={(e) => {
-            const selectedValue = e.target.value;
-            const manager = managers.find((m: Manager) => m.costcenter === selectedValue);
-            setSelectedManager(
-              manager || { hopc1id: "All", hopc1name: "All", costcenter: "All" }
-            );
-          }}
-        >
-          {managers.map((manager: Manager) => (
-            <option
-              key={`${manager.hopc1id}-${manager.costcenter || "All"}`}
-              value={manager.costcenter || "All"}
-            >
-              {manager.hopc1name === "All"
-                ? "All"
-                : `${manager.hopc1name} (${manager.costcenter})`}
-            </option>
-          ))}
-        </select>
-      </FormControl>
+    <Box sx={{ width: "100%" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-start", // ✅ Left align
+          padding: "24px",
+          mt: 12,
+        }}
+      >
+        <Box sx={{ width: 300 }}>
+          <SelectControl
+            name="costcenter"
+            label="Select Manager"
+            value={selectedManager?.costcenter ?? "All"}
+            width="200px"
+            options={managers.map((manager: Manager) => ({
+              value: manager.costcenter || "All",
+              label:
+                manager.hopc1name === "All"
+                  ? "All"
+                  : `${manager.hopc1name} (${manager.costcenter})`,
+            }))}
+            onChange={(e: any) => {
+              const selectedValue = e.target.value;
 
+              const manager = managers.find(
+                (m: Manager) => m.costcenter === selectedValue
+              );
+
+              setSelectedManager(
+                manager || {
+                  hopc1id: "All",
+                  hopc1name: "All",
+                  costcenter: "All",
+                }
+              );
+            }}
+          />
+        </Box>
+      </Box>
       {/* Date Range + Generate Button */}
       <div
         style={{
@@ -634,7 +647,7 @@ const RptBillingPlanner: React.FC = () => {
         </div>
         {!loadingData && showResults && data?.length > 0 && (
           <div style={{ textAlign: "right", padding: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "20px" }}>
-            <ExportButton label="Export to Excel" onClick={handleBillExport}/>
+            <ExportButton label="Export to Excel" onClick={handleBillExport} />
 
             {/* 🟦🟥🟩 Legends */}
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -688,13 +701,14 @@ const RptBillingPlanner: React.FC = () => {
               title="Billing Planner Data"
               loading={loading}
               sx={dataGridSx}
+              gridheight={500}
             />
           </div>
         )}
 
         {Array.isArray(invoicePendingData) && invoicePendingData.length > 0 && (
           <div style={{ textAlign: "left", alignItems: "center", marginTop: "20px" }}>
-            <ExportButton label="Export to Excel" onClick={handleInvPenExport}/>
+            <ExportButton label="Export to Excel" onClick={handleInvPenExport} />
             <CustomDataGrid
               rows={invoicePendingData.map((r: any, i: number) => ({
                 id: r.id ?? i, // ✅ ensure every row has an ID
@@ -707,7 +721,7 @@ const RptBillingPlanner: React.FC = () => {
           </div>
         )}
       </>
-    </div>
+    </Box>
   );
 
 };

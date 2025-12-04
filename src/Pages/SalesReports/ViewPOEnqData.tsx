@@ -6,14 +6,14 @@ import CustomDataGrid from "../../components/common/CustomerDataGrid";
 import { baseUrl } from "../../const/BaseUrl";
 import { exporttoexcel } from "../../components/utils/exporttoexcel";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+//import { useNavigate } from "react-router-dom";
 
 
 export default function ViewPOEnqData() {
     const [rows, setRows] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
-    const navigate = useNavigate();
-    const loginId = sessionStorage.getItem("SessionUserID") || "guest";
+   // const navigate = useNavigate();
+   // const loginId = sessionStorage.getItem("SessionUserID") || "guest";
 
     const columns: GridColDef[] = [
         { field: "penquiryno", headerName: "Enquiryno"},
@@ -53,26 +53,26 @@ export default function ViewPOEnqData() {
         { field: "pupdatedon", headerName: "updatedon" },
  
     ];
-const checkAccess = async () => {
-      try {
-        // Step 1: Get user role
-        const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
-        const userRole = userRoleRes.data;
+// const checkAccess = async () => {
+//       try {
+//         // Step 1: Get user role
+//         const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
+//         const userRole = userRoleRes.data;
 
-        // Step 2: Verify internal rights
-        const roleCheck = await axios.get<boolean>(
-          `${baseUrl}/UserRoleInternalRights/${userRole}/salesmgmtdashboard`
-        );
+//         // Step 2: Verify internal rights
+//         const roleCheck = await axios.get<boolean>(
+//           `${baseUrl}/UserRoleInternalRights/${userRole}/salesmgmtdashboard`
+//         );
 
-        // Step 3: If not authorized, redirect
-        if (!roleCheck.data) {
-          navigate("/blank");
-        }
-      } catch (error) {
-        console.error("Error checking role:", error);
-        navigate("/blank");
-      }
-    };
+//         // Step 3: If not authorized, redirect
+//         if (!roleCheck.data) {
+//           navigate("/blank");
+//         }
+//       } catch (error) {
+//         console.error("Error checking role:", error);
+//         navigate("/blank");
+//       }
+//     };
 
     const fetchData = async () => {
         setLoading(true);
@@ -104,9 +104,10 @@ const checkAccess = async () => {
     };
 
     useEffect(() => {
-        checkAccess();
-       // fetchData();
-    }, [navigate, baseUrl, loginId]);
+       // checkAccess();
+       fetchData();
+   // }, [navigate, baseUrl, loginId]);
+     }, []);
 
     return (
         <Box sx={{ padding: "100px", mt: "30px", ml: "20px" }}>
@@ -115,7 +116,7 @@ const checkAccess = async () => {
                 <Button variant="contained"   onClick={handleViewEnqExport} style={{ height: 35 }}>Export to Excel</Button>
             </Box>
             <CustomDataGrid
-                autoHeight={true}
+              //  autoHeight={true}
                 rows={rows}
                 columns={columns}
                 title="View PO Enquiry Data"

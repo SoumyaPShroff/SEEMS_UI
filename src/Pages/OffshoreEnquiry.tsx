@@ -1009,7 +1009,6 @@ const OffshoreEnquiry: React.FC = () => {
                         options={lookups.Contacts.map((c) => ({
                            value: c.contact_id.toString(),
                            label: c.contactName,
-
                         }))}
                         onChange={handleChange}
                         required

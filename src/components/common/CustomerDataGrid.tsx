@@ -10,7 +10,8 @@ interface CustomDataGridProps {
   rowHeight?: number;
   getRowClassName?: (params: any) => string;
   sx?: object;
-  autoHeight?: boolean;   // ← add this
+  //autoHeight?: boolean;   // ← add this
+  gridheight?: number | string; // ← height for scroll
 }
 
 const CustomDataGrid: React.FC<CustomDataGridProps> = ({
@@ -21,6 +22,7 @@ const CustomDataGrid: React.FC<CustomDataGridProps> = ({
   rowHeight = 40,
   getRowClassName,
   sx = {},
+  gridheight,
 }) => {
 const defaultSx = {
   // Actual text inside each header cell
@@ -33,12 +35,13 @@ const defaultSx = {
       display: "none",
     },
 };
-
+ 
 
   return (
     <div
       style={{
-        height: "auto",
+       // height: "auto",
+       height: gridheight, // <-- important for vertical scroll
         width: "100%",
         background: "#fff",
       //  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
@@ -61,9 +64,9 @@ const defaultSx = {
           {title}
         </h3>
       )}
-
+      <div style={{ height: gridheight, width: "100%" }}>
       <DataGrid
-        autoHeight
+      //  autoHeight
         rows={rows}
         columns={columns}
         loading={loading}
@@ -71,6 +74,7 @@ const defaultSx = {
         getRowClassName={(params) => (getRowClassName?.(params) ?? '')}
         sx={{ ...defaultSx, ...sx }}
       />
+    </div>
     </div>
   );
 };

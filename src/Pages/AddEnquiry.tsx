@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, ToggleButton, ToggleButtonGroup, Typography, Card } from "@mui/material";
+import { Box, ToggleButton, ToggleButtonGroup, Card } from "@mui/material";
 import OnsiteEnquiry from "./OnsiteEnquiry";
 import OffshoreEnquiry from "./OffshoreEnquiry";
 
@@ -20,11 +20,7 @@ const AddEnquiry: React.FC = () => {
   };
 
   return (
-    <Box sx={{ mt: 5, display: "flex", flexDirection: "column", alignItems: "center" }}>
-      <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
-        ENQUIRY
-      </Typography>
-
+    <Box sx={{ mt: 12, display: "flex", flexDirection: "column", alignItems: "center" }}>
       {/* 🔹 Radio Button Box */}
       <Card
         sx={{
@@ -46,7 +42,6 @@ const AddEnquiry: React.FC = () => {
           <ToggleButton value="OFFSHORE">OFFSHORE</ToggleButton>
         </ToggleButtonGroup>
       </Card>
-
       {/* 🔹 Dynamic Form Panel */}
       <Box sx={{ width: "100%", maxWidth: 1100}}>
         {renderForm()}
