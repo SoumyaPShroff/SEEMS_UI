@@ -434,12 +434,12 @@ const RptBillingPlanner: React.FC = () => {
 
   const handleBillExport = () => {
     exporttoexcel(data, "BillingPlanner", "BillingPlanner-Data.xlsx");
-    toast.success("✅ Billing Planner Data exported!", { position: "bottom-right" });
+    toast.success("✅ Billing Planner Data exported!", { position: "top-right" });
   };
 
   const handleInvPenExport = () => {
     exporttoexcel(data, "PendingInvoices", "BillingPlanner-PendInv.xlsx");
-    toast.success("✅ Pending Invoices exported!", { position: "bottom-right" });
+    toast.success("✅ Pending Invoices exported!", { position: "top-right" });
   };
 
   const pendingInvoiceColumns: GridColDef[] = [

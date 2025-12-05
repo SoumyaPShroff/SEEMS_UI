@@ -172,8 +172,8 @@ const OffshoreEnquiry: React.FC = () => {
                fetch(`${baseUrl}/DesignManagers`),
                fetch(`${baseUrl}/SalesNpiUsers`),
                fetch(`${baseUrl}/PCBTools`),
-               fetch(`${baseUrl}/api/Sales/customerlocations`),
-               fetch(`${baseUrl}/api/Sales/customercontacts`),
+               fetch(`${baseUrl}/api/Sales/customerlocations`),  
+               fetch(`${baseUrl}/api/Sales/customercontacts`),  
                fetch(`${baseUrl}/api/Sales/States`),
             ]);
             const [customers, AllActiveEmployees, AnalysisManagers, SalesManagers, designMngrs, salesnpiusers, PCBTools, Locations, Contacts, States] =
@@ -939,25 +939,11 @@ const OffshoreEnquiry: React.FC = () => {
          }}
       >
          <Card
-            sx={{
-               width: "100%",
-               m: "auto",
-               mt: 3,
-               p: 4,
-               boxShadow: 6,
-               borderRadius: 3,
-            }}
-         >
+            sx={{ width: "100%", m: "auto", mt: 3, p: 4, boxShadow: 6, borderRadius: 3, }}>
             <CardContent>
                <Typography
                   variant="h5"
-                  sx={{
-                     textAlign: "center",
-                     mb: 3,
-                     fontWeight: 700,
-                     color: "#1565c0",
-                  }}
-               >
+                  sx={{ textAlign: "center",mb: 3, fontWeight: 700, color: "#1565c0",}}>
                   {isEditMode ? "Edit OFFSHORE Enquiry" : "Add OFFSHORE Enquiry"}
                </Typography>
 
