@@ -10,23 +10,29 @@ import { IconContext } from "react-icons/lib";
 import axios from "axios";
 import { baseUrl } from "../const/BaseUrl";
 import { motion, AnimatePresence } from "framer-motion";
-
+ 
 interface SidebarProps {
     sessionUserID: string;
 }
 
 // === Top Navbar ===
 const Nav = styled.div`
-  background: #85c1e9;
   height: 80px;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   position: fixed;
   top: 0;
   width: 100%;
   z-index: 1000;
-  left: 1px;
+  left: 0;
+
+  /* ✅ Gradient Header Equivalent */
+  background: linear-gradient(to right, #23458dff, #4fb695ff); /* blue-600 → teal-500 */
+  color: white;
+
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.25);
+  padding: 0 20px;
 `;
 
 const NavIcon = styled(Link)`
@@ -58,6 +64,19 @@ const RightCorner = styled.div`
     }
   }
 `;
+
+const HeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const Logo = styled.img`
+  height:60px;
+  width: 80px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+`;
+
 
 const Sidebar: React.FC<SidebarProps> = ({ sessionUserID }) => {
     const [sidebar, setSidebar] = useState(false);
@@ -101,14 +120,17 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID }) => {
             <IconContext.Provider value={{ color: "#5D6D7E" }}>
                 {/* === Top Nav === */}
                 <Nav>
+                     <HeaderLeft>
                     <NavIcon to="#">
                         <FaIcons.FaBars onClick={showSidebar} />
                     </NavIcon>
+                     <Logo src="/src/const/Images/Sienna-Ecad-logo.jpg" alt="logo" />
+              </HeaderLeft>
                     <h1
                         style={{
                             textAlign: "center",
-                            marginLeft: "300px",
-                            color: "#5D6D7E",
+                            marginLeft: "200px",
+                            color: "White",
                             fontSize: "30px",
                         }}
                     >
