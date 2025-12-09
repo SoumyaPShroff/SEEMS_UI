@@ -170,7 +170,7 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
 
   return (
     <div style={{ height: "350px", width: "100%" }}>
-      <Bar data={chartData} options={chartOptions} />;
+      <Bar data={chartData} options={chartOptions} />
     </div>
   );
 };

@@ -67,5 +67,5 @@ export const SalesManagerChart: React.FC<ChartProps> = ({ data }) => {
       },
     },
   };
-  return <Chart type="bar" data={chartData} options={chartOptions} plugins={[ChartDataLabels]} />;
+  return <Chart type="bar" data={chartData} options={chartOptions} plugins={[ChartDataLabels]} />
 };

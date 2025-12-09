@@ -36,7 +36,6 @@ const defaultSx = {
     },
 };
  
-
   return (
     <div
       style={{

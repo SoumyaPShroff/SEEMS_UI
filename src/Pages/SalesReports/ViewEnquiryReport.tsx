@@ -19,12 +19,14 @@ export default function ViewEnquiryReport() {
     const columns: GridColDef[] = [
         { field: "enquiryno", headerName: "enquiryno", width: 100 },
         { field: "customer", headerName: "customer", width: 200 },
-        { field: "createdon", headerName: "createdon", width: 110 },
+        { field: "enquiry_createdon", headerName: "enquiry_createdon", width: 150 },
+        { field: "quote_generatedon", headerName: "quote_generatedon", width: 150 },
+        { field: "job_Createdon", headerName: "Job_Createdon", width: 150 },
         { field: "salesperson", headerName: "salesperson", width: 150 },
-        { field: "completeresponsibility", headerName: "completeresponsibility", width: 150 },
-        { field: "status", headerName: "status", width: 180 },
-        { field: "remarks", headerName: "remarks", width: 200 },
-        { field: "cancelledremarks", headerName: "cancelledremarks", width: 100 },
+        { field: "completeresponsibility", headerName: "completeresponsibility", width: 170 },
+        { field: "status", headerName: "status", width: 120 },
+        { field: "remarks", headerName: "remarks", width:100 },
+        { field: "cancelledremarks", headerName: "cancelledremarks", width: 150 },
     ];
 
     // const checkAccess = async () => {

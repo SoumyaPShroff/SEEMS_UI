@@ -5,11 +5,12 @@ import Support from "./Pages/Support";
 import SeemsHomeSubMenu from './Pages/SeemsHomeSubMenu';
 import RptBillingPlanner from './Pages/SalesReports/RptBillingPlanner';
 import SalesDashboard from './Pages/SalesReports/SalesDashboard';
- import ViewAllEnquiries from './Pages/SalesReports/ViewAllEnquiries';
- import AddEnquiry from './Pages/AddEnquiry';
- import OffshoreEnquiry from './Pages/OffshoreEnquiry';
- import ViewEnquiryReport from './Pages/SalesReports/ViewEnquiryReport';
+import ViewAllEnquiries from './Pages/SalesReports/ViewAllEnquiries';
+import AddEnquiry from './Pages/AddEnquiry';
+import OffshoreEnquiry from './Pages/OffshoreEnquiry';
+import ViewEnquiryReport from './Pages/SalesReports/ViewEnquiryReport';
 import ViewPOEnqData from './Pages/SalesReports/ViewPOEnqData';
+import OnsiteEnquiry from './Pages/OnsiteEnquiry';
 
 const Home = () => {
     const sessionUserID = sessionStorage.getItem('SessionUserID');
@@ -36,6 +37,7 @@ const Home = () => {
                 <Route path="/ViewAllEnquiries" element={<ViewAllEnquiries />} />
                 <Route path="/AddEnquiry" element={<AddEnquiry />} />
                 <Route path="/OffshoreEnquiry/:enquiryNo" element={<OffshoreEnquiry />} />
+                <Route path="/OnsiteEnquiry/:enquiryNo" element={<OnsiteEnquiry />} />
                 <Route path="/ViewEnquiryReport" element={<ViewEnquiryReport />} />
                 <Route path="/ViewPOEnqData" element={<ViewPOEnqData />} />
                 <Route path="/support" element={<Support />} />

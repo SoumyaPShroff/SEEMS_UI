@@ -120,11 +120,11 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID }) => {
             <IconContext.Provider value={{ color: "#5D6D7E" }}>
                 {/* === Top Nav === */}
                 <Nav>
-                     <HeaderLeft>
-                    <NavIcon to="#">
+                     <HeaderLeft> 
+                    <NavIcon to="#" >
                         <FaIcons.FaBars onClick={showSidebar} />
                     </NavIcon>
-                     <Logo src="/src/const/Images/Sienna-Ecad-logo.jpg" alt="logo" />
+                     <Logo   src="/src/const/Images/Sienna-Ecad-logo.jpg" alt="logo"  />
               </HeaderLeft>
                     <h1
                         style={{

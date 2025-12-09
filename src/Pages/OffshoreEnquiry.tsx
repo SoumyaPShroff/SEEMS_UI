@@ -935,11 +935,11 @@ const OffshoreEnquiry: React.FC = () => {
             maxWidth: "1100px",   // prevents horizontal stretching
             margin: "0 auto",     // centers the card
             padding: "40px",
-            mt:  5,
+            mt:  8,
          }}
       >
          <Card
-            sx={{ width: "100%", m: "auto", mt: 3, p: 4, boxShadow: 6, borderRadius: 3, }}>
+            sx={{ width: "100%", m: "auto", mt: 3, p: 4,   borderRadius: 3,  boxShadow: "0px 4px 20px #6594b3ff"}}>
             <CardContent>
                <Typography
                   variant="h5"
