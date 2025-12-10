@@ -10,7 +10,8 @@ import { IconContext } from "react-icons/lib";
 import axios from "axios";
 import { baseUrl } from "../const/BaseUrl";
 import { motion, AnimatePresence } from "framer-motion";
- 
+import logo from '../const/Images/Sienna-Ecad-logo.jpg';
+
 interface SidebarProps {
     sessionUserID: string;
 }
@@ -124,7 +125,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID }) => {
                     <NavIcon to="#" >
                         <FaIcons.FaBars onClick={showSidebar} />
                     </NavIcon>
-                     <Logo   src="/src/const/Images/Sienna-Ecad-logo.jpg" alt="logo"  />
+                     <Logo   src={logo} alt="logo"  />
               </HeaderLeft>
                     <h1
                         style={{

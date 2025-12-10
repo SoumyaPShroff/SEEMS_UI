@@ -136,6 +136,7 @@ export default function ViewEnquiryReport() {
                 columns={columns}
                 title="View Enquiry Report"
                 loading={loading}
+                gridheight={400}
             />
         </Box>
     );

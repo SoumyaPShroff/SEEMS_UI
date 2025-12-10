@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Card, CardContent, FormGroup, Typography, TextField, FormControlLabel, RadioGroup, Radio, Button } from "@mui/material";
+import { Box, Card, CardContent, Typography, TextField, FormControlLabel, RadioGroup, Radio, Button } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import SelectControl from "../components/ReusablePageControls/SelectControl";
 import { baseUrl } from "../const/BaseUrl";
@@ -15,20 +15,26 @@ interface EnquiryForm {
   state: string;
   email11: string;
   tm: string;
-  toolLicense: number;
+  //toolLicense: number;
+  //logistics: number;
+  //onsiteDurationType: number;
+  //hourlyRateType: number;
+  toolLicense: string;
   logistics: string;
-  onsiteDurationType: number;
-  hourlyRateType: number;
+  onsiteDurationType: string;
+  hourlyRateType: string;
   hourlyReate: string;
-  expFrom: number;
-  expTo: number;
+  // expFrom: number;
+  // expTo: number;
+  expFrom: string;
+  expTo: string;
   salesresponsibilityid: string;
   completeresponsibilityid: string;
   remarks: string;
   uploadedfilename?: string;
   noOfResources: string;
   type: string;
-  onsiteDuration: number;
+  onsiteDuration: string;
   profReqLastDate: string;
   taskId: string;
   tentStartDate: string;
@@ -37,9 +43,24 @@ interface EnquiryForm {
   status: string;
   createdBy: string;
   referenceBy: string;
-  toolId: number;
+  //toolId: number;
+  toolId: string;
   tool: string;
+  quotation_request_lastdate?: string;
 }
+
+interface HOPCManager {
+  hopc1id: number;
+  hopc1name: string;
+  emailID?: string;
+}
+
+interface SalesManager {
+  id: number;
+  name: string;
+  emailID?: string;
+}
+
 
 function isHOPCManager(obj: any): obj is HOPCManager {
   return obj && "hopc1id" in obj;
@@ -61,11 +82,11 @@ const OnsiteEnquiry: React.FC = () => {
     state: "",
     email11: "",
     tm: "",
-    toolLicense:1,
-    logistics:1,
-    onsiteDurationType: 1,
+    toolLicense: "",
+    logistics: "",
+    onsiteDurationType: "",
     onsiteDuration: "",
-    hourlyRateType: 1,
+    hourlyRateType: "",
     hourlyReate: "",
     expFrom: "",
     expTo: "",
@@ -112,9 +133,9 @@ const OnsiteEnquiry: React.FC = () => {
       fetch(`${baseUrl}/api/Sales/customerlocations`).then(r => r.json()),
       fetch(`${baseUrl}/api/Sales/customercontacts`).then(r => r.json()),
       fetch(`${baseUrl}/AllActiveEmployees`).then(r => r.json()),
-      
+
     ]).then(([customers, States, SalesManagers, HOPCManagers, StageTools, HOPCTasks, Locations, Contacts, AllActiveEmployees]) => {
-      setLookups({ customers, States, SalesManagers, HOPCManagers, StageTools, HOPCTasks, Locations, Contacts,AllActiveEmployees });
+      setLookups({ customers, States, SalesManagers, HOPCManagers, StageTools, HOPCTasks, Locations, Contacts, AllActiveEmployees });
     });
   }, []);
 
@@ -178,68 +199,68 @@ const OnsiteEnquiry: React.FC = () => {
   }, [form.contactName]);
 
   /* ---------------- EDIT MODE LOAD ---------------- */
- 
+
   useEffect(() => {
-  if (!isEditMode) return;
+    if (!isEditMode) return;
 
-  fetch(`${baseUrl}/api/Sales/EnquiryDetailsByEnquiryno/${enquiryNo}`)
-    .then(r => r.json())
-    .then(async data => {
-      const e = Array.isArray(data) ? data[0] : data;
+    fetch(`${baseUrl}/api/Sales/EnquiryDetailsByEnquiryno/${enquiryNo}`)
+      .then(r => r.json())
+      .then(async data => {
+        const e = Array.isArray(data) ? data[0] : data;
 
-      // ✅ 1. Set CUSTOMER FIRST
-      setForm(prev => ({
-        ...prev,
-        customerId: String(e.customer_id || ""),
-      }));
+        // ✅ 1. Set CUSTOMER FIRST
+        setForm(prev => ({
+          ...prev,
+          customerId: String(e.customer_id || ""),
+        }));
 
-      // ✅ 2. Load Locations
-      await fetchCustomerLocations(String(e.customer_id));
-      
+        // ✅ 2. Load Locations
+        await fetchCustomerLocations(String(e.customer_id));
 
-      // ✅ 3. Set LOCATION
-      setForm(prev => ({
-        ...prev,
-        locationId: String(e.location_id || ""),
-      }));
 
-      // ✅ 4. Load Contacts
-      await fetchCustomerContacts(
-        String(e.customer_id),
-        String(e.location_id)
-      );
+        // ✅ 3. Set LOCATION
+        setForm(prev => ({
+          ...prev,
+          locationId: String(e.location_id || ""),
+        }));
 
-      // ✅ 5. Set REST OF FIELDS
-      setForm(prev => ({
-        ...prev,
-        contactName: String(e.contact_id || ""),
-        state: e.statename || "",
-        email11: e.email11 || "",
-        tm: e.tm || "",
-        toolLicense: String(e.toolLicense || "1"),
-        logistics: String(e.logistics || "1"),
-        onsiteDurationType: String(e.onsiteDurationType || "1"),  
-        onsiteDuration: e.onsiteDuration || "",
-        hourlyRateType: String(e.hourlyRateType || "1"),
-        hourlyReate: e.hourlyReate || "",
-        expFrom: e.expFrom || "",
-        expTo: e.expTo || "",
-        profReqLastDate: e.profReqLastDate?.substring(0, 10) || "",
-        salesresponsibilityid: e.salesresponsibilityid || "",
-        completeresponsibilityid: e.completeresponsibilityid || "",
-        referenceBy: e.referenceBy || "",
-        remarks: e.remarks || "",
-        uploadedfilename: e.uploadedfilename,
-        toolId: String(e.toolId || ""),  
-        taskId: String(e.taskId || ""),  
-        noOfResources: e.noOfResources || "",
-        type: e.type || "Export",
-        tentStartDate: e.tentStartDate?.substring(0, 10) || "",
-        SI: e.si || "",
-        PI: e.pi || "",
-      }));
-    });
-}, [isEditMode, enquiryNo]);
+        // ✅ 4. Load Contacts
+        await fetchCustomerContacts(
+          String(e.customer_id),
+          String(e.location_id)
+        );
+
+        // ✅ 5. Set REST OF FIELDS
+        setForm(prev => ({
+          ...prev,
+          contactName: String(e.contact_id || ""),
+          state: e.statename || "",
+          email11: e.email11 || "",
+          tm: e.tm || "",
+          toolLicense: String(e.toolLicense),
+          logistics: String(e.logistics),
+          onsiteDurationType: String(e.onsiteDurationType),
+          onsiteDuration: String(e.onsiteDuration),
+          hourlyRateType: String(e.hourlyRateType),
+          hourlyReate: e.hourlyReate || "",
+          expFrom: e.expFrom || "",
+          expTo: e.expTo || "",
+          profReqLastDate: e.profReqLastDate?.substring(0, 10) || "",
+          salesresponsibilityid: e.salesresponsibilityid || "",
+          completeresponsibilityid: e.completeresponsibilityid || "",
+          referenceBy: e.referenceBy || "",
+          remarks: e.remarks || "",
+          uploadedfilename: e.uploadedfilename,
+          toolId: String(e.toolId || ""),
+          taskId: String(e.taskId || ""),
+          noOfResources: e.noOfResources || "",
+          type: e.type,
+          tentStartDate: e.tentStartDate?.substring(0, 10) || "",
+          SI: e.si || "",
+          PI: e.pi || "",
+        }));
+      });
+  }, [isEditMode, enquiryNo]);
 
 
   /* ---------------- AUTO EMAIL FILL ---------------- */
@@ -254,68 +275,68 @@ const OnsiteEnquiry: React.FC = () => {
 
   /* ---------------- HANDLERS ---------------- */
 
- const handleChange = async (e: any) => {
-  const { name, value } = e.target;
+  const handleChange = async (e: any) => {
+    const { name, value } = e.target;
 
-  // ✅ CUSTOMER CHANGE
-  if (name === "customerId") {
-    setForm((prev) => ({
-      ...prev,
-      customerId: value,
-      locationId: "",
-      contactName: "",
-      email11: "",
-    }));
+    // ✅ CUSTOMER CHANGE
+    if (name === "customerId") {
+      setForm((prev) => ({
+        ...prev,
+        customerId: value,
+        locationId: "",
+        contactName: "",
+        email11: "",
+      }));
 
-    await fetchCustomerLocations(value);
-    return;
-  }
-
-  // ✅ LOCATION CHANGE
-  if (name === "locationId") {
-    setForm((prev) => ({
-      ...prev,
-      locationId: value,
-      contactName: "",
-      email11: "",
-    }));
-
-    await fetchCustomerContacts(form.customerId, value);
-    return;
-  }
-
-  // ✅ CONTACT CHANGE
-  if (name === "contactName") {
-    setForm((prev) => ({
-      ...prev,
-      contactName: value,
-    }));
-    return;
-  }
-
-  // ✅ ✅ TASK → SI / PI AUTO MAPPING (YOUR MAIN REQUIREMENT)
-  if (name === "taskId") {
-    let SI = "";
-    let PI = "";
-
-    if (Number(value) === 182) {
-      SI = "YES";
-    } else if (Number(value) === 183) {
-      PI = "YES";
+      await fetchCustomerLocations(value);
+      return;
     }
 
-    setForm((prev) => ({
-      ...prev,
-      taskId: value,
-      SI,
-      PI,
-    }));
-    return;
-  }
+    // ✅ LOCATION CHANGE
+    if (name === "locationId") {
+      setForm((prev) => ({
+        ...prev,
+        locationId: value,
+        contactName: "",
+        email11: "",
+      }));
 
-  // ✅ DEFAULT CHANGE
-  setForm((prev) => ({ ...prev, [name]: value }));
-};
+      await fetchCustomerContacts(form.customerId, value);
+      return;
+    }
+
+    // ✅ CONTACT CHANGE
+    if (name === "contactName") {
+      setForm((prev) => ({
+        ...prev,
+        contactName: value,
+      }));
+      return;
+    }
+
+    // ✅ ✅ TASK → SI / PI AUTO MAPPING (YOUR MAIN REQUIREMENT)
+    if (name === "taskId") {
+      let SI = "";
+      let PI = "";
+
+      if (Number(value) === 182) {
+        SI = "YES";
+      } else if (Number(value) === 183) {
+        PI = "YES";
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        taskId: value,
+        SI,
+        PI,
+      }));
+      return;
+    }
+
+    // ✅ DEFAULT CHANGE
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleNumericChange = (e: any) => {
     const { name, value } = e.target;
@@ -330,61 +351,71 @@ const OnsiteEnquiry: React.FC = () => {
 
   /* ---------------- DATE VALIDATION ---------------- */
 
-  const isValidDate = () => {
-    const selected = new Date(form.profReqLastDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return selected >= today;
-  };
+  // const isValidDate = () => {
+  //   const selected = new Date(form.profReqLastDate);
+  //   const today = new Date();
+  //   today.setHours(0, 0, 0, 0);
+  //   return selected >= today;
+  // };
 
+  // const getUserEmail = (
+  //   u: Employee | Manager | SalesManager
+  // ): string | null => {
+  //   const e = u as any;
+  //   return (
+  //     e.emailID ??
+  //     e.EmailID ??
+  //     e.emailId ??
+  //     e.EmailId ??
+  //     e.email ??
+  //     e.Email ??
+  //     null
+  //   );
+  // };
   const getUserEmail = (
-    u: Employee | Manager | SalesManager
+    u: HOPCManager | SalesManager
   ): string | null => {
     const e = u as any;
     return (
       e.emailID ??
-      e.EmailID ??
-      e.emailId ??
-      e.EmailId ??
-      e.email ??
-      e.Email ??
       null
     );
   };
 
+
   // Main function
   const buildEmailRecipientList = () => {
-  const respIds = [
-    form.salesresponsibilityid,
-    form.completeresponsibilityid,
-  ].filter(Boolean);
+    const respIds = [
+      form.salesresponsibilityid,
+      form.completeresponsibilityid,
+    ].filter(Boolean);
 
-  const allUsers: (SalesManager | HOPCManager)[] = [
-    ...lookups.SalesManagers,
-    ...lookups.HOPCManagers,
-  ];
+    const allUsers: (SalesManager | HOPCManager)[] = [
+      ...lookups.SalesManagers,
+      ...lookups.HOPCManagers,
+    ];
 
-  const emails = respIds
-    .map((id) => {
-      const user = allUsers.find((u) => {
-        if (isHOPCManager(u)) return String(u.hopc1id) === String(id);
-        return String((u as any).id) === String(id);
-      });
+    const emails = respIds
+      .map((id) => {
+        const user = allUsers.find((u) => {
+          if (isHOPCManager(u)) return String(u.hopc1id) === String(id);
+          return String((u as any).id) === String(id);
+        });
 
-      if (!user) return null;
+        if (!user) return null;
 
-      return getUserEmail(user);
-    })
-    .filter((e): e is string => Boolean(e));
+        return getUserEmail(user);
+      })
+      .filter((e): e is string => Boolean(e));
 
-  return [...new Set(emails)];
-};
+    return [...new Set(emails)];
+  };
 
 
   /* ---------------- SUBMIT ---------------- */
 
   const handleSubmit = async () => {
-    if (!form.customerId || !form.salesresponsibilityid || !form.completeresponsibilityid  || !form.noOfResources || !form.expFrom || !form.expTo || !form.profReqLastDate  || !form.tentStartDate || !form.hourlyReate  ) {
+    if (!form.customerId || !form.salesresponsibilityid || !form.completeresponsibilityid || !form.noOfResources || !form.expFrom || !form.expTo || !form.profReqLastDate || !form.tentStartDate || !form.hourlyReate) {
       toast.error("Required fields missing");
       return;
     }
@@ -397,7 +428,7 @@ const OnsiteEnquiry: React.FC = () => {
     fd.append("statename", form.state);
 
     fd.append("tm", form.tm);
-    fd.append("toolId", form.toolId);
+    fd.append("toolId", String(form.toolId));
     fd.append("tool", form.tool);
     fd.append("taskId", form.taskId);
 
@@ -419,12 +450,12 @@ const OnsiteEnquiry: React.FC = () => {
     fd.append("enquirytype", "ONSITE");
     fd.append("si", form.SI || "");
     fd.append("pi", form.PI || "");
-    fd.append("toolLicense", form.toolLicense || "");
+    fd.append("toolLicense", form.toolLicense);
     fd.append("createdBy", loginUser);
     fd.append("logistics", form.logistics);
     fd.append("remarks", form.remarks);
     fd.append("referenceBy", form.referenceBy);
- 
+
     // email trigger lists
     const toList = buildEmailRecipientList();
     fd.append("ToMailList", JSON.stringify(toList));  // send array as JSON
@@ -454,11 +485,11 @@ const OnsiteEnquiry: React.FC = () => {
       fd.append("file", file);
       fd.append("uploadedfilename", file.name);
     }
-      // ✅ NOW LOG SAFELY
-  console.log("✅ FINAL FORMDATA PAYLOAD ↓↓↓");
-  for (let pair of fd.entries()) {
-    console.log(pair[0], ":", pair[1]);
-  }
+    // ✅ NOW LOG SAFELY
+    console.log("✅ FINAL FORMDATA PAYLOAD ↓↓↓");
+    for (let pair of fd.entries()) {
+      console.log(pair[0], ":", pair[1]);
+    }
 
     const url = isEditMode ? `${baseUrl}/api/Sales/EditEnquiryData` : `${baseUrl}/api/Sales/AddEnquiryData`;
 
@@ -466,22 +497,22 @@ const OnsiteEnquiry: React.FC = () => {
       fd.append("enquiryno", enquiryNo as string);
     }
 
-  try {
-  const res = await fetch(url, { method: isEditMode ? "PUT" : "POST", body: fd, });
-  if (!res.ok) {
-    const err = await res.text();
-    console.error("SAVE ERROR:", err);
-    toast.error("❌ Failed to Add enquiry");
-    return;
-  }
+    try {
+      const res = await fetch(url, { method: isEditMode ? "PUT" : "POST", body: fd, });
+      if (!res.ok) {
+        const err = await res.text();
+        console.error("SAVE ERROR:", err);
+        toast.error("❌ Failed to Add enquiry");
+        return;
+      }
 
-  toast.success(isEditMode ? "✅ Onsite Enquiry Updated" : "✅ Onsite Enquiry Added");
-  navigate("/Home/ViewAllEnquiries");
+      toast.success(isEditMode ? "✅ Onsite Enquiry Updated" : "✅ Onsite Enquiry Added");
+      navigate("/Home/ViewAllEnquiries");
 
-} catch (error) {
-  console.error("NETWORK ERROR:", error);
-  toast.error("❌ Server not reachable");
-}
+    } catch (error) {
+      console.error("NETWORK ERROR:", error);
+      toast.error("❌ Server not reachable");
+    }
 
   };
 
@@ -514,8 +545,8 @@ const OnsiteEnquiry: React.FC = () => {
   /* ---------------- UI ---------------- */
 
   return (
-    <Box sx={{ maxWidth: 1100, margin: "0 auto", mt: 9}}>
-      <Card sx={{ width: "100%", m: "auto", mt: 3, p: 4,   borderRadius: 3, boxShadow: "0px 4px 20px #6594b3ff"}}>
+    <Box sx={{ maxWidth: 1100, margin: "0 auto", mt: 9 }}>
+      <Card sx={{ width: "100%", m: "auto", mt: 3, p: 4, borderRadius: 3, boxShadow: "0px 4px 20px #6594b3ff" }}>
         <CardContent>
           <Typography variant="h5" textAlign="center" mb={3} color="#1565c0" fontWeight="700">
             {isEditMode ? "Edit ONSITE Enquiry" : "Add ONSITE Enquiry"}
@@ -526,23 +557,22 @@ const OnsiteEnquiry: React.FC = () => {
             <Box gridColumn="span 3">
               <Typography>Tool License</Typography>
               <RadioGroup row sx={{
-                justifyContent: "space-evenly", border: "1px solid #ccc",borderRadius: "8px", padding: "6px",height: "40px",
+                justifyContent: "space-evenly", border: "1px solid #ccc", borderRadius: "8px", padding: "6px", height: "40px",
               }}
                 name="toolLicense"
                 value={form.toolLicense}
                 onChange={handleChange}
-                required
-                >
+              >
                 <FormControlLabel value="1" control={<Radio />} label="With" />
                 <FormControlLabel value="2" control={<Radio />} label="Without" />
               </RadioGroup>
             </Box>
 
-            <Box gridColumn="span 3">
+            <Box gridColumn="span 4">
               <Typography>Logistics</Typography>
               <RadioGroup row sx={{ justifyContent: "space-evenly", height: "40px", border: "1px solid #ccc", borderRadius: "8px", padding: "6px", }} name="logistics" value={form.logistics} onChange={handleChange}>
                 <FormControlLabel value="1" control={<Radio />} label="Customer" />
-                <FormControlLabel value="2" control={<Radio />} label="ECAD" />
+                <FormControlLabel value="2" control={<Radio />} label="Sienna ECAD" />
               </RadioGroup>
             </Box>
 
@@ -550,7 +580,7 @@ const OnsiteEnquiry: React.FC = () => {
               <Typography>Type</Typography>
               <RadioGroup
                 row
-                sx={{ justifyContent: "space-evenly", border: "1px solid #ccc", borderRadius: "8px", padding: "6px",height: "40px", }}
+                sx={{ justifyContent: "space-evenly", border: "1px solid #ccc", borderRadius: "8px", padding: "6px", height: "40px", }}
                 value={form.type}
               >
                 <FormControlLabel value="Export" control={<Radio />} label="Export" />
@@ -561,13 +591,13 @@ const OnsiteEnquiry: React.FC = () => {
             {/* Customer / Location / State / Contact */}
             <Box gridColumn="span 3">
               <SelectControl name="customerId" label="Customer" value={form.customerId}
-                options={lookups.customers.map((c: any) => ({ value: String(c.itemno).trim(),label: c.customer,}))}
-                onChange={handleChange} required height={40}/>
+                options={lookups.customers.map((c: any) => ({ value: String(c.itemno).trim(), label: c.customer, }))}
+                onChange={handleChange} required height={40} />
             </Box>
 
             <Box gridColumn="span 3">
               <SelectControl name="locationId" label="Location" value={form.locationId}
-                options={lookups.Locations.map(l => ({ value: l.location_id.toString(), label: l.location }))}
+                options={lookups.Locations.map((l: any) => ({ value: l.location_id.toString(), label: l.location }))}
                 onChange={handleChange} required height={40} />
             </Box>
 
@@ -584,7 +614,7 @@ const OnsiteEnquiry: React.FC = () => {
             </Box>
 
             <Box gridColumn="span 3">
-              <TextField label="Email Address" value={form.email11} disabled fullWidth size="small"/>
+              <TextField label="Email Address" value={form.email11} disabled fullWidth size="small" />
             </Box>
 
             <Box gridColumn="span 3">
@@ -596,7 +626,7 @@ const OnsiteEnquiry: React.FC = () => {
                   handleChange(e); // keeps toolId updated
                   // get selected text
                   const selectedOption = lookups.StageTools.find(
-                    (t) => t.idno.toString() === e.target.value
+                    (t: any) => t.idno.toString() === e.target.value
                   );
                   // update form.tool with label
                   setForm((prev) => ({
@@ -613,6 +643,7 @@ const OnsiteEnquiry: React.FC = () => {
                 height={40}
               />
             </Box>
+
             <Box gridColumn="span 3">
               <SelectControl
                 name="taskId"
@@ -632,14 +663,16 @@ const OnsiteEnquiry: React.FC = () => {
             <Box gridColumn="span 2">
               <TextField label="Experience From" name="expFrom" value={form.expFrom} onChange={handleNumericChange} required size="small" />
             </Box>
+
             <Box gridColumn="span 1">
-              <TextField label="To" name="expTo" value={form.expTo} onChange={handleNumericChange} required  size="small"/>
+              <TextField label="To" name="expTo" value={form.expTo} onChange={handleNumericChange} required size="small" />
             </Box>
 
             <Box gridColumn="span 2">
               <TextField label="No of Resources" type="number" name="noOfResources" value={form.noOfResources}
-                onChange={handleChange} required size="small"/>
+                onChange={handleChange} required size="small" />
             </Box>
+
             {/* Profile req date Date */}
             <Box gridColumn="span 2">
               <TextField type="date" label="Profile Request Last Date"
@@ -647,8 +680,8 @@ const OnsiteEnquiry: React.FC = () => {
                 value={form.profReqLastDate}
                 onChange={handleChange} InputLabelProps={{ shrink: true }}
                 size="small"
-                required 
-                />
+                required
+              />
             </Box>
 
             <Box gridColumn="span 2">
@@ -658,7 +691,7 @@ const OnsiteEnquiry: React.FC = () => {
                 onChange={(e) => {
                   const value = e.target.value; // always yyyy-mm-dd from <input type="date">
                   setForm((p) => ({ ...p, tentStartDate: value }));
-                }} InputLabelProps={{ shrink: true } } 
+                }} InputLabelProps={{ shrink: true }}
                 size="small"
                 required />
             </Box>
@@ -689,11 +722,12 @@ const OnsiteEnquiry: React.FC = () => {
               </Box>
               <Box width={110}>
                 <TextField type="number" size="small" onChange={handleTwoDigitNumber} name="onsiteDuration"
-                  label={form.onsiteDurationType === "1" ? "In Days" : "In Months"} 
-                   value={form.onsiteDuration}
-                   required />
+                  label={form.onsiteDurationType === "1" ? "In Days" : "In Months"}
+                  value={form.onsiteDuration}
+                  required />
               </Box>
             </Box>
+
             <Box gridColumn="span 5" display="flex" gap={2} alignItems="flex-end">
               <Box flex={1}>
                 <Typography>Currency</Typography>
@@ -708,28 +742,32 @@ const OnsiteEnquiry: React.FC = () => {
                 <TextField size="small" label="Hourly Rate" name="hourlyReate" onChange={handleHourlyRateChange} value={form.hourlyReate} InputLabelProps={{ shrink: true }} required />
               </Box>
             </Box>
+
             <Box gridColumn="span 3">
               <SelectControl name="salesresponsibilityid" label="Sales Responsibility"
                 value={form.salesresponsibilityid}
                 options={lookups.SalesManagers.map((e: any) => ({ value: e.id, label: e.name }))}
-                onChange={handleChange} required height={40}/>
+                onChange={handleChange} required height={40} />
             </Box>
+
             <Box gridColumn="span 3">
               <SelectControl name="completeresponsibilityid" label="Complete Responsibility"
                 value={form.completeresponsibilityid}
                 // options={allCompleteResp}
                 options={lookups.HOPCManagers.map((e: any) => ({ value: e.hopc1id, label: e.hopc1name }))}
-                onChange={handleChange} required height={40}/>
+                onChange={handleChange} required height={40} />
             </Box>
+
             <Box gridColumn="span 3">
               <SelectControl name="referenceBy" label="Reference By"
                 value={form.referenceBy}
-                options={lookups.AllActiveEmployees.map((e) => ({
-                           value: e.name,
-                           label: e.name,
-                        }))}
-                onChange={handleChange} height={40}/>
+                options={lookups.AllActiveEmployees.map((e: any) => ({
+                  value: e.name,
+                  label: e.name,
+                }))}
+                onChange={handleChange} height={40} />
             </Box>
+
             {/* Remarks */}
             <Box gridColumn="span 4">
               <TextField label="Remarks" fullWidth size="small" name="remarks" value={form.remarks} onChange={handleChange} />

@@ -121,6 +121,7 @@ export default function ViewPOEnqData() {
                 columns={columns}
                 title="View PO Enquiry Data"
                 loading={loading}
+                gridheight={400}
             />
         </Box>
     );
