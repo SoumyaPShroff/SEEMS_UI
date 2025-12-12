@@ -24,6 +24,7 @@ export default function ViewEnquiryReport() {
         { field: "job_Createdon", headerName: "Job_Createdon", width: 150 },
         { field: "salesperson", headerName: "salesperson", width: 150 },
         { field: "completeresponsibility", headerName: "completeresponsibility", width: 170 },
+        { field: "quoteCreatedby", headerName:"quoteCreatedby", width:150},
         { field: "status", headerName: "status", width: 120 },
         { field: "remarks", headerName: "remarks", width:100 },
         { field: "cancelledremarks", headerName: "cancelledremarks", width: 150 },
