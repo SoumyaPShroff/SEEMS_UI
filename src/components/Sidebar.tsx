@@ -118,25 +118,32 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID }) => {
 
     return (
         <>
+        
             <IconContext.Provider value={{ color: "#5D6D7E" }}>
                 {/* === Top Nav === */}
                 <Nav>
                      <HeaderLeft> 
                     <NavIcon to="#" >
                         <FaIcons.FaBars onClick={showSidebar} />
-                    </NavIcon>
-                     <Logo   src={logo} alt="logo"  />
-              </HeaderLeft>
-                    <h1
-                        style={{
-                            textAlign: "center",
-                            marginLeft: "200px",
-                            color: "White",
-                            fontSize: "30px",
-                        }}
-                    >
-                        Welcome to Sienna ECAD Enterprise Management System
-                    </h1>
+                    </NavIcon>          
+              </HeaderLeft>   
+                    {/* Wrap Logo + Header in a flex container */}
+                    <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "20px",          // Medium space between logo and header
+                        marginLeft: "240px"   // Push away from the menu icon
+                    }}>
+                        <Logo src={logo} alt="logo" />
+
+                        <h1 style={{
+                            color: "white",
+                            fontSize: "28px",
+                            margin: 0
+                        }}>
+                            Welcome to Sienna ECAD Enterprise Management System
+                        </h1>
+                    </div>
                     <RightCorner>
                         <span>{userName ? userName : "User"}</span>
                         <span style={{ margin: "0 8px" }}>|</span>
