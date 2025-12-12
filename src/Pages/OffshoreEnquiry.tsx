@@ -27,7 +27,6 @@ interface LookupData {
    customers: Customer[];
    AllActiveEmployees: Employee[];
    AnalysisManagers: Manager[];
-   // SalesManagers: Manager[];
    SalesManagers: SalesManager[];
    designMngrs: Manager[];
    salesnpiusers: Employee[];
@@ -92,6 +91,7 @@ const OffshoreEnquiry: React.FC = () => {
    const navigate = useNavigate();
    const { enquiryNo } = useParams();
    const isEditMode = Boolean(enquiryNo);
+   const layoutHideForAdd = ["QA/CAM", "DFA", "Fabrication", "Testing"];
 
    const [form, setForm] = useState<EnquiryForm>({
       enquirytype: "OFFSHORE",
@@ -152,7 +152,7 @@ const OffshoreEnquiry: React.FC = () => {
       pi: "NO", si: "NO", dfa: "NO", dfm: "NO", fpg: "NO", asmb: "NO", pcba: "NO", qacam: "NO",
       design: "NO", library: "NO", layout_fab: "NO", layout_testing: "NO", layout_others: "NO",
       emi_net_level: "NO", emi_system_level: "NO", thermal_board_level: "NO", thermal_system_level: "NO",
-      hardware: "NO", VA_Assembly: "NO", DesignOutSource: "NO", npi_fab: "NO", npi_testing: "NO", npi_others: "NO",
+      hardware: "NO", VA_Assembly: "NO", DesignOutSource: "NO", npi_fab: "NO", npi_testing: "NO", npi_others: "NO",vaMech: "NO",
       NPINew_Fab: "NO", NPINew_Testing: "NO", NPINew_Assbly: "NO", NPINew_BOMProc: "NO",
       npinew_jobwork: "NO", tool: "", software: "NO", analysis_others: "NO", status: "Open",
       quotation_request_lastdate: new Date().toISOString(), createdOn: new Date().toISOString(), enquiryno: "AUTO",
@@ -326,7 +326,6 @@ const OffshoreEnquiry: React.FC = () => {
       try {
          const res = await fetch(`${baseUrl}/api/Sales/customerlocations?customerId=${customerId}`);
          const data = await res.json();
-         // setLookups((prev) => ({ ...prev, Locations: data, Contacts: [] }));
          //edit mode contact was not appearing in first load
          setLookups((prev) => ({ ...prev, Locations: data, Contacts: isEditMode ? prev.Contacts : [] }));  // 👈 keep contacts while editing
       } catch (err) {
@@ -377,7 +376,6 @@ const OffshoreEnquiry: React.FC = () => {
 
       const options = selectedIds
          .map((id) => {
-            // const emp = allEmployees.find((e) => e.hopC1ID === id || e.iDno === id) || null;
             const emp = allEmployees.find((e) => {
                if (isManager(e)) return e.HOPC1ID === id;
                return e.iDno === id;
@@ -413,7 +411,7 @@ const OffshoreEnquiry: React.FC = () => {
             library: "Library",
             qacam: "QA/CAM",
             dfa: "DFA",
-            dfm: "DFM",
+            dfm: "DFX",
             layout_fab: "Fabrication",
             layout_testing: "Testing",
             layout_others: "Others",
@@ -436,12 +434,13 @@ const OffshoreEnquiry: React.FC = () => {
             npi_testing: "Testing",
             npi_others: "Others",
             DesignOutSource: "Design Outsourced",
+            vaMech: "Mechanical",
          },
          npi: {
             NPINew_BOMProc: "BOM Procurement",
-            NPINew_Fab: "NPI-Fabrication",
-            NPINew_Assbly: "NPI-Assembly",
-            NPINew_Testing: "NPI-Testing",
+            NPINew_Fab: "ATS-Fabrication",
+            NPINew_Assbly: "ATS-Assembly",
+            NPINew_Testing: "ATS-Testing",
             npinew_jobwork: "Job Work",
          }
       };
@@ -546,8 +545,6 @@ const OffshoreEnquiry: React.FC = () => {
                );
                //  return emp ? emp.hopC1NAME || emp.name : null;
                return {
-                  // value: isManager(emp) ? emp.HOPC1ID : emp.iDno,
-                  // label: isManager(emp) ? emp.HOPC1NAME : emp.name,
                   value: isManager(emp) ? emp.HOPC1ID : isEmployee(emp) ? emp.iDno : "",
                   label: isManager(emp) ? emp.HOPC1NAME : isEmployee(emp) ? emp.name : "Unknown"
                };
@@ -604,7 +601,7 @@ const OffshoreEnquiry: React.FC = () => {
          section: "Layout",
          field: "layout",
          responsibilityField: "layoutbyid",
-         checkboxes: ["Design", "Library", "QA/CAM", "DFA", "DFM", "Fabrication", "Testing", "Others"],
+         checkboxes: ["Design", "Library", "QA/CAM", "DFA", "DFX", "Fabrication", "Testing", "Others"],
          responsibilityOptions: lookups.designMngrs,
          isManager: true, // use hopC1ID/hopC1NAME
       },
@@ -620,15 +617,15 @@ const OffshoreEnquiry: React.FC = () => {
          section: "VA",
          field: "va",
          responsibilityField: "npibyid",
-         checkboxes: ["Fabrication", "Assembly", "Hardware", "Software", "FPGA", "Testing", "Others", "Design Outsourced"],
+         checkboxes: ["Fabrication", "Assembly", "Hardware", "Software", "FPGA", "Testing", "Others", "Design Outsourced", "Mechanical"],
          responsibilityOptions: lookups.designMngrs,     //use designmanagers for VA responsibility
          isManager: true,
       },
       {
-         section: "NPI",
+         section: "ATS",
          field: "npi",
          responsibilityField: "NPINewbyid",
-         checkboxes: ["BOM Procurement", "NPI-Fabrication", "NPI-Assembly", "Job Work", "NPI-Testing"],
+         checkboxes: ["BOM Procurement", "ATS-Fabrication", "ATS-Assembly", "Job Work", "ATS-Testing"],
          responsibilityOptions: lookups.salesnpiusers,
          isManager: false,
       },
@@ -749,7 +746,7 @@ const OffshoreEnquiry: React.FC = () => {
             Library: "library",
             "QA/CAM": "qacam",
             DFA: "dfa",
-            DFM: "dfm",
+            DFX: "dfm",
             Fabrication: "asmb",
             Testing: "layout_testing",
             Others: "layout_others",
@@ -782,6 +779,7 @@ const OffshoreEnquiry: React.FC = () => {
             Software: "software",
             FPGA: "fpg",
             Testing: "npi_testing",
+            Mechanical: "vaMech",
          };
          Object.entries(vaMap).forEach(([label, field]) => {
             postPayload[field] = form.va.includes(label) ? "YES" : "NO";
@@ -790,9 +788,9 @@ const OffshoreEnquiry: React.FC = () => {
          // NPI
          const npiMap: Record<string, string> = {
             "BOM Procurement": "NPINew_BOMProc",
-            "NPI-Fabrication": "NPINew_Fab",
-            "NPI-Assembly": "NPINew_Assbly",
-            "NPI-Testing": "NPINew_Testing",
+            "ATS-Fabrication": "NPINew_Fab",
+            "ATS-Assembly": "NPINew_Assbly",
+            "ATS-Testing": "NPINew_Testing",
             "Job Work": "npinew_jobwork",
          };
          Object.entries(npiMap).forEach(([label, field]) => {
@@ -1149,7 +1147,13 @@ const OffshoreEnquiry: React.FC = () => {
                               </Typography>
 
                               <FormGroup row>
-                                 {cfg.checkboxes.map((item) => (
+                                 {/* {
+                                 cfg.checkboxes.map((item) => ( */}
+                                 {(
+                                    !isEditMode && cfg.field === "layout"
+                                       ? cfg.checkboxes.filter(cb => !layoutHideForAdd.includes(cb))
+                                       : cfg.checkboxes
+                                 ).map((item) => (
                                     <FormControlLabel
                                        key={item}
                                        control={
