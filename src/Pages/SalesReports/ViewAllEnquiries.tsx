@@ -53,7 +53,6 @@ const ViewAllEnquiries = () => {
             onClick={(e) => {
               e.preventDefault();
               if (!hasAccess) return;
-              // handleEditEnquiry(params.row.enquiryno);
               handleEditEnquiry(params.row); // in order to recieve multiple no of columns
             }}
           >
@@ -82,7 +81,7 @@ const ViewAllEnquiries = () => {
             onClick={(e) => {
               e.preventDefault();
               if (!hasAccess) return;
-              // handleAddQuote(params.row);
+              handleQuote(params.row);
             }}
           >
             Add Quote
@@ -246,6 +245,11 @@ const ViewAllEnquiries = () => {
     } else {
       toast.error(`❌ Unknown Enquiry Type: ${enqType}`);
     }
+  };
+
+    const handleQuote = (row: any) => {
+    const enqNo = row.enquiryno;
+    navigate(`/Home/AddQuotation/${enqNo}`);
   };
 
   return (

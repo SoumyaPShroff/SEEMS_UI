@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Box, Button, CircularProgress } from "@mui/material";
 import { useBillingData } from "../../components/hooks/useBillingData";
 import { useManagers } from "../../components/hooks/useManagers";
-import { getCurrentMonthDates } from "../../components/utils/DateUtils";
+//import { getCurrentMonthDates } from "../../components/utils/DateUtils";
 import { ProjectionVsTargetChart } from "../../components/charts/ProjectionVsTargetChart";
 import { dataGridSx } from "../../components/common/DataGridStyles";
 import { ProjectManagerChart } from "../../components/charts/ProjectManagerChart";
@@ -133,9 +133,9 @@ const RptBillingPlanner: React.FC = () => {
   const { data, loading, fetchBillingData } = useBillingData();
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
   const { managers } = useManagers(loginId, "billingplanner");
-  const { startdate: initialStart, enddate: initialEnd } = getCurrentMonthDates();
-  const [startdate, setStartdate] = useState(initialStart);
-  const [enddate, setEnddate] = useState(initialEnd);
+  // const { startdate: initialStart, enddate: initialEnd } = getCurrentMonthDates();
+  // const [startdate, setStartdate] = useState(initialStart);
+  // const [enddate, setEnddate] = useState(initialEnd);
   const [selectedManager, setSelectedManager] = useState<any>(null);
   const [summary, setSummary] = useState<any>(null);
   const [invoiceDict, setInvoiceDict] = useState<Set<string>>(new Set());
@@ -145,6 +145,32 @@ const RptBillingPlanner: React.FC = () => {
   const [loadingData, setLoadingData] = useState(false);
   const [invoicePendingData, setInvoicePendingData] = useState<BillingData[]>([]);
   const [pendingSummary, setPendingSummary] = useState<any>(null);
+  const months = [
+  { value: 1, label: "January" },
+  { value: 2, label: "February" },
+  { value: 3, label: "March" },
+  { value: 4, label: "April" },
+  { value: 5, label: "May" },
+  { value: 6, label: "June" },
+  { value: 7, label: "July" },
+  { value: 8, label: "August" },
+  { value: 9, label: "September" },
+  { value: 10, label: "October" },
+  { value: 11, label: "November" },
+  { value: 12, label: "December" },
+];
+
+const years = Array.from({ length: 12 }, (_, i) => {
+  const y = 2020 + i;
+  return { value: y, label: String(y) };
+});
+
+const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
+const [year, setYear] = useState<number>(new Date().getFullYear());
+
+  const startdate = `${year}-${String(month).padStart(2, "0")}-01`;
+  const enddate = new Date(year, month, 0).toISOString().slice(0, 10);
+
 
   const handleGenerate = async () => {
     try {
@@ -152,7 +178,9 @@ const RptBillingPlanner: React.FC = () => {
       setShowResults(false);
       setInvoiceDict(new Set()); // reset old data
 
-      // Fetch billing data
+  //console.log("USING START:", firstDay, "END:", lastDay);
+
+      // Fetch billing data startdate,
       await fetchBillingData(startdate, enddate, selectedManager.costcenter);
 
       // ✅ Fetch Invoice Dictionary
@@ -548,7 +576,7 @@ const RptBillingPlanner: React.FC = () => {
       <div
         style={{
           backgroundColor: "#81adde",
-          color: "#fff",
+          color: "#000000ff",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -556,7 +584,7 @@ const RptBillingPlanner: React.FC = () => {
           padding: "10px",
         }}
       >
-        <label>
+        {/* <label>
           Start Date:{" "}
           <input
             type="date"
@@ -571,8 +599,37 @@ const RptBillingPlanner: React.FC = () => {
             value={enddate}
             onChange={(e) => setEnddate(e.target.value)}
           />
-        </label>
+        </label> */}
+ <label>
+    Month:
+    <select
+      value={month}
+      onChange={(e) => setMonth(Number(e.target.value))}
+      style={{ padding: "5px", marginLeft: "5px" }}
+    >
+      {months.map((m) => (
+        <option key={m.value} value={m.value}>
+          {m.label}
+        </option>
+      ))}
+    </select>
+  </label>
 
+  <label>
+    Year:
+    <select
+      value={year}
+      onChange={(e) => setYear(Number(e.target.value))}
+      style={{ padding: "5px", marginLeft: "5px" }}
+    >
+      {years.map((y) => (
+        <option key={y.value} value={y.value}>
+          {y.label}
+        </option>
+      ))}
+    </select>
+  </label>
+  
         <Button
           variant="contained"
           color="primary"
@@ -706,9 +763,10 @@ const RptBillingPlanner: React.FC = () => {
           </div>
         )}
 
-        {Array.isArray(invoicePendingData) && invoicePendingData.length > 0 && (
-          <div style={{ textAlign: "left", alignItems: "center", marginTop: "20px" }}>
-            <ExportButton label="Export to Excel" onClick={handleInvPenExport} />
+        {!loadingData && showResults && data?.length > 0 && 
+        Array.isArray(invoicePendingData) && invoicePendingData.length > 0 && (
+          <div style={{ textAlign: "left", alignItems: "center", marginTop: "30px" }}>
+          
             <CustomDataGrid
               rows={invoicePendingData.map((r: any, i: number) => ({
                 id: r.id ?? i, // ✅ ensure every row has an ID
@@ -718,7 +776,9 @@ const RptBillingPlanner: React.FC = () => {
               title="Invoice Pending Data"
               sx={dataGridSx}
             />
+            <ExportButton label="Export to Excel" onClick={handleInvPenExport} />
           </div>
+            
         )}
       </>
     </Box>

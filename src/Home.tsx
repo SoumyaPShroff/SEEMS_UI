@@ -11,6 +11,7 @@ import OffshoreEnquiry from './Pages/OffshoreEnquiry';
 import ViewEnquiryReport from './Pages/SalesReports/ViewEnquiryReport';
 import ViewPOEnqData from './Pages/SalesReports/ViewPOEnqData';
 import OnsiteEnquiry from './Pages/OnsiteEnquiry';
+import AddQuotation from './Pages/AddQuotation';
 
 const Home = () => {
     const sessionUserID = sessionStorage.getItem('SessionUserID');
@@ -40,6 +41,7 @@ const Home = () => {
                 <Route path="/OnsiteEnquiry/:enquiryNo" element={<OnsiteEnquiry />} />
                 <Route path="/ViewEnquiryReport" element={<ViewEnquiryReport />} />
                 <Route path="/ViewPOEnqData" element={<ViewPOEnqData />} />
+                 <Route path="/AddQuotation/:enquiryNo" element={<AddQuotation />} />
                 <Route path="/support" element={<Support />} />
             </Routes>
         </>
