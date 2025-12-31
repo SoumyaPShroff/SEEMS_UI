@@ -16,9 +16,14 @@ export const exporttoexcel = (
     console.warn("⚠️ No data available for export.");
     return;
   }
-
+ 
+ const formattedData = data.map(({ id, ...rest }, index) => ({
+      SINo: id ?? index + 1, // rename id -> SINo
+      ...rest,              
+    }));
+ 
   try {
-    const worksheet = XLSX.utils.json_to_sheet(data);
+    const worksheet = XLSX.utils.json_to_sheet(formattedData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
     XLSX.writeFile(workbook, fileName);

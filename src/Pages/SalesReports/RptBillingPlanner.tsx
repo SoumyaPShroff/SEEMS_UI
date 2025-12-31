@@ -11,7 +11,7 @@ import axios from "axios";
 import DesignVsWipChart from "../../components/charts/DesignVsWipChart";
 import SegmentWiseBillingChart from "../../components/charts/SegmentWiseBillingChart";
 import { toast } from "react-toastify";
-import type { GridColDef } from '@mui/x-data-grid';
+import type { GridColDef, GridColumnVisibilityModel } from '@mui/x-data-grid';
 import { baseUrl } from "../../const/BaseUrl";
 import { exporttoexcel } from "../../components/utils/exporttoexcel";
 import ExportButton from "../../components/ReusablePageControls/ExportButton";
@@ -146,31 +146,80 @@ const RptBillingPlanner: React.FC = () => {
   const [invoicePendingData, setInvoicePendingData] = useState<BillingData[]>([]);
   const [pendingSummary, setPendingSummary] = useState<any>(null);
   const months = [
-  { value: 1, label: "January" },
-  { value: 2, label: "February" },
-  { value: 3, label: "March" },
-  { value: 4, label: "April" },
-  { value: 5, label: "May" },
-  { value: 6, label: "June" },
-  { value: 7, label: "July" },
-  { value: 8, label: "August" },
-  { value: 9, label: "September" },
-  { value: 10, label: "October" },
-  { value: 11, label: "November" },
-  { value: 12, label: "December" },
-];
+    { value: 1, label: "January" },
+    { value: 2, label: "February" },
+    { value: 3, label: "March" },
+    { value: 4, label: "April" },
+    { value: 5, label: "May" },
+    { value: 6, label: "June" },
+    { value: 7, label: "July" },
+    { value: 8, label: "August" },
+    { value: 9, label: "September" },
+    { value: 10, label: "October" },
+    { value: 11, label: "November" },
+    { value: 12, label: "December" },
+  ];
 
-const years = Array.from({ length: 12 }, (_, i) => {
-  const y = 2020 + i;
-  return { value: y, label: String(y) };
-});
+  const years = Array.from({ length: 12 }, (_, i) => {
+    const y = 2020 + i;
+    return { value: y, label: String(y) };
+  });
 
-const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
-const [year, setYear] = useState<number>(new Date().getFullYear());
+  const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
+  const [year, setYear] = useState<number>(new Date().getFullYear());
 
   const startdate = `${year}-${String(month).padStart(2, "0")}-01`;
   const enddate = new Date(year, month, 0).toISOString().slice(0, 10);
 
+  const defaultVisibleColumns: GridColumnVisibilityModel = {
+    jobNumber: true,
+    customer: true,
+    startDate: true,
+    plannedEndDate: true,
+    totalHrs: true,
+    poAmount: true,
+    plannedHrs: true,
+    enqType: true,
+    estimatedHours: true,
+    hourlyRate: true,
+    type: true,
+    costCenter: true,
+    salesManager: true,
+    projectManager: true,
+
+    // ❌ hidden initially
+
+    bilHrs_CurrentMonth: false,
+    billPerctg_CurMonth: false,
+    projectComp_Perc: false,
+    updatedByPrevDay: false,
+    billableECOHrs: false,
+    eco: false,
+    bilHrsPrevDay: false,
+    wipAmount: false,
+
+    enquiryno: false,
+    govt_tender: false,
+
+    poNumber: false,
+
+    poRcvd: false,
+    billingType: false,
+    expectedDeliveryDate: false,
+    actualEndDate: false,
+    nonBillableHrs: false,
+    flagRaisedOn: false,
+    totalBillableHrs: false,
+    totalInvoicedHrs: false,
+    totalInvoicedAmt: false,
+
+
+    jobtitle: false,
+    rejectedHrs: false,
+    projectmanagerid: false,
+  };
+
+  const [columnVisibilityModel, setColumnVisibilityModel] = useState(defaultVisibleColumns);
 
   const handleGenerate = async () => {
     try {
@@ -178,7 +227,7 @@ const [year, setYear] = useState<number>(new Date().getFullYear());
       setShowResults(false);
       setInvoiceDict(new Set()); // reset old data
 
-  //console.log("USING START:", firstDay, "END:", lastDay);
+      //console.log("USING START:", firstDay, "END:", lastDay);
 
       // Fetch billing data startdate,
       await fetchBillingData(startdate, enddate, selectedManager.costcenter);
@@ -253,6 +302,7 @@ const [year, setYear] = useState<number>(new Date().getFullYear());
     //   setShowResults(false);
     // }
   }, [data]);
+
 
   const renderSummaryTable = () => {
     if (!summary) return null;
@@ -382,54 +432,78 @@ const [year, setYear] = useState<number>(new Date().getFullYear());
       </div>
     );
   };
+  useEffect(() => {
+    localStorage.setItem(
+      "billingPlannerColumnVisibility",
+      JSON.stringify(columnVisibilityModel)
+    );
+  }, [columnVisibilityModel]);
 
   const columns: GridColDef[] = [
-    { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 350, },
+    { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 300, },
     { field: "customer", headerName: "Customer", flex: 1, minWidth: 180 },
     { field: "startDate", headerName: "Start Date", flex: 1, minWidth: 100 },
-    { field: "plannedEndDate", headerName: "Planned End Date", flex: 1, minWidth: 100 },
+    { field: "plannedEndDate", headerName: "Planned End Date", flex: 1, minWidth: 150 },
     { field: "totalHrs", headerName: "Total Hours", flex: 1, minWidth: 100 },
-    { field: "plannedHrs", headerName: "Planned Hours", flex: 1, minWidth: 50 },
-    { field: "bilHrs_CurrentMonth", headerName: "BilHrs_CurrentMonth", flex: 1, minWidth: 50 },
-    { field: "billPerctg_CurMonth", headerName: "BillPerctg_CurMonth", flex: 1, minWidth: 50 },
-    { field: "projectComp_Perc", headerName: "ProjectComp_Perc", flex: 1, minWidth: 50 },
-    { field: "updatedByPrevDay", headerName: "UpdatedByPrevDay", flex: 1, minWidth: 80 },
-    { field: "billableECOHrs", headerName: "BillableECO", flex: 1 },
-    { field: "eco", headerName: "ECO", flex: 1 },
-    { field: "bilHrsPrevDay", headerName: "BilHrsPrevDay", flex: 1 },
-    { field: "wipAmount", headerName: "WIPAmount", flex: 1 },
-    { field: "enqType", headerName: "EnqType", flex: 1 },
-    { field: "enquiryno", headerName: "Enquiry no", flex: 1 },
-    { field: "govt_tender", headerName: "govt_tender", flex: 1 },
-    { field: "estimatedHours", headerName: "Estimated Hours", flex: 1 },
-    { field: "poNumber", headerName: "PO Number", flex: 1 },
-    { field: "hourlyRate", headerName: "HourlyRate", flex: 1 },
-    { field: "poRcvd", headerName: "PoRcvd", flex: 1 },
+    { field: "plannedHrs", headerName: "Planned Hours", flex: 1, minWidth: 120 },
+    { field: "bilHrs_CurrentMonth", headerName: "BilHrs_CurrentMonth", flex: 1, minWidth: 160 },
+    { field: "billPerctg_CurMonth", headerName: "BillPerctg_CurMonth", flex: 1, minWidth: 160 },
+    { field: "projectComp_Perc", headerName: "ProjectComp_Perc", flex: 1, minWidth: 160 },
+    { field: "updatedByPrevDay", headerName: "UpdatedByPrevDay", flex: 1, minWidth: 150 },
+    { field: "billableECOHrs", headerName: "BillableECO", flex: 1, minWidth: 100 },
+    { field: "eco", headerName: "ECO", flex: 1 , minWidth: 100},
+    { field: "bilHrsPrevDay", headerName: "BilHrsPrevDay", flex: 1 , minWidth: 120},
+    { field: "wipAmount", headerName: "WIPAmount", flex: 1, minWidth: 120 },
+    { field: "enqType", headerName: "EnqType", flex: 1, minWidth: 100  },
+    { field: "enquiryno", headerName: "Enquiry no", flex: 1, minWidth: 120 },
+    { field: "govt_tender", headerName: "govt_tender", flex: 1, minWidth: 100 },
+    { field: "estimatedHours", headerName: "Estimated Hours", flex: 1 , minWidth: 150},
+    { field: "poNumber", headerName: "PO Number", flex: 1, minWidth: 250 },
+    { field: "hourlyRate", headerName: "HourlyRate", flex: 1, minWidth: 100 },
+    { field: "poRcvd", headerName: "PoRcvd", flex: 1, minWidth: 100 },
     { field: "poAmount", headerName: "PO Amount", flex: 1, minWidth: 100 },
-    { field: "billingType", headerName: "BillingType", flex: 1 },
-    { field: "expectedDeliveryDate", headerName: "ExpectedDeliveryDate", flex: 1 },
-    { field: "actualEndDate", headerName: "ActualEndDate", flex: 1 },
-    { field: "nonBillableHrs", headerName: "Non Billable Hrs", flex: 1 },
-    { field: "flagRaisedOn", headerName: "Flag RaisedOn", flex: 1 },
-    { field: "totalBillableHrs", headerName: "Total Billable Hrs", flex: 1 },
-    { field: "totalInvoicedHrs", headerName: "Total Invoiced Hrs", flex: 1 },
-    { field: "totalInvoicedAmt", headerName: "Total InvoicedAmt", flex: 1 },
-    { field: "type", headerName: "Type", flex: 1 },
-    { field: "costCenter", headerName: "Cost Center", flex: 1 },
+    { field: "billingType", headerName: "BillingType", flex: 1 , minWidth: 100},
+    { field: "expectedDeliveryDate", headerName: "ExpectedDeliveryDate", flex: 1 , minWidth: 150},
+    { field: "actualEndDate", headerName: "ActualEndDate", flex: 1 , minWidth: 150},
+    { field: "nonBillableHrs", headerName: "Non Billable Hrs", flex: 1 , minWidth: 140},
+    { field: "flagRaisedOn", headerName: "Flag RaisedOn", flex: 1 , minWidth: 130},
+    { field: "totalBillableHrs", headerName: "Total Billable Hrs", flex: 1 , minWidth: 150},
+    { field: "totalInvoicedHrs", headerName: "Total Invoiced Hrs", flex: 1, minWidth: 150 },
+    { field: "totalInvoicedAmt", headerName: "Total InvoicedAmt", flex: 1 , minWidth: 150},
+    { field: "type", headerName: "Type", flex: 1, minWidth: 90 },
+    { field: "costCenter", headerName: "Cost Center", flex: 1 , minWidth: 100},
     { field: "projectManager", headerName: "Project Manager", flex: 1, minWidth: 150 },
-    { field: "salesManager", headerName: "Sales Manager", flex: 1 },
-    { field: "jobtitle", headerName: "Job Title", flex: 1 },
-    { field: "rejectedHrs", headerName: "Rejected Hrs", flex: 1 },
-    { field: "projectmanagerid", headerName: "projectmanagerid", flex: 1 },
+    { field: "salesManager", headerName: "Sales Manager", flex: 1 , minWidth: 150 },
+    { field: "jobtitle", headerName: "Job Title", flex: 1 , minWidth: 100},
+    { field: "rejectedHrs", headerName: "Rejected Hrs", flex: 1, minWidth: 120 },
+    { field: "projectmanagerid", headerName: "projectmanagerid", flex: 1 , minWidth: 80},
+    { field: "poDate", headerName: "PO Date", flex: 1 , minWidth: 100},
+    { field: "realisedDate", headerName: "Realised Date", flex: 1 , minWidth: 120},
   ];
 
   const getRowClassName = (params: any): string => {
     const jobNo: string = params.row.jobNumber || "";
     const poRcvd: string = params.row.poRcvd || "";
     const dtStr: string = params.row.flagRaisedOn || "";
-
+    const poDateStr: string = params.row.poDate;
+    const requestDateStr: string = params.row.realisedDate;
     // 🟥 Case 1 — PO not received
     if (poRcvd === "NO") {
+      //new logic
+      if (poDateStr && requestDateStr) {
+      const poDate = new Date(poDateStr);
+      const requestDate = new Date(requestDateStr);
+
+      //const diffDays =  (poDate.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24);
+
+        const diffDays =  Math.floor((poDate.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
+      // 🟠 PO delay > 7 days
+      if (diffDays > 7) {
+        return "row-purple";
+      }
+    }
+
+    // 🟥 Default PO not received
       return "row-red";
     }
 
@@ -538,7 +612,7 @@ const [year, setYear] = useState<number>(new Date().getFullYear());
           display: "flex",
           justifyContent: "flex-start", // ✅ Left align
           padding: "24px",
-          mt: 12,
+          mt: 2,
         }}
       >
         <Box sx={{ width: 300 }}>
@@ -600,36 +674,36 @@ const [year, setYear] = useState<number>(new Date().getFullYear());
             onChange={(e) => setEnddate(e.target.value)}
           />
         </label> */}
- <label>
-    Month:
-    <select
-      value={month}
-      onChange={(e) => setMonth(Number(e.target.value))}
-      style={{ padding: "5px", marginLeft: "5px" }}
-    >
-      {months.map((m) => (
-        <option key={m.value} value={m.value}>
-          {m.label}
-        </option>
-      ))}
-    </select>
-  </label>
+        <label>
+          Month:
+          <select
+            value={month}
+            onChange={(e) => setMonth(Number(e.target.value))}
+            style={{ padding: "5px", marginLeft: "5px" }}
+          >
+            {months.map((m) => (
+              <option key={m.value} value={m.value}>
+                {m.label}
+              </option>
+            ))}
+          </select>
+        </label>
 
-  <label>
-    Year:
-    <select
-      value={year}
-      onChange={(e) => setYear(Number(e.target.value))}
-      style={{ padding: "5px", marginLeft: "5px" }}
-    >
-      {years.map((y) => (
-        <option key={y.value} value={y.value}>
-          {y.label}
-        </option>
-      ))}
-    </select>
-  </label>
-  
+        <label>
+          Year:
+          <select
+            value={year}
+            onChange={(e) => setYear(Number(e.target.value))}
+            style={{ padding: "5px", marginLeft: "5px" }}
+          >
+            {years.map((y) => (
+              <option key={y.value} value={y.value}>
+                {y.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
         <Button
           variant="contained"
           color="primary"
@@ -754,6 +828,8 @@ const [year, setYear] = useState<number>(new Date().getFullYear());
             <CustomDataGrid
               rows={data}
               columns={columns}
+              columnVisibilityModel={columnVisibilityModel}
+              onColumnVisibilityModelChange={(newModel) => setColumnVisibilityModel(newModel)}
               getRowClassName={(params) => getRowClassName(params) ?? ""}
               title="Billing Planner Data"
               loading={loading}
@@ -763,23 +839,23 @@ const [year, setYear] = useState<number>(new Date().getFullYear());
           </div>
         )}
 
-        {!loadingData && showResults && data?.length > 0 && 
-        Array.isArray(invoicePendingData) && invoicePendingData.length > 0 && (
-          <div style={{ textAlign: "left", alignItems: "center", marginTop: "30px" }}>
-          
-            <CustomDataGrid
-              rows={invoicePendingData.map((r: any, i: number) => ({
-                id: r.id ?? i, // ✅ ensure every row has an ID
-                ...r,
-              }))}
-              columns={pendingInvoiceColumns}
-              title="Invoice Pending Data"
-              sx={dataGridSx}
-            />
-            <ExportButton label="Export to Excel" onClick={handleInvPenExport} />
-          </div>
-            
-        )}
+        {!loadingData && showResults && data?.length > 0 &&
+          Array.isArray(invoicePendingData) && invoicePendingData.length > 0 && (
+            <div style={{ textAlign: "left", alignItems: "center", marginTop: "30px" }}>
+
+              <CustomDataGrid
+                rows={invoicePendingData.map((r: any, i: number) => ({
+                  id: r.id ?? i, // ✅ ensure every row has an ID
+                  ...r,
+                }))}
+                columns={pendingInvoiceColumns}
+                title="Invoice Pending Data"
+                sx={dataGridSx}
+              />
+              <ExportButton label="Export to Excel" onClick={handleInvPenExport} />
+            </div>
+
+          )}
       </>
     </Box>
   );

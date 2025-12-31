@@ -1,6 +1,6 @@
 import React from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import type { GridColDef } from "@mui/x-data-grid";
+import type { GridColDef, GridColumnVisibilityModel, } from "@mui/x-data-grid";
 
 interface CustomDataGridProps {
   rows: any[];
@@ -12,6 +12,11 @@ interface CustomDataGridProps {
   sx?: object;
   //autoHeight?: boolean;   // ← add this
   gridheight?: number | string; // ← height for scroll
+  // ✅ TYPES ONLY (NO commas, NO values)
+  columnVisibilityModel?: GridColumnVisibilityModel;
+  onColumnVisibilityModelChange?: (
+    model: GridColumnVisibilityModel
+  ) => void;
 }
 
 const CustomDataGrid: React.FC<CustomDataGridProps> = ({
@@ -23,27 +28,30 @@ const CustomDataGrid: React.FC<CustomDataGridProps> = ({
   getRowClassName,
   sx = {},
   gridheight,
+  // ✅ MUST be here
+  columnVisibilityModel,
+  onColumnVisibilityModelChange,
 }) => {
-const defaultSx = {
-  // Actual text inside each header cell
-  "& .MuiDataGrid-columnHeaderTitle": {
-    color: "SlateGrey",
-    fontWeight: "bold",  
-    fontSize: "14px",
-  },
+  const defaultSx = {
+    // Actual text inside each header cell
+    "& .MuiDataGrid-columnHeaderTitle": {
+      color: "SlateGrey",
+      fontWeight: "bold",
+      fontSize: "14px",
+    },
     "& .MuiDataGrid-columnSeparator": {
       display: "none",
     },
-};
- 
+  };
+
   return (
     <div
       style={{
-       // height: "auto",
-       height: gridheight, // <-- important for vertical scroll
+        // height: "auto",
+        height: gridheight, // <-- important for vertical scroll
         width: "100%",
         background: "#fff",
-      //  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+        //  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
         borderRadius: "8px",
         padding: "10px",
       }}
@@ -64,16 +72,19 @@ const defaultSx = {
         </h3>
       )}
       <div style={{ height: gridheight, width: "100%" }}>
-      <DataGrid
-      //  autoHeight
-        rows={rows}
-        columns={columns}
-        loading={loading}
-        rowHeight={rowHeight}
-        getRowClassName={(params) => (getRowClassName?.(params) ?? '')}
-        sx={{ ...defaultSx, ...sx }}
-      />
-    </div>
+        <DataGrid
+          //  autoHeight
+          rows={rows}
+          columns={columns}
+          loading={loading}
+          rowHeight={rowHeight}
+          getRowClassName={(params) => (getRowClassName?.(params) ?? '')}
+          sx={{ ...defaultSx, ...sx }}
+          columnVisibilityModel={columnVisibilityModel}
+          onColumnVisibilityModelChange={onColumnVisibilityModelChange}
+          disableColumnSelector={false}
+        />
+      </div>
     </div>
   );
 };

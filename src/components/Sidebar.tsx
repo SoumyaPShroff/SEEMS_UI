@@ -14,6 +14,7 @@ import logo from '../const/Images/Sienna-Ecad-logo.jpg';
 
 interface SidebarProps {
     sessionUserID: string;
+    setUserId: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 // === Top Navbar ===
@@ -78,20 +79,20 @@ const Logo = styled.img`
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
 `;
 
-
-const Sidebar: React.FC<SidebarProps> = ({ sessionUserID }) => {
+    const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId }) => {
     const [sidebar, setSidebar] = useState(false);
     const [activeMenu, setActiveMenu] = useState<string | null>(null);
     const [userName, setUserName] = useState("");
     const navigate = useNavigate();
     const location = useLocation();
     const showSidebar = () => setSidebar(!sidebar);
-    const menu = useSideBarData(); 
+    const menu = useSideBarData();
 
     const handleLogout = (e: React.MouseEvent<HTMLElement>) => {
         e.preventDefault();
         sessionStorage.removeItem("SessionUserID");
-        navigate("/");
+        setUserId(null);
+        navigate("/Login", { replace: true });         // replace=true - block to go back to protected page (prev page) for secure purpose
     };
 
     useEffect(() => {
@@ -118,15 +119,15 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID }) => {
 
     return (
         <>
-        
+
             <IconContext.Provider value={{ color: "#5D6D7E" }}>
                 {/* === Top Nav === */}
                 <Nav>
-                     <HeaderLeft> 
-                    <NavIcon to="#" >
-                        <FaIcons.FaBars onClick={showSidebar} />
-                    </NavIcon>          
-              </HeaderLeft>   
+                    <HeaderLeft>
+                        <NavIcon to="#" >
+                            <FaIcons.FaBars onClick={showSidebar} />
+                        </NavIcon>
+                    </HeaderLeft>
                     {/* Wrap Logo + Header in a flex container */}
                     <div style={{
                         display: "flex",
@@ -147,9 +148,12 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID }) => {
                     <RightCorner>
                         <span>{userName ? userName : "User"}</span>
                         <span style={{ margin: "0 8px" }}>|</span>
-                        <a href="/" onClick={handleLogout}>
+                        {/* <a href="/login" onClick={handleLogout}>
                             Log Out
-                        </a>
+                        </a> */}
+                        <Link to="/Login" onClick={handleLogout}>
+                            Log Out
+                        </Link>
                     </RightCorner>
                 </Nav>
 
@@ -179,8 +183,8 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID }) => {
                                     <AiIcons.AiOutlineClose onClick={showSidebar} />
                                 </NavIcon>
 
-                              {/* {SideBarData.map((item, index) => (   */}
-                                    {menu.map((item, index) => (
+                                {/* {SideBarData.map((item, index) => (   */}
+                                {menu.map((item, index) => (
                                     <SubMenu
                                         key={index}
                                         item={item}
