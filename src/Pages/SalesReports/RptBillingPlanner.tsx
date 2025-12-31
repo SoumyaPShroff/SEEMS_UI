@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Box, Button, CircularProgress } from "@mui/material";
 import { useBillingData } from "../../components/hooks/useBillingData";
 import { useManagers } from "../../components/hooks/useManagers";
-//import { getCurrentMonthDates } from "../../components/utils/DateUtils";
 import { ProjectionVsTargetChart } from "../../components/charts/ProjectionVsTargetChart";
 import { dataGridSx } from "../../components/common/DataGridStyles";
 import { ProjectManagerChart } from "../../components/charts/ProjectManagerChart";
@@ -133,9 +132,6 @@ const RptBillingPlanner: React.FC = () => {
   const { data, loading, fetchBillingData } = useBillingData();
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
   const { managers } = useManagers(loginId, "billingplanner");
-  // const { startdate: initialStart, enddate: initialEnd } = getCurrentMonthDates();
-  // const [startdate, setStartdate] = useState(initialStart);
-  // const [enddate, setEnddate] = useState(initialEnd);
   const [selectedManager, setSelectedManager] = useState<any>(null);
   const [summary, setSummary] = useState<any>(null);
   const [invoiceDict, setInvoiceDict] = useState<Set<string>>(new Set());
@@ -197,12 +193,9 @@ const RptBillingPlanner: React.FC = () => {
     eco: false,
     bilHrsPrevDay: false,
     wipAmount: false,
-
     enquiryno: false,
     govt_tender: false,
-
     poNumber: false,
-
     poRcvd: false,
     billingType: false,
     expectedDeliveryDate: false,
@@ -212,8 +205,6 @@ const RptBillingPlanner: React.FC = () => {
     totalBillableHrs: false,
     totalInvoicedHrs: false,
     totalInvoicedAmt: false,
-
-
     jobtitle: false,
     rejectedHrs: false,
     projectmanagerid: false,
@@ -226,8 +217,6 @@ const RptBillingPlanner: React.FC = () => {
       setLoadingData(true); // show spinner
       setShowResults(false);
       setInvoiceDict(new Set()); // reset old data
-
-      //console.log("USING START:", firstDay, "END:", lastDay);
 
       // Fetch billing data startdate,
       await fetchBillingData(startdate, enddate, selectedManager.costcenter);
@@ -297,10 +286,6 @@ const RptBillingPlanner: React.FC = () => {
       setTotalDesignVA(designSum);
       setShowResults(true);
     }
-    // else {
-    //   setSummary(null);
-    //   setShowResults(false);
-    // }
   }, [data]);
 
 
@@ -451,34 +436,34 @@ const RptBillingPlanner: React.FC = () => {
     { field: "projectComp_Perc", headerName: "ProjectComp_Perc", flex: 1, minWidth: 160 },
     { field: "updatedByPrevDay", headerName: "UpdatedByPrevDay", flex: 1, minWidth: 150 },
     { field: "billableECOHrs", headerName: "BillableECO", flex: 1, minWidth: 100 },
-    { field: "eco", headerName: "ECO", flex: 1 , minWidth: 100},
-    { field: "bilHrsPrevDay", headerName: "BilHrsPrevDay", flex: 1 , minWidth: 120},
+    { field: "eco", headerName: "ECO", flex: 1, minWidth: 100 },
+    { field: "bilHrsPrevDay", headerName: "BilHrsPrevDay", flex: 1, minWidth: 120 },
     { field: "wipAmount", headerName: "WIPAmount", flex: 1, minWidth: 120 },
-    { field: "enqType", headerName: "EnqType", flex: 1, minWidth: 100  },
+    { field: "enqType", headerName: "EnqType", flex: 1, minWidth: 100 },
     { field: "enquiryno", headerName: "Enquiry no", flex: 1, minWidth: 120 },
     { field: "govt_tender", headerName: "govt_tender", flex: 1, minWidth: 100 },
-    { field: "estimatedHours", headerName: "Estimated Hours", flex: 1 , minWidth: 150},
+    { field: "estimatedHours", headerName: "Estimated Hours", flex: 1, minWidth: 150 },
     { field: "poNumber", headerName: "PO Number", flex: 1, minWidth: 250 },
     { field: "hourlyRate", headerName: "HourlyRate", flex: 1, minWidth: 100 },
     { field: "poRcvd", headerName: "PoRcvd", flex: 1, minWidth: 100 },
     { field: "poAmount", headerName: "PO Amount", flex: 1, minWidth: 100 },
-    { field: "billingType", headerName: "BillingType", flex: 1 , minWidth: 100},
-    { field: "expectedDeliveryDate", headerName: "ExpectedDeliveryDate", flex: 1 , minWidth: 150},
-    { field: "actualEndDate", headerName: "ActualEndDate", flex: 1 , minWidth: 150},
-    { field: "nonBillableHrs", headerName: "Non Billable Hrs", flex: 1 , minWidth: 140},
-    { field: "flagRaisedOn", headerName: "Flag RaisedOn", flex: 1 , minWidth: 130},
-    { field: "totalBillableHrs", headerName: "Total Billable Hrs", flex: 1 , minWidth: 150},
+    { field: "billingType", headerName: "BillingType", flex: 1, minWidth: 100 },
+    { field: "expectedDeliveryDate", headerName: "ExpectedDeliveryDate", flex: 1, minWidth: 150 },
+    { field: "actualEndDate", headerName: "ActualEndDate", flex: 1, minWidth: 150 },
+    { field: "nonBillableHrs", headerName: "Non Billable Hrs", flex: 1, minWidth: 140 },
+    { field: "flagRaisedOn", headerName: "Flag RaisedOn", flex: 1, minWidth: 130 },
+    { field: "totalBillableHrs", headerName: "Total Billable Hrs", flex: 1, minWidth: 150 },
     { field: "totalInvoicedHrs", headerName: "Total Invoiced Hrs", flex: 1, minWidth: 150 },
-    { field: "totalInvoicedAmt", headerName: "Total InvoicedAmt", flex: 1 , minWidth: 150},
+    { field: "totalInvoicedAmt", headerName: "Total InvoicedAmt", flex: 1, minWidth: 150 },
     { field: "type", headerName: "Type", flex: 1, minWidth: 90 },
-    { field: "costCenter", headerName: "Cost Center", flex: 1 , minWidth: 100},
+    { field: "costCenter", headerName: "Cost Center", flex: 1, minWidth: 100 },
     { field: "projectManager", headerName: "Project Manager", flex: 1, minWidth: 150 },
-    { field: "salesManager", headerName: "Sales Manager", flex: 1 , minWidth: 150 },
-    { field: "jobtitle", headerName: "Job Title", flex: 1 , minWidth: 100},
+    { field: "salesManager", headerName: "Sales Manager", flex: 1, minWidth: 150 },
+    { field: "jobtitle", headerName: "Job Title", flex: 1, minWidth: 100 },
     { field: "rejectedHrs", headerName: "Rejected Hrs", flex: 1, minWidth: 120 },
-    { field: "projectmanagerid", headerName: "projectmanagerid", flex: 1 , minWidth: 80},
-    { field: "poDate", headerName: "PO Date", flex: 1 , minWidth: 100},
-    { field: "realisedDate", headerName: "Realised Date", flex: 1 , minWidth: 120},
+    { field: "projectmanagerid", headerName: "projectmanagerid", flex: 1, minWidth: 80 },
+    { field: "poDate", headerName: "PO Date", flex: 1, minWidth: 100 },
+    { field: "realisedDate", headerName: "Realised Date", flex: 1, minWidth: 120 },
   ];
 
   const getRowClassName = (params: any): string => {
@@ -491,19 +476,19 @@ const RptBillingPlanner: React.FC = () => {
     if (poRcvd === "NO") {
       //new logic
       if (poDateStr && requestDateStr) {
-      const poDate = new Date(poDateStr);
-      const requestDate = new Date(requestDateStr);
+        const poDate = new Date(poDateStr);
+        const requestDate = new Date(requestDateStr);
 
-      //const diffDays =  (poDate.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24);
+        //const diffDays =  (poDate.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24);
 
-        const diffDays =  Math.floor((poDate.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
-      // 🟠 PO delay > 7 days
-      if (diffDays > 7) {
-        return "row-purple";
+        const diffDays = Math.floor((poDate.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
+        // 🟠 PO delay > 7 days
+        if (diffDays > 7) {
+          return "row-purple";
+        }
       }
-    }
 
-    // 🟥 Default PO not received
+      // 🟥 Default PO not received
       return "row-red";
     }
 
@@ -612,7 +597,7 @@ const RptBillingPlanner: React.FC = () => {
           display: "flex",
           justifyContent: "flex-start", // ✅ Left align
           padding: "24px",
-          mt: 2,
+          mt: 11,
         }}
       >
         <Box sx={{ width: 300 }}>

@@ -79,7 +79,7 @@ const Logo = styled.img`
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
 `;
 
-    const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId }) => {
+const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId }) => {
     const [sidebar, setSidebar] = useState(false);
     const [activeMenu, setActiveMenu] = useState<string | null>(null);
     const [userName, setUserName] = useState("");

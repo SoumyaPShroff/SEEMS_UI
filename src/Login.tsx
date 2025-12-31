@@ -87,7 +87,7 @@ const LoginPage: React.FC<ILogin> = ({ setUserId }) => {
           const responseName = await axios.get<string>(`${baseUrl}/UserName/${loginId}`);
           sessionStorage.setItem('SessionUserName', responseName.data);
           const resDesgnName = await axios.get<string>(`${baseUrl}/UserDesignation/${loginId}`);
-          const resDesgnID  = await axios.get<string>(`${baseUrl}/RoleDesignID/${resDesgnName.data}`);
+          const resDesgnID = await axios.get<string>(`${baseUrl}/RoleDesignID/${resDesgnName.data}`);
           sessionStorage.setItem('SessionDesigID', resDesgnID.data);
           navigate('/Home');
         } else {

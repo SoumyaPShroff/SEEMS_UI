@@ -21,11 +21,15 @@ import AddQuotation from './Pages/AddQuotation';
 
 const App: React.FC = () => {
   const [userId, setUserId] = useState(sessionStorage.getItem('SessionUserID'));
-
   useEffect(() => {
-    const id = sessionStorage.getItem("SessionUserID");
-    setUserId(id);
+    const syncUser = () => {
+      setUserId(sessionStorage.getItem("SessionUserID"));
+    };
+
+    window.addEventListener("storage", syncUser);
+    return () => window.removeEventListener("storage", syncUser);
   }, []);
+
 
   return (
     <Router>
@@ -36,12 +40,12 @@ const App: React.FC = () => {
         {/* Login Route */}
         <Route path="/Login" element={<LoginPage userId={userId} setUserId={setUserId} />} />
 
-        {/* Home Route */}
-        {/* <Route path="/Home/*" element={userId ? <Home /> : <Navigate to="/Login" replace />} /> */}
         {/* Home Layout */}
         <Route
           path="/Home"
-          element={userId ? <Home setUserId={setUserId} /> : <Navigate to="/Login" replace />}
+          // element={userId ? <Home setUserId={setUserId} /> : <Navigate to="/Login" replace />}
+           element={userId ? <Home userId={userId} setUserId={setUserId} /> : <Navigate to="/Login" replace />} // passing serverUserID as prop
+
         >
           {/* <Route index element={<Home />} /> */}
           <Route path="RptBillingPlanner" element={<RptBillingPlanner />} />
@@ -50,7 +54,6 @@ const App: React.FC = () => {
           <Route path="ViewAllEnquiries" element={<ViewAllEnquiries />} />
           <Route path="AddEnquiry" element={<AddEnquiry />} />
           <Route path="support" element={<Support />} />
-
 
           {/* Absolute routes */}
           <Route path="OffshoreEnquiry/:enquiryNo" element={<OffshoreEnquiry />} />
@@ -71,3 +74,6 @@ const App: React.FC = () => {
   );
 };
 export default App;
+
+
+
