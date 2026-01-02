@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
+import Label from "./ReusablePageControls/Label";
 
 interface SubMenuItem {
   title: string;
@@ -40,10 +41,6 @@ const SidebarLink = styled(Link) <SidebarLinkProps>`
     border-left: 4px solid #27ae60;
     cursor: pointer;
   }
-`;
-
-const SidebarLabel = styled.span`
-  margin-left: 16px;
 `;
 
 const DropdownContainer = styled(motion.div)`
@@ -99,8 +96,9 @@ const SubMenu: React.FC<SubMenuProps> = ({ item, closeSidebar }) => {
         }}
       >
         <div>
-          {item.icon}
-          <SidebarLabel>{item.title}</SidebarLabel>
+          {/* {item.icon} */}
+          {/* <SidebarLabel>{item.title}</SidebarLabel> */}
+          <Label text={item.title} variant="menu"/>
         </div>
         <div>{item.subNav && (subnav ? item.iconOpened : item.iconClosed)}</div>
       </SidebarLink>
@@ -130,8 +128,9 @@ const SubMenu: React.FC<SubMenuProps> = ({ item, closeSidebar }) => {
                     else closeSidebar?.();
                   }}
                 >
-                  {subItem.icon}
-                  <SidebarLabel>{subItem.title}</SidebarLabel>
+                  {/* {subItem.icon} */}
+                  {/* <SidebarLabel>{subItem.title}</SidebarLabel> */}
+                  <Label text={subItem.title} variant="submenu" />
                 </DropdownLink>
               )
             )}

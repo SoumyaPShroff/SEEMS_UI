@@ -1,13 +1,27 @@
-import React from 'react';
+import React from "react";
+import "./Label.css";
 
 interface LabelProps {
   text: string;
-  style?: React.CSSProperties;
   className?: string;
+  style?: React.CSSProperties;
+  variant?: "default" | "menu" | "submenu";
 }
 
-const Label: React.FC<LabelProps> = ({ text, style, className }) => {
-  return <label className={className} style={style}>{text}</label>;
+const Label: React.FC<LabelProps> = ({
+  text,
+  className = "",
+  style,
+  variant = "default",
+}) => {
+  return (
+    <label
+      className={`app-label app-label--${variant} ${className}`}
+      style={style}
+    >
+      {text}
+    </label>
+  );
 };
 
 export default Label;

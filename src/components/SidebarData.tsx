@@ -3,7 +3,7 @@ import axios from "axios";
 import * as IoIcons from "react-icons/io";
 import * as RiIcons from "react-icons/ri";
 import { baseUrl } from "../const/BaseUrl";
-
+ 
 interface SidebarItem {
   title: string;
   path?: string;
@@ -32,7 +32,7 @@ export const useSideBarData = () => {
           let main = structured.find((m) => m.title === item.mainmenu);
           if (!main) {
             main = {
-              title: item.mainmenu,
+             title: item.mainmenu,
               icon: <IoIcons.IoIosPaper />,
               iconClosed: <RiIcons.RiArrowDownSFill />,
               iconOpened: <RiIcons.RiArrowUpSFill />,

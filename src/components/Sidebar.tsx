@@ -53,7 +53,8 @@ const RightCorner = styled.div`
   display: flex;
   align-items: center;
   margin-left: auto;
-  padding: 20px;
+  margin-right: 20px;
+  padding: 30px;
   color: #2c3e50;
 
   a {
@@ -147,7 +148,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId }) => {
                     </div>
                     <RightCorner>
                         <span>{userName ? userName : "User"}</span>
-                        <span style={{ margin: "0 8px" }}>|</span>
+                        <span style={{ margin: "0 2px" }}>|</span>
                         {/* <a href="/login" onClick={handleLogout}>
                             Log Out
                         </a> */}
