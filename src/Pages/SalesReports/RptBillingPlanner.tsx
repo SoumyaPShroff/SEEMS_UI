@@ -165,7 +165,13 @@ const RptBillingPlanner: React.FC = () => {
   const [year, setYear] = useState<number>(new Date().getFullYear());
 
   const startdate = `${year}-${String(month).padStart(2, "0")}-01`;
-  const enddate = new Date(year, month, 0).toISOString().slice(0, 10);
+  //  const enddate = new Date(year, month, 0).toISOString().slice(0, 10); // not working as expected expecailly skipping 31
+
+  const endDateObj = new Date(year, month, 0);
+
+  const enddate = `${year}-${String(month).padStart(2, "0")}-${String(
+    endDateObj.getDate()
+  ).padStart(2, "0")}`;
 
   const defaultVisibleColumns: GridColumnVisibilityModel = {
     jobNumber: true,
