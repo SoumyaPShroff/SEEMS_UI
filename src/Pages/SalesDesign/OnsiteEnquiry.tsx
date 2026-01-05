@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Box, Card, CardContent, Typography, TextField, FormControlLabel, RadioGroup, Radio, Button } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import SelectControl from "../components/ReusablePageControls/SelectControl";
-import { baseUrl } from "../const/BaseUrl";
+import SelectControl from "../../components/ReusablePageControls/SelectControl";
+import { baseUrl } from "../../const/BaseUrl";
 import { ToastContainer, toast } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";

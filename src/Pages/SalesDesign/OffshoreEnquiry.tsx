@@ -3,8 +3,8 @@ import type { ChangeEvent } from "react";
 import { FormGroup, TextField, Button, Card, CardContent, Typography, Box, FormControlLabel, Checkbox, RadioGroup, Radio,
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import { baseUrl } from "../const/BaseUrl";
-import SelectControl from "../components/ReusablePageControls/SelectControl";
+import SelectControl from "../../components/ReusablePageControls/SelectControl";
+import { baseUrl } from "../../const/BaseUrl";
 import { ToastContainer, toast } from "react-toastify";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";

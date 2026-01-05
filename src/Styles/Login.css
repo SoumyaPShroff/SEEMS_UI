@@ -100,6 +100,7 @@
   margin-top: 10px;
   font-size: small;
 }
+
 /* Application Title - Centered and Styled */
 .AppTitle {
   text-align: center;
@@ -109,12 +110,14 @@
   margin-bottom: 2px; /* Small gap between main header and subtitle */
   margin-top: 50px;
 }
+
 .SubTitle {
   font-size: 2rem; /* Smaller than the main header */
   text-align: center;
   color: #333; /* Adjust color as needed */
   margin-top: 2px;
 }
+
 .error-message {
   color: red;
   font-weight: bold;

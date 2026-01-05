@@ -9,15 +9,15 @@ import ForgotPassword from './ForgotPassword';
 import Blank from './Pages/Blank';
 import Support from "./Pages/Support";
 import SeemsHomeSubMenu from './Pages/SeemsHomeSubMenu';
-import RptBillingPlanner from './Pages/SalesReports/RptBillingPlanner';
-import SalesDashboard from './Pages/SalesReports/SalesDashboard';
-import ViewAllEnquiries from './Pages/SalesReports/ViewAllEnquiries';
-import AddEnquiry from './Pages/AddEnquiry';
-import OffshoreEnquiry from './Pages/OffshoreEnquiry';
-import ViewEnquiryReport from './Pages/SalesReports/ViewEnquiryReport';
-import ViewPOEnqData from './Pages/SalesReports/ViewPOEnqData';
-import OnsiteEnquiry from './Pages/OnsiteEnquiry';
-import AddQuotation from './Pages/AddQuotation';
+import RptBillingPlanner from './Pages/GeneralReports/RptBillingPlanner';
+import SalesDashboard from './Pages/SalesDesign/SalesDashboard';
+import ViewAllEnquiries from './Pages/SalesDesign/ViewAllEnquiries';
+import AddEnquiry from "./Pages/SalesDesign/AddEnquiry";
+import OffshoreEnquiry from './Pages/SalesDesign/OffshoreEnquiry';
+import ViewEnquiryReport from './Pages/SalesDesign/ViewEnquiryReport';
+import ViewPOEnqData from './Pages/SalesDesign/ViewPOEnqData';
+import OnsiteEnquiry from './Pages/SalesDesign/OnsiteEnquiry';
+import AddQuotation from './Pages/SalesDesign/AddQuotation';
 
 const App: React.FC = () => {
   const [userId, setUserId] = useState(sessionStorage.getItem('SessionUserID'));

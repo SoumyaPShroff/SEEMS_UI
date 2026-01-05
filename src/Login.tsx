@@ -3,7 +3,7 @@ import { baseUrl } from './const/BaseUrl';
 import { useNavigate } from 'react-router-dom';
 import logo1 from './const/Images/Sienna-Ecad-logo.jpg'
 import logo2 from './const/Images/Sienna-Ecad-logo2.jpg'
-import './Login.css';
+import './Styles/Login.css';
 import { Link } from "react-router-dom";
 import axios from "axios";
 
