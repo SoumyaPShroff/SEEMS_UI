@@ -165,8 +165,6 @@ const RptBillingPlanner: React.FC = () => {
   const [year, setYear] = useState<number>(new Date().getFullYear());
 
   const startdate = `${year}-${String(month).padStart(2, "0")}-01`;
-  //  const enddate = new Date(year, month, 0).toISOString().slice(0, 10); // not working as expected expecailly skipping 31
-
   const endDateObj = new Date(year, month, 0);
 
   const enddate = `${year}-${String(month).padStart(2, "0")}-${String(
@@ -484,9 +482,6 @@ const RptBillingPlanner: React.FC = () => {
       if (poDateStr && requestDateStr) {
         const poDate = new Date(poDateStr);
         const requestDate = new Date(requestDateStr);
-
-        //const diffDays =  (poDate.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24);
-
         const diffDays = Math.floor((poDate.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
         // 🟠 PO delay > 7 days
         if (diffDays > 7) {
@@ -649,22 +644,6 @@ const RptBillingPlanner: React.FC = () => {
           padding: "10px",
         }}
       >
-        {/* <label>
-          Start Date:{" "}
-          <input
-            type="date"
-            value={startdate}
-            onChange={(e) => setStartdate(e.target.value)}
-          />
-        </label>
-        <label>
-          End Date:{" "}
-          <input
-            type="date"
-            value={enddate}
-            onChange={(e) => setEnddate(e.target.value)}
-          />
-        </label> */}
         <label>
           Month:
           <select
