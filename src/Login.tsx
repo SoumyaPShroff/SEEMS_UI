@@ -77,7 +77,18 @@ const LoginPage: React.FC<ILogin> = ({ setUserId }) => {
     // }
 
     try {
-      const response = await fetch(`${baseUrl}/VerifyLoginUser/${loginId}/${password}`);
+    //  const response = await fetch(`${baseUrl}/VerifyLoginUser/${loginId}/${password}`); // insecure - avoid GET for sensitive data - not exposing the password in URL
+      const response = await fetch(`${baseUrl}/VerifyLoginUser`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          loginId,
+          password,
+        }),
+      });
+
       if (response.ok) {
         const result = await response.json();
         if (result != null) {
@@ -102,6 +113,9 @@ const LoginPage: React.FC<ILogin> = ({ setUserId }) => {
     } catch (error) {
       setLoginError(<span className="error-message">Login failed. Please check your credentials.</span>);
     }
+    finally {
+    setPassword(""); // clear sensitive data
+  }
   };
 
   useEffect(() => {
