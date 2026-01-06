@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { baseUrl } from "./const/BaseUrl";
-import "./Styles/ResetForgotPswd.css"
+import "../src/mainstyles/ResetForgotPswd.css";
 import { useNavigate, useLocation } from "react-router-dom";
 
 interface ForgotPasswordResponse {

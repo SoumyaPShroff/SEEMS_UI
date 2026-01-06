@@ -1,6 +1,6 @@
 import { Bar } from "react-chartjs-2";
 import { useEffect, useState } from "react";
-import { bucketFor, normCat } from "../utils/billingutils";
+import { bucketFor, normCat } from '../billplanhooks/billingutils';
 import type { ChartOptions } from 'chart.js';
 
 // ✅ Register required components

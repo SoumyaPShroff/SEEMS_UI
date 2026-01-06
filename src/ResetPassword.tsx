@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { baseUrl } from "./const/BaseUrl";
-import "./Styles/ResetForgotPswd.css"
+import "../src/mainstyles/ResetForgotPswd.css";
 
 const ResetPassword: React.FC = () => {
   const location = useLocation();

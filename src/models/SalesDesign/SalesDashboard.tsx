@@ -4,7 +4,6 @@ import { baseUrl } from "../../const/BaseUrl";
 import { LoadingButton } from "@mui/lab";
 import { motion } from "framer-motion";
 import { ResponsiveContainer,  PieChart,  Pie,  Cell,  Tooltip,  Legend,} from "recharts";
-import "../../styles/SalesDashboard.css";
 import type { PieLabelRenderProps } from "recharts";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";

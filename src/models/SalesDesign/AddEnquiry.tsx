@@ -1,4 +1,4 @@
-import ToggleView from "./ToggleView";
+import ToggleView from "../../components/resusablecontrols/ToggleView";
 import OnsiteEnquiry from "./OnsiteEnquiry";
 import OffshoreEnquiry from "./OffshoreEnquiry";
 

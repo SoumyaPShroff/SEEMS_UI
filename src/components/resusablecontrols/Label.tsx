@@ -1,5 +1,5 @@
 import React from "react";
-import "./Label.css";
+import "./styles/Label.css";
 
 interface LabelProps {
   text: string;
