@@ -3,7 +3,7 @@ import { Box, Button, CircularProgress } from "@mui/material";
 import { useBillingData } from "../../components/hooks/useBillingData";
 import { useManagers } from "../../components/hooks/useManagers";
 import { ProjectionVsTargetChart } from "../../components/charts/ProjectionVsTargetChart";
-import { dataGridSx } from "../../components/common/DataGridStyles";
+import { dataGridSx } from "../common/BillPlanDataGridStyles";
 import { ProjectManagerChart } from "../../components/charts/ProjectManagerChart";
 import { SalesManagerChart } from "../../components/charts/SalesManagerChart";
 import axios from "axios";
@@ -11,11 +11,11 @@ import DesignVsWipChart from "../../components/charts/DesignVsWipChart";
 import SegmentWiseBillingChart from "../../components/charts/SegmentWiseBillingChart";
 import { toast } from "react-toastify";
 import type { GridColDef, GridColumnVisibilityModel } from '@mui/x-data-grid';
-import { baseUrl } from "../../const/BaseUrl";
-import { exporttoexcel } from "../../components/utils/exporttoexcel";
-import ExportButton from "../../components/ReusablePageControls/ExportButton";
-import CustomDataGrid from "../../components/common/CustomerDataGrid";
-import SelectControl from "../../components/ReusablePageControls/SelectControl";
+import { baseUrl } from "../../../const/BaseUrl";
+import { exporttoexcel } from "../../../components/utils/exporttoexcel";
+import ExportButton from "../../../components/resusablecontrols/ExportButton";
+import CustomDataGrid from "../../../components/resusablecontrols/CustomerDataGrid";
+import SelectControl from "../../../components/resusablecontrols/SelectControl";
 
 // ✅ Types
 interface BillingData {

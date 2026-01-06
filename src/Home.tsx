@@ -1,17 +1,17 @@
 import { useEffect } from 'react';
 import Sidebar from "./components/Sidebar";
 import { Routes, Route } from "react-router-dom";
-import Support from "./Pages/Support";
-import SeemsHomeSubMenu from './Pages/SeemsHomeSubMenu';
-import RptBillingPlanner from './Pages/GeneralReports/RptBillingPlanner';
-import SalesDashboard from './Pages/SalesDesign/SalesDashboard';
-import ViewAllEnquiries from './Pages/SalesDesign/ViewAllEnquiries';
-import AddEnquiry from  './Pages/SalesDesign/AddEnquiry';
-import OffshoreEnquiry from './Pages/SalesDesign/OffshoreEnquiry';
-import ViewEnquiryReport from './Pages/SalesDesign/ViewEnquiryReport';
-import ViewPOEnqData from './Pages/SalesDesign/ViewPOEnqData';
-import OnsiteEnquiry from './Pages/SalesDesign/OnsiteEnquiry';
-import AddQuotation from './Pages/SalesDesign/AddQuotation';
+import Support from "./models/Support";
+import SeemsHomeSubMenu from './models/SeemsHomeSubMenu';
+import RptBillingPlanner from './models/GeneralReports/billingplanner/RptBillingPlanner';
+import SalesDashboard from './models/SalesDesign/SalesDashboard';
+import ViewAllEnquiries from './models/SalesDesign/ViewAllEnquiries';
+import AddEnquiry from  './models/SalesDesign/AddEnquiry';
+import OffshoreEnquiry from './models/SalesDesign/OffshoreEnquiry';
+import ViewEnquiryReport from './models/SalesDesign/ViewEnquiryReport';
+import ViewPOEnqData from './models/SalesDesign/ViewPOEnqData';
+import OnsiteEnquiry from './models/SalesDesign/OnsiteEnquiry';
+import AddQuotation from './models/SalesDesign/AddQuotation';
 
 interface HomeProps {
     userId: string | null;  //new

@@ -6,8 +6,8 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { baseUrl } from "../../const/BaseUrl";
 import { exporttoexcel } from "../../components/utils/exporttoexcel";
-import ExportButton from "../../components/ReusablePageControls/ExportButton";
-import CustomDataGrid from "../../components/common/CustomerDataGrid";
+import ExportButton from "../../components/resusablecontrols/ExportButton";
+import CustomDataGrid from "../../components/resusablecontrols/CustomerDataGrid";
 
 const ViewAllEnquiries = () => {
   const navigate = useNavigate();

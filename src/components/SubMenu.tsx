@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
-import Label from "./ReusablePageControls/Label";
+import Label from "./resusablecontrols/Label";
 
 interface SubMenuItem {
   title: string;

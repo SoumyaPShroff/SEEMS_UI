@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import type { GridColDef } from '@mui/x-data-grid';
 import { Box, Button, TextField } from "@mui/material";
-import CustomDataGrid from "../../components/common/CustomerDataGrid";
+import CustomDataGrid from "../../components/resusablecontrols/CustomerDataGrid";
 import { baseUrl } from "../../const/BaseUrl";
 import { exporttoexcel } from "../../components/utils/exporttoexcel";
 import { toast } from "react-toastify";

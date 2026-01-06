@@ -1,27 +1,31 @@
 import React, { useState } from "react";
 import { Box, ToggleButton, ToggleButtonGroup, Card } from "@mui/material";
-import OnsiteEnquiry from "./OnsiteEnquiry";
-import OffshoreEnquiry from "./OffshoreEnquiry";
 
-const AddEnquiry: React.FC = () => {
-  const [mode, setMode] = useState<string>("OFFSHORE");
+export type ToggleOption = {
+  label: string;
+  value: string;
+};
+
+type ToggleViewProps = {
+  options: ToggleOption[];
+  defaultValue: string;
+  renderMap: Record<string, React.ReactNode>;
+};
+
+const ToggleView: React.FC<ToggleViewProps> = ({
+  options,
+  defaultValue,
+  renderMap,
+}) => {
+  const [mode, setMode] = useState<string>(defaultValue);
 
   const handleModeChange = (_: any, value: string) => {
     if (value) setMode(value);
   };
 
-  const renderForm = () => {
-    switch (mode) {
-      case "ONSITE":
-        return <OnsiteEnquiry />;
-      default:
-        return <OffshoreEnquiry />;
-    }
-  };
-
   return (
     <Box sx={{ mt: 12, display: "flex", flexDirection: "column", alignItems: "center" }}>
-      {/* 🔹 Radio Button Box */}
+      {/* Toggle Buttons */}
       <Card
         sx={{
           p: 1,
@@ -38,16 +42,20 @@ const AddEnquiry: React.FC = () => {
           color="primary"
           size="large"
         >
-          <ToggleButton value="ONSITE">ONSITE</ToggleButton>
-          <ToggleButton value="OFFSHORE">OFFSHORE</ToggleButton>
+          {options.map((opt) => (
+            <ToggleButton key={opt.value} value={opt.value}>
+              {opt.label}
+            </ToggleButton>
+          ))}
         </ToggleButtonGroup>
       </Card>
-      {/* 🔹 Dynamic Form Panel */}
-      <Box sx={{ width: "100%", maxWidth: 1100}}>
-        {renderForm()}
+
+      {/* Dynamic Content */}
+      <Box sx={{ width: "100%", maxWidth: 1100 }}>
+        {renderMap[mode]}
       </Box>
     </Box>
   );
 };
 
-export default AddEnquiry;
+export default ToggleView;

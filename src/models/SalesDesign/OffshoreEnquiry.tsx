@@ -3,7 +3,7 @@ import type { ChangeEvent } from "react";
 import { FormGroup, TextField, Button, Card, CardContent, Typography, Box, FormControlLabel, Checkbox, RadioGroup, Radio,
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import SelectControl from "../../components/ReusablePageControls/SelectControl";
+import SelectControl from "../../components/resusablecontrols/SelectControl";
 import { baseUrl } from "../../const/BaseUrl";
 import { ToastContainer, toast } from "react-toastify";
 import { useParams, useNavigate } from "react-router-dom";
@@ -159,7 +159,6 @@ const OffshoreEnquiry: React.FC = () => {
       remarks: "", referenceBy: "",
    };
 
-
    // 🔹 Fetch dropdown data
    useEffect(() => {
       const fetchLookups = async () => {
@@ -243,7 +242,6 @@ const OffshoreEnquiry: React.FC = () => {
             // 🔹 THEN set your form
             setForm((prev) => ({
                ...prev,
-               // enquirytype: data.enquirytype,
                enquirytype: enquiry.enquirytype || "OFFSHORE",
                customerId: String(enquiry.customer_id),
                locationId: String(enquiry.location_id),
@@ -590,7 +588,6 @@ const OffshoreEnquiry: React.FC = () => {
                   break;
             }
          }
-
          return updated;
       });
    };
