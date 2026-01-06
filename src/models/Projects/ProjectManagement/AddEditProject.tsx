@@ -3,17 +3,9 @@
 
 const AddEditProject = () => {
   return (
-    // <ToggleView
-    //   defaultValue="Add Project"
-    //   options={[
-    //     { label: "Add Project", value: "Add" },
-    //     { label: "Edit Project", value: "Edit" },
-    //   ]}
-    //   renderMap={{
-    //     Add: <AddEditProject />,
-    //     Edit: <AddEditProject />,
-    //   }}
-    // />
+    <div>
+      <h2>Add/Edit Project</h2>
+    </div>
   );
 };
 

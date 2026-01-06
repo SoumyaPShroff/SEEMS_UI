@@ -8,16 +8,15 @@ import ResetPassword from './ResetPassword';
 import ForgotPassword from './ForgotPassword';
 import Blank from './models/Blank';
 import Support from "./models/Support";
-import SeemsHomeSubMenu from './models/SeemsHomeSubMenu';
-import RptBillingPlanner from './models/GeneralReports/billingplanner/RptBillingPlanner';
-import SalesDashboard from './models/SalesDesign/SalesDashboard';
-import ViewAllEnquiries from './models/SalesDesign/ViewAllEnquiries';
-import AddEnquiry from "./models/SalesDesign/AddEnquiry";
-import OffshoreEnquiry from './models/SalesDesign/OffshoreEnquiry';
-import ViewEnquiryReport from './models/SalesDesign/ViewEnquiryReport';
-import ViewPOEnqData from './models/SalesDesign/ViewPOEnqData';
-import OnsiteEnquiry from './models/SalesDesign/OnsiteEnquiry';
-import AddQuotation from './models/SalesDesign/AddQuotation';
+import RptBillingPlanner from './models/General/Reports/billingplanner/RptBillingPlanner';
+import SalesDashboard from './models/Sales/SalesDashboard';
+import ViewAllEnquiries from './models/Sales/ViewAllEnquiries';
+import AddEnquiry from "./models/Sales/AddEnquiry";
+import OffshoreEnquiry from './models/Sales/OffshoreEnquiry';
+import ViewEnquiryReport from './models/Sales/ViewEnquiryReport';
+import ViewPOEnqData from './models/Sales/ViewPOEnqData';
+import OnsiteEnquiry from './models/Sales/OnsiteEnquiry';
+import AddQuotation from './models/Sales/AddQuotation';
 
 const App: React.FC = () => {
   const [userId, setUserId] = useState(sessionStorage.getItem('SessionUserID'));
@@ -49,7 +48,6 @@ const App: React.FC = () => {
         >
           {/* <Route index element={<Home />} /> */}
           <Route path="RptBillingPlanner" element={<RptBillingPlanner />} />
-          <Route path="SeemsHomeSubMenu" element={<SeemsHomeSubMenu />} />
           <Route path="SalesDashboard" element={<SalesDashboard />} />
           <Route path="ViewAllEnquiries" element={<ViewAllEnquiries />} />
           <Route path="AddEnquiry" element={<AddEnquiry />} />

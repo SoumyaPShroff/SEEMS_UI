@@ -2,16 +2,15 @@ import { useEffect } from 'react';
 import Sidebar from "./components/Sidebar";
 import { Routes, Route } from "react-router-dom";
 import Support from "./models/Support";
-import SeemsHomeSubMenu from './models/SeemsHomeSubMenu';
-import RptBillingPlanner from './models/GeneralReports/billingplanner/RptBillingPlanner';
-import SalesDashboard from './models/SalesDesign/SalesDashboard';
-import ViewAllEnquiries from './models/SalesDesign/ViewAllEnquiries';
-import AddEnquiry from  './models/SalesDesign/AddEnquiry';
-import OffshoreEnquiry from './models/SalesDesign/OffshoreEnquiry';
-import ViewEnquiryReport from './models/SalesDesign/ViewEnquiryReport';
-import ViewPOEnqData from './models/SalesDesign/ViewPOEnqData';
-import OnsiteEnquiry from './models/SalesDesign/OnsiteEnquiry';
-import AddQuotation from './models/SalesDesign/AddQuotation';
+import RptBillingPlanner from './models/General/Reports/billingplanner/RptBillingPlanner';
+import SalesDashboard from './models/Sales/SalesDashboard';
+import ViewAllEnquiries from './models/Sales/ViewAllEnquiries';
+import AddEnquiry from  './models/Sales/AddEnquiry';
+import OffshoreEnquiry from './models/Sales/OffshoreEnquiry';
+import ViewEnquiryReport from './models/Sales/ViewEnquiryReport';
+import ViewPOEnqData from './models/Sales/ViewPOEnqData';
+import OnsiteEnquiry from './models/Sales/OnsiteEnquiry';
+import AddQuotation from './models/Sales/AddQuotation';
 
 interface HomeProps {
     userId: string | null;  //new
@@ -39,7 +38,6 @@ const sessionUserID = userId; // updated to use prop
                 setUserId={setUserId}
             />
             <Routes>
-                <Route path="/SeemsHomeSubMenu" element={<SeemsHomeSubMenu />} />
                 <Route path="/RptBillingPlanner" element={<RptBillingPlanner />} />
                 <Route path="/SalesDashboard" element={<SalesDashboard />} />
                 <Route path="/ViewAllEnquiries" element={<ViewAllEnquiries />} />
