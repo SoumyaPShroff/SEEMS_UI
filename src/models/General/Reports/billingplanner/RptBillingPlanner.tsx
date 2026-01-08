@@ -226,7 +226,7 @@ const RptBillingPlanner: React.FC = () => {
       await fetchBillingData(startdate, enddate, selectedManager.costcenter);
 
       // ✅ Fetch Invoice Dictionary
-      const invUrl = `${baseUrl}/InvoiceDictionary/${startdate}/${enddate}`;
+      const invUrl = `${baseUrl}/api/Job/InvoiceDictionary/${startdate}/${enddate}`;
       const invResponse = await axios.get<{ jobnumber: string; month: number; year: number }[]>(invUrl);
 
       const invSet = new Set<string>();
@@ -237,7 +237,7 @@ const RptBillingPlanner: React.FC = () => {
 
       setInvoiceDict(invSet);
 
-      const invPendingUrl = `${baseUrl}/api/sales/PendingInvoices/${selectedManager.costcenter}`;
+      const invPendingUrl = `${baseUrl}/api/Sales/PendingInvoices/${selectedManager.costcenter}`;
       const pendingResponse = await axios.get<BillingData[]>(invPendingUrl);
       setInvoicePendingData(pendingResponse.data);
 

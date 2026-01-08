@@ -17,7 +17,7 @@ export const useBillingData = () => {
       }
 
       // Since your API expects query parameters, this is correct
-      const res = await axios.get<any[]>(`${baseUrl}/BillingPlanner`, { params });
+      const res = await axios.get<any[]>(`${baseUrl}/api/Job/BillingPlanner`, { params });
       const rows = res.data.map((item: any, i: number) => ({ id: i + 1, ...item }));
       setData(rows);
     } catch (err) {
