@@ -1,11 +1,12 @@
 import {useEffect, useState } from "react";
 import axios from "axios";
 import type { GridColDef } from '@mui/x-data-grid';
-import { Box, Button } from "@mui/material";
-import CustomDataGrid from "../../components/resusablecontrols/CustomerDataGrid";
+import { Box } from "@mui/material";//, Button
+import CustomDataGrid from "../../components/resusablecontrols/CustomDataGrid";
 import { baseUrl } from "../../const/BaseUrl";
 import { exporttoexcel } from "../../components/utils/exporttoexcel";
 import { toast } from "react-toastify";
+import ExportButton from "../../components/resusablecontrols/ExportButton";
 //import { useNavigate } from "react-router-dom";
 
 
@@ -112,8 +113,9 @@ export default function ViewPOEnqData() {
     return (
         <Box sx={{ padding: "100px", mt: "30px", ml: "20px" }}>
             <Box sx={{ display: "flex", alignItems: "left", gap: 2 }}>
-                <Button variant="contained"    onClick={fetchData} style={{ height: 35 }}> View Data </Button>
-                <Button variant="contained"   onClick={handleViewEnqExport} style={{ height: 35 }}>Export to Excel</Button>
+                {/* <Button variant="contained"    onClick={fetchData} style={{ height: 35 }}> View Data </Button> */}
+                {/* <Button variant="contained"   onClick={handleViewEnqExport} style={{ height: 35 }}>Export to Excel</Button> */}
+                <ExportButton label="Export to Excel" onClick={handleViewEnqExport} />
             </Box>
             <CustomDataGrid
               //  autoHeight={true}

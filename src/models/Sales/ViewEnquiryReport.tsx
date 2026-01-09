@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import axios from "axios";
 import type { GridColDef } from '@mui/x-data-grid';
 import { Box, Button, TextField } from "@mui/material";
-import CustomDataGrid from "../../components/resusablecontrols/CustomerDataGrid";
+import CustomDataGrid from "../../components/resusablecontrols/CustomDataGrid";
 import { baseUrl } from "../../const/BaseUrl";
 import { exporttoexcel } from "../../components/utils/exporttoexcel";
 import { toast } from "react-toastify";
+import ExportButton from "../../components/resusablecontrols/ExportButton";
 //import { useNavigate } from "react-router-dom";
 
 export default function ViewEnquiryReport() {
@@ -18,16 +19,16 @@ export default function ViewEnquiryReport() {
 
     const columns: GridColDef[] = [
         { field: "enquiryno", headerName: "enquiryno", width: 100 },
-        { field: "customer", headerName: "customer", width: 200 },
+        { field: "customer", headerName: "customer", width: 300 },
         { field: "enquiry_createdon", headerName: "enquiry_createdon", width: 150 },
         { field: "quote_generatedon", headerName: "quote_generatedon", width: 150 },
         { field: "job_Createdon", headerName: "Job_Createdon", width: 150 },
         { field: "salesperson", headerName: "salesperson", width: 150 },
-        { field: "completeresponsibility", headerName: "completeresponsibility", width: 170 },
-        { field: "quoteCreatedby", headerName:"quoteCreatedby", width:150},
+        { field: "completeresponsibility", headerName: "completeresponsibility", width: 200 },
+        { field: "quoteCreatedby", headerName:"quoteCreatedby", width:200},
         { field: "status", headerName: "status", width: 120 },
-        { field: "remarks", headerName: "remarks", width:100 },
-        { field: "cancelledremarks", headerName: "cancelledremarks", width: 150 },
+        { field: "remarks", headerName: "remarks", width:200 },
+        { field: "cancelledremarks", headerName: "cancelledremarks", width: 200 },
     ];
 
     // const checkAccess = async () => {
@@ -54,12 +55,12 @@ export default function ViewEnquiryReport() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            let url = `${baseUrl}/api/Sales/RptViewEnquiryData`;
+            let url = `${baseUrl}/api/Sales/RptViewEnquiryData/${startDate}/${endDate}`;
 
-            // Pass only if both dates are selected
-            if (startDate && endDate) {
-                url += `?startdate=${startDate}&enddate=${endDate}`;
-            }
+            // // Pass only if both dates are selected
+            // if (startDate && endDate) {
+            //     url += `?startdate=${startDate}&enddate=${endDate}`;
+            // }
 
             const response = await axios.get(url);
             //const data = response.data;
@@ -89,11 +90,11 @@ export default function ViewEnquiryReport() {
     };
 
     
-    useEffect(() => {
-       // checkAccess();
-        fetchData();
-   // }, [navigate, baseUrl, loginId]);
-       }, []);
+//     useEffect(() => {
+//        // checkAccess();
+//         fetchData();
+//    // }, [navigate, baseUrl, loginId]);
+//        }, []);
 
     return (
         <Box sx={{ padding: "100px", mt: "30px", ml: "20px" }}>
@@ -129,7 +130,8 @@ export default function ViewEnquiryReport() {
                     }}
                 />
                 <Button variant="contained"    onClick={fetchData} style={{ height: 35 }}> View Data </Button>
-                <Button variant="contained"   onClick={handleViewEnqExport} style={{ height: 35 }}>Export to Excel</Button>
+                {/* <Button variant="contained"   onClick={handleViewEnqExport} style={{ height: 35 }}>Export to Excel</Button> */}
+             <ExportButton label="Export to Excel" onClick={handleViewEnqExport} />
             </Box>
             <CustomDataGrid
                // autoHeight={true}

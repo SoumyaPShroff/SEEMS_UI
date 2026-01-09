@@ -14,8 +14,9 @@ import type { GridColDef, GridColumnVisibilityModel } from '@mui/x-data-grid';
 import { baseUrl } from "../../../../const/BaseUrl";
 import { exporttoexcel } from "../../../../components/utils/exporttoexcel";
 import ExportButton from "../../../../components/resusablecontrols/ExportButton";
-import CustomDataGrid from "../../../../components/resusablecontrols/CustomerDataGrid";
+import CustomDataGrid from "../../../../components/resusablecontrols/CustomDataGrid";
 import SelectControl from "../../../../components/resusablecontrols/SelectControl";
+import { formatInLakhs } from "../../../../components/utils/formatInLakhs";
 
 // ✅ Types
 interface BillingData {
@@ -333,7 +334,8 @@ const RptBillingPlanner: React.FC = () => {
                 fontWeight: isGrandTotal ? "bold" : "normal",
               }}
             >
-              {row[key as keyof TotalsRow].toFixed(2)}
+              {/* {row[key as keyof TotalsRow].toFixed(2)} */}
+              {formatInLakhs(row[key as keyof TotalsRow])}
             </td>
           );
         })}
@@ -406,7 +408,8 @@ const RptBillingPlanner: React.FC = () => {
                     fontFamily: "'Segoe UI', Roboto, sans-serif",
                   }}
                 >
-                  {total[key as keyof TotalsRow].toFixed(2)}
+                  {/* {total[key as keyof TotalsRow].toFixed(2)} */}
+                  {formatInLakhs(total[key as keyof TotalsRow])}
                 </td>
               ))}
             </tr>
@@ -429,8 +432,8 @@ const RptBillingPlanner: React.FC = () => {
   }, [columnVisibilityModel]);
 
   const columns: GridColDef[] = [
-    { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 300, },
-    { field: "customer", headerName: "Customer", flex: 1, minWidth: 180 },
+    { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 450, },
+    { field: "customer", headerName: "Customer", flex: 1, minWidth: 300 },
     { field: "startDate", headerName: "Start Date", flex: 1, minWidth: 100 },
     { field: "plannedEndDate", headerName: "Planned End Date", flex: 1, minWidth: 150 },
     { field: "totalHrs", headerName: "Total Hours", flex: 1, minWidth: 100 },
@@ -531,7 +534,7 @@ const RptBillingPlanner: React.FC = () => {
   };
 
   const pendingInvoiceColumns: GridColDef[] = [
-    { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 350 },
+    { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 400 },
     { field: "startDate", headerName: "Start Date", flex: 1, minWidth: 120 },
     { field: "enddate", headerName: "End Date", flex: 1, minWidth: 150 },
     { field: "costCenter", headerName: "CostCenter", flex: 1, minWidth: 120 },
@@ -784,6 +787,17 @@ const RptBillingPlanner: React.FC = () => {
                 }}
               ></div>
               <span>Invoiced</span>
+              <div
+                style={{
+                  backgroundColor: "#d517f2c2",
+                  width: "14px",
+                  height: "14px",
+                  borderRadius: "3px",
+                  border: "1px solid #333",
+                  marginLeft: "10px",
+                }}
+              ></div>
+              <span>Job without PO</span>
             </div>
           </div>
         )}

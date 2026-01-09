@@ -68,7 +68,7 @@ export const ProjectManagerChart: React.FC<ChartProps> = ({ data }) => {
     },
   };
   return (
-    <div style={{ height: "350px", width: "100%" }}>
+    <div style={{ height: "300px", width: "110%" }}>
       <Chart type="bar" data={chartData} options={chartOptions} plugins={[ChartDataLabels]} />
     </div>
   );

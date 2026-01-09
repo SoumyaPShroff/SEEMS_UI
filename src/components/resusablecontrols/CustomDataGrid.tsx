@@ -39,9 +39,23 @@ const CustomDataGrid: React.FC<CustomDataGridProps> = ({
       fontWeight: "bold",
       fontSize: "14px",
     },
-    "& .MuiDataGrid-columnSeparator": {
-      display: "none",
-    },
+    // "& .MuiDataGrid-columnSeparator": {
+    //   display: "none",
+    // },
+     // ✅ vertical borders between columns (body cells)
+  "& .MuiDataGrid-cell": {
+    borderRight: "1px solid #e0e0e0",
+  },
+
+  // ✅ vertical borders between columns (header cells)
+  "& .MuiDataGrid-columnHeader": {
+    borderRight: "1px solid #e0e0e0",
+  },
+
+  // ✅ optional: bottom border for rows
+  "& .MuiDataGrid-row": {
+    borderBottom: "1px solid #e0e0e0",
+  },
   };
 
   return (

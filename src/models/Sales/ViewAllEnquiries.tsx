@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { baseUrl } from "../../const/BaseUrl";
 import { exporttoexcel } from "../../components/utils/exporttoexcel";
 import ExportButton from "../../components/resusablecontrols/ExportButton";
-import CustomDataGrid from "../../components/resusablecontrols/CustomerDataGrid";
+import CustomDataGrid from "../../components/resusablecontrols/CustomDataGrid";
 
 const ViewAllEnquiries = () => {
   const navigate = useNavigate();
