@@ -15,17 +15,11 @@ interface EnquiryForm {
   state: string;
   email11: string;
   tm: string;
-  //toolLicense: number;
-  //logistics: number;
-  //onsiteDurationType: number;
-  //hourlyRateType: number;
   toolLicense: string;
   logistics: string;
   onsiteDurationType: string;
   hourlyRateType: string;
   hourlyReate: string;
-  // expFrom: number;
-  // expTo: number;
   expFrom: string;
   expTo: string;
   salesresponsibilityid: string;
@@ -43,7 +37,6 @@ interface EnquiryForm {
   status: string;
   createdBy: string;
   referenceBy: string;
-  //toolId: number;
   toolId: string;
   tool: string;
   quotation_request_lastdate?: string;
@@ -217,7 +210,6 @@ const OnsiteEnquiry: React.FC = () => {
         // ✅ 2. Load Locations
         await fetchCustomerLocations(String(e.customer_id));
 
-
         // ✅ 3. Set LOCATION
         setForm(prev => ({
           ...prev,
@@ -258,6 +250,7 @@ const OnsiteEnquiry: React.FC = () => {
           tentStartDate: e.tentStartDate?.substring(0, 10) || "",
           SI: e.si || "",
           PI: e.pi || "",
+          tool: e.tool || "",
         }));
       });
   }, [isEditMode, enquiryNo]);
@@ -428,37 +421,57 @@ const OnsiteEnquiry: React.FC = () => {
     fd.append("statename", form.state);
 
     fd.append("tm", form.tm);
-    fd.append("toolId", String(form.toolId));
+    //fd.append("toolId", String(form.toolId));
+    fd.append("toolId", String(Number(form.toolId)));
     fd.append("tool", form.tool);
-    fd.append("taskId", form.taskId);
+    //fd.append("taskId", form.taskId);
+    fd.append("taskId", String(Number(form.taskId)));
 
-    fd.append("expFrom", String(form.expFrom));
-    fd.append("expTo", String(form.expTo));
-    fd.append("noOfResources", form.noOfResources);
+    // fd.append("expFrom", String(form.expFrom));
+    // fd.append("expTo", String(form.expTo));
+    // fd.append("noOfResources", form.noOfResources);
+    fd.append("expFrom", String(Number(form.expFrom)));
+    fd.append("expTo", String(Number(form.expTo)));
+    fd.append("noOfResources", String(Number(form.noOfResources)));
 
-    fd.append("tentStartDate", form.tentStartDate);
-    fd.append("onsiteDurationType", form.onsiteDurationType);
-    fd.append("onsiteDuration", form.onsiteDuration);
-    fd.append("hourlyRateType", String(form.hourlyRateType));
-    fd.append("hourlyReate", form.hourlyReate);
-    fd.append("profReqLastDate", form.profReqLastDate);
-    fd.append("quotation_request_lastdate", form.profReqLastDate);
-
+    //fd.append("tentStartDate", form.tentStartDate);
+    fd.append("tentStartDate", new Date(form.tentStartDate).toISOString());
+    // fd.append("onsiteDurationType", form.onsiteDurationType);
+    // fd.append("onsiteDuration", form.onsiteDuration);
+    // fd.append("hourlyRateType", String(form.hourlyRateType));
+    // fd.append("hourlyReate", form.hourlyReate);
+    fd.append("logistics", String(Number(form.logistics)));
+    fd.append("onsiteDurationType", String(Number(form.onsiteDurationType)));
+    fd.append("hourlyRateType", String(Number(form.hourlyRateType)));
+    fd.append("hourlyReate", String(Number(form.hourlyReate)));
+    fd.append("onsiteDuration", String(Number(form.onsiteDuration)));
+   // fd.append("profReqLastDate", form.profReqLastDate);
+   fd.append("profReqLastDate", new Date(form.profReqLastDate).toISOString());
+   // fd.append("quotation_request_lastdate", form.profReqLastDate);
+fd.append(
+  "quotation_request_lastdate",
+  new Date(form.profReqLastDate).toISOString()
+);
     fd.append("salesresponsibilityid", form.salesresponsibilityid);
     fd.append("completeresponsibilityid", form.completeresponsibilityid);
     fd.append("type", form.type);
     fd.append("enquirytype", "ONSITE");
     fd.append("si", form.SI || "");
     fd.append("pi", form.PI || "");
-    fd.append("toolLicense", form.toolLicense);
+
+    // fd.append("toolLicense", form.toolLicense);
+    fd.append("toolLicense", String(Number(form.toolLicense)));
     fd.append("createdBy", loginUser);
-    fd.append("logistics", form.logistics);
+    fd.append("createdOn", new Date().toISOString());
+    //fd.append("logistics", form.logistics);
     fd.append("remarks", form.remarks);
     fd.append("referenceBy", form.referenceBy);
 
     // email trigger lists
+   // const toList = buildEmailRecipientList();
+    //fd.append("ToMailList", JSON.stringify(toList));  // send array as JSON
     const toList = buildEmailRecipientList();
-    fd.append("ToMailList", JSON.stringify(toList));  // send array as JSON
+    fd.append("ToMailList", JSON.stringify(toList.length ? toList : ["noreply@system"]));
 
     // Optional CC list e.g. referenceBy or createdBy
     // 1️⃣ Collect Login IDs (not emails)
@@ -505,15 +518,23 @@ const OnsiteEnquiry: React.FC = () => {
         toast.error("❌ Failed to Add enquiry");
         return;
       }
-
-      toast.success(isEditMode ? "✅ Onsite Enquiry Updated" : "✅ Onsite Enquiry Added");
-      navigate("/Home/ViewAllEnquiries");
+      toast.success(
+        <div>
+          {isEditMode ? "Onsite Enquiry Updated" : "Onsite Enquiry Added"}
+          <Button
+            style={{ marginLeft: "10px", color: "#273992", textDecoration: "underline" }}
+            onClick={() => navigate("/Home/ViewAllEnquiries")}
+          >
+            Return to ViewAllEnquiries
+          </Button>
+        </div>,
+        { autoClose: false }   // 🔥 toast stays until user closes or clicks button
+      );
 
     } catch (error) {
       console.error("NETWORK ERROR:", error);
-      toast.error("❌ Server not reachable");
+      toast.error("❌ Failed to save enquiry");
     }
-
   };
 
   const handleTwoDigitNumber = (e: any) => {
