@@ -23,13 +23,15 @@ interface State { state: string; }
 
 interface SalesManager { id: string; name: string; emailID?: string; }
 
+interface NPIManager { iDno: string; name: string; emailId?: string; } 
+
 interface LookupData {
    customers: Customer[];
    AllActiveEmployees: Employee[];
    AnalysisManagers: Manager[];
    SalesManagers: SalesManager[];
    designMngrs: Manager[];
-   salesnpiusers: Employee[];
+   salesnpiusers: NPIManager[];
    tool: string[];
    Locations: Location[];
    Contacts: Contact[];
@@ -61,7 +63,7 @@ interface EnquiryForm {
    layoutbyid: string;
    analysisbyid: string;
    npibyid: string;    //referring va only but tbale field is npibyid
-   NPINewbyid: string;
+   npiNewbyid: string;
    locationId: string;
    createdBy: string;
    status: string;
@@ -82,6 +84,10 @@ function isManager(obj: any): obj is Manager {
 }
 
 function isEmployee(obj: any): obj is Employee {
+   return obj && "iDno" in obj;
+}
+
+function isNPIManager(obj: any): obj is NPIManager {
    return obj && "iDno" in obj;
 }
 
@@ -117,7 +123,7 @@ const OffshoreEnquiry: React.FC = () => {
       layoutbyid: "",
       analysisbyid: "",
       npibyid: "",
-      NPINewbyid: "",
+      npiNewbyid: "",
       locationId: "",
       createdBy: loginUser,
       status: "Open",
@@ -148,7 +154,7 @@ const OffshoreEnquiry: React.FC = () => {
 
    // fields backend requires, but UI does not collect
    const dtoBlankDefaults = {
-      layoutbyid: "", npibyid: "", analysisbyid: "", NPINewbyid: "",
+      layoutbyid: "", npibyid: "", analysisbyid: "", npiNewbyid: "",
       pi: "NO", si: "NO", dfa: "NO", dfm: "NO", fpg: "NO", asmb: "NO", pcba: "NO", qacam: "NO",
       design: "NO", library: "NO", layout_fab: "NO", layout_testing: "NO", layout_others: "NO",
       emi_net_level: "NO", emi_system_level: "NO", thermal_board_level: "NO", thermal_system_level: "NO",
@@ -170,7 +176,7 @@ const OffshoreEnquiry: React.FC = () => {
                fetch(`${baseUrl}/SalesManagers`),
                fetch(`${baseUrl}/DesignManagers`),
                fetch(`${baseUrl}/SalesNpiUsers`),
-               fetch(`${baseUrl}/PCBTools`),
+               fetch(`${baseUrl}/api/Job/PCBTools`),
                fetch(`${baseUrl}/api/Sales/customerlocations`),  
                fetch(`${baseUrl}/api/Sales/customercontacts`),  
                fetch(`${baseUrl}/api/Sales/States`),
@@ -268,7 +274,7 @@ const OffshoreEnquiry: React.FC = () => {
                layoutbyid: enquiry.layoutbyid || "",
                analysisbyid: enquiry.analysisbyid || "",
                npibyid: enquiry.npibyid || "",
-               NPINewbyid: enquiry.NPINewbyid || "",
+               npiNewbyid: enquiry.npiNewbyid || "",
                uploadedfilename: enquiry.uploadedfilename,
             }));
 
@@ -312,13 +318,13 @@ const OffshoreEnquiry: React.FC = () => {
          form.layoutbyid,
          form.analysisbyid,
          form.npibyid,
-         form.NPINewbyid,
+         form.npiNewbyid,
       ]
          .filter(Boolean)
          .join(", ");
 
       setForm((prev) => ({ ...prev, completeResp: combined }));
-   }, [form.layoutbyid, form.analysisbyid, form.npibyid, form.NPINewbyid]);
+   }, [form.layoutbyid, form.analysisbyid, form.npibyid, form.npiNewbyid]);
 
    const fetchCustomerLocations = async (customerId: string) => {
       try {
@@ -360,7 +366,7 @@ const OffshoreEnquiry: React.FC = () => {
          form.layoutbyid,
          form.analysisbyid,
          form.npibyid,
-         form.NPINewbyid,
+         form.npiNewbyid,
       ].filter((id) => id && id.trim() !== "");
 
       if (selectedIds.length === 0) return [];
@@ -435,10 +441,15 @@ const OffshoreEnquiry: React.FC = () => {
             vaMech: "Mechanical",
          },
          npi: {
-            NPINew_BOMProc: "BOM Procurement",
-            NPINew_Fab: "ATS-Fabrication",
-            NPINew_Assbly: "ATS-Assembly",
-            NPINew_Testing: "ATS-Testing",
+            // NPINew_BOMProc: "BOM Procurement",
+            // NPINew_Fab: "ATS-Fabrication",
+            // NPINew_Assbly: "ATS-Assembly",
+            // NPINew_Testing: "ATS-Testing",
+            // npinew_jobwork: "Job Work",
+             npiNew_BOMProc: "BOM Procurement",
+            npiNew_Fab: "ATS-Fabrication",
+            npiNew_Assbly: "ATS-Assembly",
+            npiNew_Testing: "ATS-Testing",
             npinew_jobwork: "Job Work",
          }
       };
@@ -518,7 +529,7 @@ const OffshoreEnquiry: React.FC = () => {
          return;
       }
 
-      const responsibilityFields = ["layoutbyid", "analysisbyid", "npibyid", "NPINewbyid"];
+      const responsibilityFields = ["layoutbyid", "analysisbyid", "npibyid", "npiNewbyid"];
       //auto update completeresp when any responsibility field changes
       if (responsibilityFields.includes(name)) {
          // Collect all selected responsibilities (excluding empty ones)
@@ -538,6 +549,7 @@ const OffshoreEnquiry: React.FC = () => {
                   (e: any) => {
                      if (isManager(e)) return e.HOPC1ID === id;
                      if (isEmployee(e)) return e.iDno === id;
+                     if (isNPIManager(e)) return e.iDno === id;
                      return false;
                   }
                );
@@ -584,7 +596,7 @@ const OffshoreEnquiry: React.FC = () => {
                   updated.npibyid = "";
                   break;
                case "npi":
-                  updated.NPINewbyid = "";
+                  updated.npiNewbyid = "";
                   break;
             }
          }
@@ -621,17 +633,17 @@ const OffshoreEnquiry: React.FC = () => {
       {
          section: "ATS",
          field: "npi",
-         responsibilityField: "NPINewbyid",
+         responsibilityField: "npiNewbyid",
          checkboxes: ["BOM Procurement", "ATS-Fabrication", "ATS-Assembly", "Job Work", "ATS-Testing"],
          responsibilityOptions: lookups.salesnpiusers,
          isManager: false,
       },
    ];
 
-   const isResponsibilitySelected = !!(form.layoutbyid || form.analysisbyid || form.npibyid || form.NPINewbyid);
+   const isResponsibilitySelected = !!(form.layoutbyid || form.analysisbyid || form.npibyid || form.npiNewbyid);
    // Utility: normalize email safely without modifying interfaces
    const getUserEmail = (
-      u: Employee | Manager | SalesManager
+      u: Employee | Manager | SalesManager | NPIManager
    ): string | null => {
       const e = u as any;
       return (
@@ -651,15 +663,16 @@ const OffshoreEnquiry: React.FC = () => {
          form.layoutbyid,
          form.analysisbyid,
          form.npibyid,
-         form.NPINewbyid,
+         form.npiNewbyid,
       ].filter(Boolean);
 
-      const allUsers: (Employee | Manager | SalesManager)[] = [
+      const allUsers: (Employee | Manager | SalesManager | NPIManager)[] = [
          ...lookups.designMngrs,
          ...lookups.AnalysisManagers,
          ...lookups.salesnpiusers,
          ...lookups.AllActiveEmployees,
          ...lookups.SalesManagers,
+         ...lookups.salesnpiusers,
       ];
 
       const emails = respIds
@@ -668,6 +681,7 @@ const OffshoreEnquiry: React.FC = () => {
             const user = allUsers.find((u) => {
                if (isManager(u)) return String(u.HOPC1ID) === String(id);
                if (isEmployee(u)) return String(u.iDno) === String(id);
+               if (isNPIManager(u)) return String(u.iDno) === String(id);
                return String((u as any).id) === String(id); // SalesManager
             });
 
@@ -722,7 +736,7 @@ const OffshoreEnquiry: React.FC = () => {
             setLoading(false);
             return;
          }
-         if (form.npi.length > 0 && !form.NPINewbyid) {
+         if (form.npi.length > 0 && !form.npiNewbyid) {
             toast.error("Please select NPI Responsibility");
             setLoading(false);
             return;
@@ -1184,6 +1198,17 @@ const OffshoreEnquiry: React.FC = () => {
                                           ? { value: opt.hopC1ID, label: opt.hopC1NAME }
                                           : { value: opt.iDno, label: opt.name }
                                     )}
+                                    // options={cfg.responsibilityOptions.map((opt: any) => {
+                                    //    if (isManager(opt)) {
+                                    //       return { value: opt.HOPC1ID, label: opt.HOPC1NAME };
+                                    //    }
+                                    //    if (isEmployee(opt)) {
+                                    //       return { value: opt.iDno, label: opt.name };
+                                    //    }
+                                    //    🔥 SalesNpiUser
+                                    //    return { value: opt.Id, label: opt.Name };
+                                    // })}
+
                                     width="220px"
                                     required
                                  />
