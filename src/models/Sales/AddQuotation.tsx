@@ -63,6 +63,7 @@ const AddQuotation: React.FC = () => {
     const [enquiryType, setEnquiryType] = useState("");
     const [locationId, setLocationId] = useState("");
     const [boardRef, setBoardRef] = useState("");
+    const [enquiryBoardRef, setEnquiryBoardRef] = useState(""); // new: store original enquiry boardRef , again reset to enqu boardref when new quote cicked
     // Description master list from backend
     const [descriptions, setDescriptions] = useState<DescriptionItem[]>([]);
     const [items, setItems] = useState<QuotationItem[]>([
@@ -84,7 +85,10 @@ const AddQuotation: React.FC = () => {
 
     const loginId = sessionStorage.getItem("SessionUserID") || "guest";
     const [terms, setTerms] = useState(OFF_TERMS_AND_CONDITIONS);
- 
+    const [quotes, setQuotes] = useState<any[]>([]);
+    const [selectedQuoteNo, setSelectedQuoteNo] = useState<string | null>(quoteNo ?? null);
+    const isEditMode = Boolean(selectedQuoteNo);
+
     // Load descriptions from backend
     useEffect(() => {
         if (!enquiryNo) return;
@@ -100,7 +104,8 @@ const AddQuotation: React.FC = () => {
                 setAddress(data.address);
                 setEnquiryType(data.enquirytype);
                 setLocationId(data.locationid);
-                setBoardRef(data.boardref);
+                setBoardRef(data.boardref);  //for current quote
+                setEnquiryBoardRef(data.boardref); // store original enquiry boardRef
             })
             .catch(err => {
                 console.error("Failed to load enquiry header data", err);
@@ -126,21 +131,47 @@ const AddQuotation: React.FC = () => {
         }
     }, [enquiryType]);
 
+
     useEffect(() => {
-        if (!enquiryNo || descriptions.length === 0) return;
+        if (!enquiryNo) return;
+
+        const loadQuotes = async () => {
+            try {
+                const url = `${baseUrl}/api/Sales/QuotationDetailsByEnqQuote/${enquiryNo}`;
+                const { data } = await axios.get(url);
+
+                const list = Array.isArray(data) ? data : [data];
+                setQuotes(list);
+
+                // auto select first quote if none selected
+                if (!selectedQuoteNo && list.length > 0) {
+                    setSelectedQuoteNo(list[0].quoteNo);
+                }
+            } catch (err) {
+                console.error("Failed to load quotes", err);
+            }
+        };
+
+        loadQuotes();
+    }, [enquiryNo]);
+
+    useEffect(() => {
+        // Only run if we have enquiryNo, selectedQuoteNo, and descriptions loaded
+        if (!enquiryNo || !selectedQuoteNo || descriptions.length === 0) return;
 
         const fetchQuotation = async () => {
             try {
-                const url = `${baseUrl}/api/Sales/QuotationDetailsByEnqQuote/${enquiryNo}${quoteNo ? `?quoteNo=${quoteNo}` : ""}`;
+                const url = `${baseUrl}/api/Sales/QuotationDetailsByEnqQuote/${enquiryNo}?quoteNo=${selectedQuoteNo}`;
                 const { data } = await axios.get(url);
 
-                const q = Array.isArray(data) ? data[0] : data;
-                if (!q) return;
+                if (!data) return;
 
-                setBoardRef(q.board_ref);
-                setTerms(q.tandc);
+                // Set board ref and terms
+                setBoardRef(data.board_ref ?? "");
+                setTerms(data.tandc ?? (enquiryType === "OFFSHORE" ? OFF_TERMS_AND_CONDITIONS : ON_TERMS_AND_CONDITIONS));
 
-                const mappedItems: QuotationItem[] = (q.items || []).map((apiItem: any) => {
+                // Map API items to QuotationItem
+                const mappedItems: QuotationItem[] = (data.items || []).map((apiItem: any) => {
                     const desc = descriptions.find(d => d.layout === apiItem.layout);
 
                     const descriptionId = desc?.idNo ?? 0;
@@ -172,9 +203,12 @@ const AddQuotation: React.FC = () => {
                         amount,
                         taxAmount,
                         incTaxAmount,
+                        locationId: locationId,
+                        boardRef: boardRef,
                     };
                 });
 
+                // Set items, default to one empty row if none
                 setItems(mappedItems.length ? mappedItems : [{
                     descriptionId: 0,
                     qty: 1,
@@ -186,6 +220,8 @@ const AddQuotation: React.FC = () => {
                     amount: 0,
                     taxAmount: 0,
                     incTaxAmount: 0,
+                    locationId: "",
+                    boardRef: "",
                 }]);
 
             } catch (err) {
@@ -194,8 +230,8 @@ const AddQuotation: React.FC = () => {
         };
 
         fetchQuotation();
+    }, [enquiryNo, selectedQuoteNo, descriptions]);
 
-    }, [enquiryNo, quoteNo, descriptions]);
 
     const handleItemChange = <K extends keyof QuotationItem>(
         index: number,
@@ -262,6 +298,31 @@ const AddQuotation: React.FC = () => {
             },
         ]);
     };
+    const startNewQuote = () => {
+        setSelectedQuoteNo(null);   // important
+       // setBoardRef("");
+        setBoardRef(enquiryBoardRef); // reset to enquiry boardRef
+        setTerms(
+            enquiryType === "OFFSHORE"
+                ? OFF_TERMS_AND_CONDITIONS
+                : ON_TERMS_AND_CONDITIONS
+        );
+
+        setItems([{
+            descriptionId: 0,
+            qty: 1,
+            rate: 0,
+            duration: "",
+            currency: "INR",
+            taxName: "",
+            taxRate: 0,
+            amount: 0,
+            taxAmount: 0,
+            incTaxAmount: 0,
+            locationId: "",
+            boardRef: "",
+        }]);
+    };
 
     const deleteItem = (index: number) => {
         const updated = [...items];
@@ -288,7 +349,8 @@ const AddQuotation: React.FC = () => {
             const payload = {
                 enquiryno: enquiryNo ?? "",
                 board_ref: boardRef,
-                quoteNo: quoteNo ?? "", // backend will generate if empty 
+                //   quoteNo: quoteNo ?? "", // backend will generate if empty 
+                quoteNo: selectedQuoteNo ?? "",   // empty = new quote
                 createdBy: loginId,
                 versionNo: "1",
                 tandc: terms,
@@ -320,7 +382,13 @@ const AddQuotation: React.FC = () => {
             );
 
             toast.success("Quotation saved successfully");
-            navigate(-1);  //previous page
+            //  navigate(-1);  //previous page
+            // reload quotes
+            const { data } = await axios.get(
+                `${baseUrl}/api/Sales/QuotationDetailsByEnqQuote/${enquiryNo}`
+            );
+            setQuotes(data);
+            setSelectedQuoteNo(data[data.length - 1].quoteNo); // select newest
 
         } catch (err) {
             console.error(err);
@@ -329,11 +397,23 @@ const AddQuotation: React.FC = () => {
     };
 
     return (
+
         <Box sx={{ maxWidth: 1400, mt: 20, ml: 15 }}>
-            {/* EnquiryNo: {enquiryNo} <br />
-  QuoteNo: {quoteNo ?? "N/A"} <br />
-  Descriptions: {descriptions.length} <br />
-  Items: {items.length} */}
+            <Box sx={{ mb: 2, display: "flex", gap: 2, alignItems: "center" }}>
+                {/* Quote selector */}
+                <TextField select label="Select Quote" value={selectedQuoteNo ?? ""}
+                    onChange={(e) => setSelectedQuoteNo(e.target.value)}
+                    size="small" sx={{ minWidth: 200 }}  >
+                    {quotes.map(q => (
+                        <MenuItem key={q.quoteNo} value={q.quoteNo}>
+                            Quote #{q.quoteNo}
+                        </MenuItem>
+                    ))}
+                </TextField>
+
+                {/* New Quote button */}
+                <Button variant="outlined" onClick={() => startNewQuote()} >+ New Quote </Button>
+            </Box>
             <Card sx={{ width: "100%", m: "auto", mt: 3, p: 4, borderRadius: 3, boxShadow: "0px 4px 20px #6594b3ff" }}>
                 <Typography variant="h4" sx={{ mb: 2, textAlign: "center", color: "#1565c0" }}>
                     Add Quotation
@@ -541,8 +621,7 @@ const AddQuotation: React.FC = () => {
                 {/* Save */}
                 <Box sx={{ mt: 3, textAlign: "right" }}>
                     <Button variant="contained" color="primary" onClick={handleSaveQuotation}>
-                        {/* {isEditMode ? "UPDATE" : "ADD"} */}
-                        ADD
+                       {isEditMode ? "EDIT" : "ADD"} 
                     </Button>
                 </Box>
             </Card>
