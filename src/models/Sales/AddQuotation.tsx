@@ -11,8 +11,12 @@ import { ON_TERMS_AND_CONDITIONS } from './const/QuoteOnTermsConditions';
 import { toast } from "react-toastify";
 
 interface DescriptionItem {
-    id: number;
-    name: string;
+    idNo: number;
+    layout: string;
+    taxname: string;
+    tax_INR: number;
+    tax_USD: number;
+    tax_EURO: number;
 }
 
 interface QuotationItem {
@@ -20,19 +24,14 @@ interface QuotationItem {
     currency: "INR" | "USD" | "EURO";
     qty: number;
     rate: number;
-
-    tax_INR: number;
-    tax_USD: number;
-    tax_EURO: number;
-
-    taxRate: number;
+    duration: string;
     taxName: string;
+    taxRate: number;
     amount: number;
     taxAmount: number;
     incTaxAmount: number;
-    duration: string;
-    currency: "INR" | "USD" | "EURO";
-
+    locationId: string;
+    boardRef: string;
 }
 
 const durationOptions = [
@@ -52,10 +51,10 @@ const currencyOptions = [
 ];
 
 const AddQuotation: React.FC = () => {
+    console.log("🔥 AddQuotation component mounted");
     // return null;
     const navigate = useNavigate();
-    const { enquiryNo } = useParams();
-    // const isEditMode = Boolean(enquiryNo);
+    const { enquiryNo, quoteNo } = useParams();
     // Header fields
     const [customer, setCustomer] = useState("");
     const [contactName, setContactName] = useState("");
@@ -72,7 +71,7 @@ const AddQuotation: React.FC = () => {
             qty: 1,
             rate: 0,
             duration: "",
-            currency: "",
+            currency: "INR",
             taxName: "",
             taxRate: 0,
             amount: 0,
@@ -82,15 +81,10 @@ const AddQuotation: React.FC = () => {
             boardRef: "",
         },
     ]);
-    const Layout: number[] = descriptions.map(d => d.idNo);
-    const taxName: string[] = descriptions.map(d => d.taxname);
 
-    const tax_INR: number[] = descriptions.map(d => d.tax_INR);
-    const tax_USD: number[] = descriptions.map(d => d.tax_USD);
-    const tax_EURO: number[] = descriptions.map(d => d.tax_EURO);
     const loginId = sessionStorage.getItem("SessionUserID") || "guest";
     const [terms, setTerms] = useState(OFF_TERMS_AND_CONDITIONS);
-
+ 
     // Load descriptions from backend
     useEffect(() => {
         if (!enquiryNo) return;
@@ -132,45 +126,76 @@ const AddQuotation: React.FC = () => {
         }
     }, [enquiryType]);
 
-    // useEffect(() => {
-    //     if (!isEditMode) return;
+    useEffect(() => {
+        if (!enquiryNo || descriptions.length === 0) return;
 
-    //     fetch(`${baseUrl}/api/Sales/QuoteDetailsByQuoteNo/${enquiryNo}/${quoteNo}`)
-    //       .then(r => r.json())
-    //       .then(async data => {
-    //         const e = Array.isArray(data) ? data[0] : data;
+        const fetchQuotation = async () => {
+            try {
+                const url = `${baseUrl}/api/Sales/QuotationDetailsByEnqQuote/${enquiryNo}${quoteNo ? `?quoteNo=${quoteNo}` : ""}`;
+                const { data } = await axios.get(url);
 
-    //         // ✅ 5. Set REST OF FIELDS
-    //         setForm(prev => ({
-    //           ...prev,
-    //           contactName: String(e.contact_id || ""),
-    //           state: e.statename || "",
-    //           email11: e.email11 || "",
-    //           tm: e.tm || "",
-    //           toolLicense: String(e.toolLicense),
-    //           logistics: String(e.logistics),
-    //           onsiteDurationType: String(e.onsiteDurationType),
-    //           onsiteDuration: String(e.onsiteDuration),
-    //           hourlyRateType: String(e.hourlyRateType),
-    //           hourlyReate: e.hourlyReate || "",
-    //           expFrom: e.expFrom || "",
-    //           expTo: e.expTo || "",
-    //           profReqLastDate: e.profReqLastDate?.substring(0, 10) || "",
-    //           salesresponsibilityid: e.salesresponsibilityid || "",
-    //           completeresponsibilityid: e.completeresponsibilityid || "",
-    //           referenceBy: e.referenceBy || "",
-    //           remarks: e.remarks || "",
-    //           uploadedfilename: e.uploadedfilename,
-    //           toolId: String(e.toolId || ""),
-    //           taskId: String(e.taskId || ""),
-    //           noOfResources: e.noOfResources || "",
-    //           type: e.type,
-    //           tentStartDate: e.tentStartDate?.substring(0, 10) || "",
-    //           SI: e.si || "",
-    //           PI: e.pi || "",
-    //         }));
-    //       });
-    //   }, [isEditMode, enquiryNo]);
+                const q = Array.isArray(data) ? data[0] : data;
+                if (!q) return;
+
+                setBoardRef(q.board_ref);
+                setTerms(q.tandc);
+
+                const mappedItems: QuotationItem[] = (q.items || []).map((apiItem: any) => {
+                    const desc = descriptions.find(d => d.layout === apiItem.layout);
+
+                    const descriptionId = desc?.idNo ?? 0;
+
+                    const currency =
+                        apiItem.currency_id === 1 ? "INR" :
+                            apiItem.currency_id === 2 ? "USD" : "EURO";
+
+                    let taxRate = 0;
+                    if (currency === "INR") taxRate = desc?.tax_INR ?? 0;
+                    if (currency === "USD") taxRate = desc?.tax_USD ?? 0;
+                    if (currency === "EURO") taxRate = desc?.tax_EURO ?? 0;
+
+                    const qty = Number(apiItem.quantity || 0);
+                    const rate = Number(apiItem.unit_rate || 0);
+
+                    const amount = qty * rate;
+                    const taxAmount = (amount * taxRate) / 100;
+                    const incTaxAmount = amount + taxAmount;
+
+                    return {
+                        descriptionId,
+                        qty,
+                        rate,
+                        duration: apiItem.durationtype || "",
+                        currency,
+                        taxName: desc?.taxname ?? "",
+                        taxRate,
+                        amount,
+                        taxAmount,
+                        incTaxAmount,
+                    };
+                });
+
+                setItems(mappedItems.length ? mappedItems : [{
+                    descriptionId: 0,
+                    qty: 1,
+                    rate: 0,
+                    duration: "",
+                    currency: "INR",
+                    taxName: "",
+                    taxRate: 0,
+                    amount: 0,
+                    taxAmount: 0,
+                    incTaxAmount: 0,
+                }]);
+
+            } catch (err) {
+                console.error("Failed to load quotation", err);
+            }
+        };
+
+        fetchQuotation();
+
+    }, [enquiryNo, quoteNo, descriptions]);
 
     const handleItemChange = <K extends keyof QuotationItem>(
         index: number,
@@ -263,7 +288,7 @@ const AddQuotation: React.FC = () => {
             const payload = {
                 enquiryno: enquiryNo ?? "",
                 board_ref: boardRef,
-                quoteNo: "",          // backend will generate
+                quoteNo: quoteNo ?? "", // backend will generate if empty 
                 createdBy: loginId,
                 versionNo: "1",
                 tandc: terms,
@@ -282,7 +307,7 @@ const AddQuotation: React.FC = () => {
                         unit_rate: item.rate.toString(),
                         currency_id: currencyId,
                         durationtype: item.duration,
-                        location_id: locationId,  
+                        location_id: locationId,
                         updatedbyid: loginId,
                     };
                 })
@@ -304,7 +329,11 @@ const AddQuotation: React.FC = () => {
     };
 
     return (
-        <Box sx={{ maxWidth: 1300, mt: 20, ml: 25 }}>
+        <Box sx={{ maxWidth: 1400, mt: 20, ml: 15 }}>
+            {/* EnquiryNo: {enquiryNo} <br />
+  QuoteNo: {quoteNo ?? "N/A"} <br />
+  Descriptions: {descriptions.length} <br />
+  Items: {items.length} */}
             <Card sx={{ width: "100%", m: "auto", mt: 3, p: 4, borderRadius: 3, boxShadow: "0px 4px 20px #6594b3ff" }}>
                 <Typography variant="h4" sx={{ mb: 2, textAlign: "center", color: "#1565c0" }}>
                     Add Quotation
@@ -337,7 +366,7 @@ const AddQuotation: React.FC = () => {
                             gap: 2, alignItems: "center", whiteSpace: "nowrap",
                         }}>
                         {/* Description - SelectControl */}
-                        <Box sx={{ minWidth: 170 }}>
+                        <Box sx={{ minWidth: 300 }}>
                             <SelectControl
                                 name="description"
                                 label="Description"
@@ -366,7 +395,7 @@ const AddQuotation: React.FC = () => {
                                     label: cur,
                                 }))}
                                 size="small"
-                                sx={{ minWidth: 60 }}
+                                sx={{ minWidth: 70 }}
                             />
                             <TextField
                                 label="Qty"
@@ -409,7 +438,7 @@ const AddQuotation: React.FC = () => {
                                 value={item.amount}
                                 size="small"
                                 InputProps={{ readOnly: true }}
-                                sx={{ minWidth: 80 }}
+                                sx={{ minWidth: 120 }}
                             />
 
                             {/* Second Row */}
@@ -490,8 +519,8 @@ const AddQuotation: React.FC = () => {
                             sx={{ minWidth: 250 }}
                         />
                         {/* </Box> */}
-                   {/* </Box>*/}
-               {/* ) */}
+                {/* </Box>*/}
+                {/* ) */}
                 {/*     : null} */}
                 {/* Total */}
                 <Box sx={{ mt: 3, textAlign: "right" }}>

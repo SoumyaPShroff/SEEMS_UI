@@ -46,7 +46,7 @@ const sessionUserID = userId; // updated to use prop
                 <Route path="/OnsiteEnquiry/:enquiryNo" element={<OnsiteEnquiry />} />
                 <Route path="/ViewEnquiryReport" element={<ViewEnquiryReport />} />
                 <Route path="/ViewPOEnqData" element={<ViewPOEnqData />} />
-                <Route path="/AddQuotation/:enquiryNo" element={<AddQuotation />} />
+                <Route path="/AddQuotation/:enquiryNo/:quoteNo?" element={<AddQuotation />} /> 
                 <Route path="/support" element={<Support />} />
             </Routes>
         </>
