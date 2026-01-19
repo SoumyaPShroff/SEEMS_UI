@@ -20,6 +20,7 @@ interface DescriptionItem {
 }
 
 interface QuotationItem {
+    slNo?: number;
     descriptionId: number;
     currency: "INR" | "USD" | "EURO";
     qty: number;
@@ -33,6 +34,21 @@ interface QuotationItem {
     locationId: string;
     boardRef: string;
 }
+
+const emptyItem = (locationId = "", boardRef = ""): QuotationItem => ({
+    descriptionId: 0,
+    qty: 1,
+    rate: 0,
+    duration: "",
+    currency: "INR",
+    taxName: "",
+    taxRate: 0,
+    amount: 0,
+    taxAmount: 0,
+    incTaxAmount: 0,
+    locationId,
+    boardRef,
+});
 
 const durationOptions = [
     "Month",
@@ -82,12 +98,17 @@ const AddQuotation: React.FC = () => {
             boardRef: "",
         },
     ]);
-
     const loginId = sessionStorage.getItem("SessionUserID") || "guest";
     const [terms, setTerms] = useState(OFF_TERMS_AND_CONDITIONS);
     const [quotes, setQuotes] = useState<any[]>([]);
     const [selectedQuoteNo, setSelectedQuoteNo] = useState<string | null>(quoteNo ?? null);
     const isEditMode = Boolean(selectedQuoteNo);
+    const [deletedSlNos, setDeletedSlNos] = useState<number[]>([]);
+
+    useEffect(() => {
+        axios.get(`${baseUrl}/api/Sales/QuoteBoardDescriptions`)
+            .then(r => setDescriptions(r.data));
+    }, []);
 
     // Load descriptions from backend
     useEffect(() => {
@@ -193,6 +214,7 @@ const AddQuotation: React.FC = () => {
                     const incTaxAmount = amount + taxAmount;
 
                     return {
+                        slNo: apiItem.slNo,
                         descriptionId,
                         qty,
                         rate,
@@ -220,8 +242,8 @@ const AddQuotation: React.FC = () => {
                     amount: 0,
                     taxAmount: 0,
                     incTaxAmount: 0,
-                    locationId: "",
-                    boardRef: "",
+                    locationId: locationId,
+                    boardRef: boardRef,
                 }]);
 
             } catch (err) {
@@ -232,7 +254,40 @@ const AddQuotation: React.FC = () => {
         fetchQuotation();
     }, [enquiryNo, selectedQuoteNo, descriptions]);
 
+    const startNewQuote = () => {
+        setSelectedQuoteNo(null);
+        setBoardRef(enquiryBoardRef); // reset to enquiry board ref
+        setItems([emptyItem(locationId, enquiryBoardRef)]);
+        setDeletedSlNos([]);
+    };
 
+    // -------------------------
+    // Helpers
+    // -------------------------
+    const recalcRow = (row: QuotationItem): QuotationItem => {
+        const desc = descriptions.find(d => d.idNo === row.descriptionId);
+
+        let taxRate = 0;
+        if (row.currency === "INR") taxRate = desc?.tax_INR ?? 0;
+        if (row.currency === "USD") taxRate = desc?.tax_USD ?? 0;
+        if (row.currency === "EURO") taxRate = desc?.tax_EURO ?? 0;
+
+        const amount = row.qty * row.rate;
+        const taxAmount = (amount * taxRate) / 100;
+
+        return {
+            ...row,
+            taxName: desc?.taxname ?? "",
+            taxRate,
+            amount,
+            taxAmount,
+            incTaxAmount: amount + taxAmount,
+        };
+    };
+
+    // -------------------------
+    // Row change
+    // -------------------------
     const handleItemChange = <K extends keyof QuotationItem>(
         index: number,
         field: K,
@@ -280,7 +335,11 @@ const AddQuotation: React.FC = () => {
         );
     };
 
+    // -------------------------
+    // Add row
+    // -------------------------
     const addNewItem = () => {
+        const defaultLocationId = items.length > 0 ? items[0].locationId : locationId;
         setItems([
             ...items,
             {
@@ -294,41 +353,27 @@ const AddQuotation: React.FC = () => {
                 amount: 0,
                 taxAmount: 0,
                 incTaxAmount: 0,
-                locationId: "",
+                locationId: defaultLocationId,
             },
         ]);
     };
-    const startNewQuote = () => {
-        setSelectedQuoteNo(null);   // important
-       // setBoardRef("");
-        setBoardRef(enquiryBoardRef); // reset to enquiry boardRef
-        setTerms(
-            enquiryType === "OFFSHORE"
-                ? OFF_TERMS_AND_CONDITIONS
-                : ON_TERMS_AND_CONDITIONS
-        );
 
-        setItems([{
-            descriptionId: 0,
-            qty: 1,
-            rate: 0,
-            duration: "",
-            currency: "INR",
-            taxName: "",
-            taxRate: 0,
-            amount: 0,
-            taxAmount: 0,
-            incTaxAmount: 0,
-            locationId: "",
-            boardRef: "",
-        }]);
-    };
-
+    // -------------------------
+    // Delete row
+    // -------------------------
     const deleteItem = (index: number) => {
-        const updated = [...items];
-        updated.splice(index, 1);
-        setItems(updated);
+        const row = items[index];
+
+        if (row.slNo) {
+            setDeletedSlNos(prev => [...prev, row.slNo!]);
+        }
+
+        setItems(prev => prev.filter((_, i) => i !== index));
     };
+
+    // -------------------------
+    // Totals
+    // -------------------------
     const totalAmount = items.reduce(
         (sum, item) => sum + (Number(item.amount) || 0),
         0
@@ -347,48 +392,43 @@ const AddQuotation: React.FC = () => {
     const handleSaveQuotation = async () => {
         try {
             const payload = {
-                enquiryno: enquiryNo ?? "",
+                enquiryno: enquiryNo,
+                quoteNo: selectedQuoteNo ?? "",   // "" => ADD, value => EDIT
                 board_ref: boardRef,
-                //   quoteNo: quoteNo ?? "", // backend will generate if empty 
-                quoteNo: selectedQuoteNo ?? "",   // empty = new quote
                 createdBy: loginId,
-                versionNo: "1",
+                versionNo: 1,
                 tandc: terms,
 
-                items: items.map((item, index) => {
-                    const desc = descriptions.find(d => d.idNo === item.descriptionId);
-
-                    const currencyId =
-                        item.currency === "INR" ? "1" :
-                            item.currency === "USD" ? "2" : "3";
-
+                items: items.map(i => {
+                    const desc = descriptions.find(d => d.idNo === i.descriptionId);
+                    if (!desc) {
+                        toast.error("Please select Description for all line items");
+                        return;
+                    }
                     return {
-                        slNo: index + 1,
-                        layout: desc?.layout ?? "",
-                        quantity: item.qty.toString(),
-                        unit_rate: item.rate.toString(),
-                        currency_id: currencyId,
-                        durationtype: item.duration,
-                        location_id: locationId,
+                        slNo: i.slNo ?? 0, // 🔴 IMPORTANT: 0 for new rows
+                        // layout: desc?.layout ?? "", //dont send empty string to backend
+                        layout: desc.layout,
+                        quantity: i.qty,
+                        unit_rate: i.rate,
+                        currency_id:
+                            i.currency === "INR" ? 1 :
+                                i.currency === "USD" ? 2 : 3,
+                        durationtype: i.duration,
+                        location_id: i.locationId,
                         updatedbyid: loginId,
                     };
-                })
+                }),
+
+                deletedSlNos
             };
 
-            await axios.post(
-                `${baseUrl}/api/Sales/AddQuotation`,
-                payload,
-                { headers: { "Content-Type": "application/json" } }
-            );
+            const url = selectedQuoteNo ? `${baseUrl}/api/Sales/EditQuotation` : `${baseUrl}/api/Sales/AddQuotation`;
 
-            toast.success("Quotation saved successfully");
-            //  navigate(-1);  //previous page
-            // reload quotes
-            const { data } = await axios.get(
-                `${baseUrl}/api/Sales/QuotationDetailsByEnqQuote/${enquiryNo}`
-            );
-            setQuotes(data);
-            setSelectedQuoteNo(data[data.length - 1].quoteNo); // select newest
+            await axios.post(url, payload);
+
+            toast.success(selectedQuoteNo ? "Quotation edited" : "Quotation added");
+            setDeletedSlNos([]);
 
         } catch (err) {
             console.error(err);
@@ -396,9 +436,12 @@ const AddQuotation: React.FC = () => {
         }
     };
 
+    // -------------------------
+    // UI
+    // -------------------------
     return (
 
-        <Box sx={{ maxWidth: 1400, mt: 20, ml: 15 }}>
+        <Box sx={{ maxWidth: 1300, mt: 20, ml: 15 }}>
             <Box sx={{ mb: 2, display: "flex", gap: 2, alignItems: "center" }}>
                 {/* Quote selector */}
                 <TextField select label="Select Quote" value={selectedQuoteNo ?? ""}
@@ -446,7 +489,7 @@ const AddQuotation: React.FC = () => {
                             gap: 2, alignItems: "center", whiteSpace: "nowrap",
                         }}>
                         {/* Description - SelectControl */}
-                        <Box sx={{ minWidth: 300 }}>
+                        <Box sx={{ minWidth: 280 }}>
                             <SelectControl
                                 name="description"
                                 label="Description"
@@ -493,7 +536,7 @@ const AddQuotation: React.FC = () => {
                                     handleItemChange(index, "duration", e.target.value)
                                 }
                                 size="small"
-                                sx={{ minWidth: 120 }}
+                                sx={{ minWidth: 110 }}
                             >
                                 {durationOptions.map((option) => (
                                     <MenuItem key={option} value={option}>
@@ -621,7 +664,7 @@ const AddQuotation: React.FC = () => {
                 {/* Save */}
                 <Box sx={{ mt: 3, textAlign: "right" }}>
                     <Button variant="contained" color="primary" onClick={handleSaveQuotation}>
-                       {isEditMode ? "EDIT" : "ADD"} 
+                        {isEditMode ? "EDIT" : "ADD"}
                     </Button>
                 </Box>
             </Card>
