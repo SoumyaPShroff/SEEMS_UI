@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import type { GridColDef } from '@mui/x-data-grid';
-import { Box, Button, TextField } from "@mui/material";
+import { Box, Button,TextField  } from "@mui/material";
 import CustomDataGrid from "../../components/resusablecontrols/CustomDataGrid";
 import { baseUrl } from "../../const/BaseUrl";
 import { exporttoexcel } from "../../components/utils/exporttoexcel";
@@ -10,7 +10,7 @@ import ExportButton from "../../components/resusablecontrols/ExportButton";
 import SearchIcon from "@mui/icons-material/Search";
 import IconButton from "@mui/material/IconButton";
 import { formatDateYYYYMMDD } from "../../components/utils/DateUtils";
-
+ 
 export default function RptQuoteDetails() {
     const [rows, setRows] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
@@ -23,7 +23,7 @@ export default function RptQuoteDetails() {
         { field: "customer", headerName: "customer", width: 350 },
         { field: "createdon", headerName: "createdon", width: 150 },
         { field: "name", headerName: "name", width: 150 },
-        { field: "totalquoteAmt", headerName: "totalquoteAmt", width: 150 },
+        { field: "totalquoteAmt", headerName: "totalquoteamt", width: 150 },
         { field: "versionno", headerName: "versionno", width: 120 },
     ];
 
@@ -123,8 +123,17 @@ export default function RptQuoteDetails() {
                         }
                     }}
                     sx={{
-                        "& .MuiInputBase-root": { height: 40 },
-                        "& input": { padding: "6px 6px" },
+                        "& .MuiInputBase-root": {
+                            height: 40,
+                        },
+                        "& input": {
+                            padding: "6px 6px",
+                            textAlign: "center", // ✅ CENTER TEXT
+                        },
+                        "& .MuiInputLabel-root": {
+                            left: "50%",
+                            transform: "translateX(-50%)", // optional: center label when not shrunk
+                        },
                     }}
                 />
                 <IconButton
