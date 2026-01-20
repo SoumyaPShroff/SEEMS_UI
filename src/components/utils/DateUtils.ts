@@ -10,3 +10,14 @@ export  const getCurrentMonthDates = () => {
 
   return { startdate: format(start), enddate: format(end) };
 };
+
+export const formatDateYYYYMMDD = (date?: string | Date): string => {
+    if (!date) return "";
+
+    const d = typeof date === "string" ? new Date(date) : date;
+
+    if (isNaN(d.getTime())) return "";
+
+    return d.toISOString().split("T")[0];
+};
+

@@ -17,6 +17,7 @@ import ViewEnquiryReport from './models/Sales/ViewEnquiryReport';
 import ViewPOEnqData from './models/Sales/ViewPOEnqData';
 import OnsiteEnquiry from './models/Sales/OnsiteEnquiry';
 import AddQuotation from './models/Sales/AddQuotation';
+import RptQuoteDetails from './models/Sales/RptQuoteDetails';
 
 const App: React.FC = () => {
   const [userId, setUserId] = useState(sessionStorage.getItem('SessionUserID'));
@@ -59,6 +60,7 @@ const App: React.FC = () => {
           <Route path="ViewEnquiryReport" element={<ViewEnquiryReport />} />
           <Route path="ViewPOEnqData" element={<ViewPOEnqData />} />
           <Route path="AddQuotation/:enquiryNo" element={<AddQuotation />} />
+          <Route path="RptQuoteDetails" element={<RptQuoteDetails />} />
         </Route>
         {/* Password + Blank */}
         <Route path="/ResetPassword" element={<ResetPassword />} />

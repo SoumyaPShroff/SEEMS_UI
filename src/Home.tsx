@@ -11,6 +11,7 @@ import ViewEnquiryReport from './models/Sales/ViewEnquiryReport';
 import ViewPOEnqData from './models/Sales/ViewPOEnqData';
 import OnsiteEnquiry from './models/Sales/OnsiteEnquiry';
 import AddQuotation from './models/Sales/AddQuotation';
+import RptQuoteDetails from './models/Sales/RptQuoteDetails';
 
 interface HomeProps {
     userId: string | null;  //new
@@ -47,6 +48,7 @@ const sessionUserID = userId; // updated to use prop
                 <Route path="/ViewEnquiryReport" element={<ViewEnquiryReport />} />
                 <Route path="/ViewPOEnqData" element={<ViewPOEnqData />} />
                 <Route path="/AddQuotation/:enquiryNo/:quoteNo?" element={<AddQuotation />} /> 
+                <Route path="/RptQuoteDetails" element={<RptQuoteDetails />} />
                 <Route path="/support" element={<Support />} />
             </Routes>
         </>
