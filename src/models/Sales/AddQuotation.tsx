@@ -104,7 +104,7 @@ const AddQuotation: React.FC = () => {
     const [selectedQuoteNo, setSelectedQuoteNo] = useState<string | null>(quoteNo ?? null);
     const isEditMode = Boolean(selectedQuoteNo);
     const [deletedSlNos, setDeletedSlNos] = useState<number[]>([]);
-
+    const [currentVersion, setCurrentVersion] = useState<number>(1);
     useEffect(() => {
         axios.get(`${baseUrl}/api/Sales/QuoteBoardDescriptions`)
             .then(r => setDescriptions(r.data));
@@ -435,6 +435,61 @@ const AddQuotation: React.FC = () => {
             toast.error("Failed to save quotation");
         }
     };
+    useEffect(() => {
+        if (!selectedQuoteNo || quotes.length === 0) return;
+
+        const q = quotes.find(q => q.quoteNo === selectedQuoteNo);
+        if (q?.versionNo) {
+            setCurrentVersion(q.versionNo);
+        }
+    }, [selectedQuoteNo, quotes]);
+    const handleSaveNewVersion = async () => {
+        try {
+            const newVersion = currentVersion + 1;
+
+            const payload = {
+                enquiryno: enquiryNo,
+                quoteNo: selectedQuoteNo,       // SAME quote
+                board_ref: boardRef,
+                createdBy: loginId,
+                versionNo: newVersion,          // 🔴 ONLY CHANGE
+                tandc: terms,
+
+                items: items.map(i => {
+                    const desc = descriptions.find(d => d.idNo === i.descriptionId);
+                    if (!desc) {
+                        toast.error("Please select Description for all line items");
+                        return;
+                    }
+
+                    return {
+                        slNo: 0,                     // 🔴 force new rows
+                        layout: desc.layout,
+                        quantity: i.qty,
+                        unit_rate: i.rate,
+                        currency_id:
+                            i.currency === "INR" ? 1 :
+                                i.currency === "USD" ? 2 : 3,
+                        durationtype: i.duration,
+                        location_id: i.locationId,
+                        updatedbyid: loginId,
+                    };
+                }),
+
+                deletedSlNos: []               // 🔴 ignore deletes for new version
+            };
+
+            await axios.post(`${baseUrl}/api/Sales/AddQuotation`, payload);
+
+            toast.success(`Saved as Version ${newVersion}`);
+            setCurrentVersion(newVersion);
+            setDeletedSlNos([]);
+
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to save new version");
+        }
+    };
 
     // -------------------------
     // UI
@@ -489,7 +544,7 @@ const AddQuotation: React.FC = () => {
                             gap: 2, alignItems: "center", whiteSpace: "nowrap",
                         }}>
                         {/* Description - SelectControl */}
-                        <Box sx={{ minWidth: 280 }}>
+                        <Box sx={{ minWidth: 260 }}>
                             <SelectControl
                                 name="description"
                                 label="Description"
@@ -510,7 +565,6 @@ const AddQuotation: React.FC = () => {
                             <SelectControl
                                 name="currency"
                                 label="Currency"
-                                // fullWidth
                                 value={item.currency}
                                 onChange={(e) => handleItemChange(index, "currency", e.target.value)}
                                 options={currencyOptions.map((cur) => ({
@@ -518,7 +572,11 @@ const AddQuotation: React.FC = () => {
                                     label: cur,
                                 }))}
                                 size="small"
-                                sx={{ minWidth: 70 }}
+                                sx={{
+                                    "& input": { title: "" },
+                                    "& .MuiSelect-select": { title: "" },
+                                     minWidth: 100
+                                }}
                             />
                             <TextField
                                 label="Qty"
@@ -527,6 +585,7 @@ const AddQuotation: React.FC = () => {
                                 value={item.qty}
                                 onChange={(e) => handleItemChange(index, "qty", Number(e.target.value))}
                                 size="small"
+                                sx={{ minWidth: 40 }}
                             />
                             <TextField
                                 label="Duration"
@@ -547,7 +606,6 @@ const AddQuotation: React.FC = () => {
                             <TextField
                                 label="Unit Rate(Rs)"
                                 type="number"
-                                // fullWidth
                                 value={item.rate}
                                 onChange={(e) => handleItemChange(index, "rate", Number(e.target.value))}
                                 size="small"
@@ -557,7 +615,6 @@ const AddQuotation: React.FC = () => {
 
                             <TextField
                                 label="Amount"
-                                // fullWidth
                                 value={item.amount}
                                 size="small"
                                 InputProps={{ readOnly: true }}
@@ -595,7 +652,7 @@ const AddQuotation: React.FC = () => {
                                 value={item.incTaxAmount.toFixed(2)}
                                 size="small"
                                 InputProps={{ readOnly: true }}
-                                sx={{ minWidth: 150 }}
+                                sx={{ minWidth: 160 }}
                             />
                             {/* </Box> */}
                         </Box>
@@ -662,10 +719,22 @@ const AddQuotation: React.FC = () => {
                     />
                 </Box>
                 {/* Save */}
+                <Box sx={{ mt: 3, textAlign: "left" }}>
+                    {isEditMode && (
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            onClick={handleSaveNewVersion}
+                        >
+                            SAVE TO NEW VERSION
+                        </Button>
+                    )}
+                </Box>
                 <Box sx={{ mt: 3, textAlign: "right" }}>
                     <Button variant="contained" color="primary" onClick={handleSaveQuotation}>
                         {isEditMode ? "EDIT" : "ADD"}
                     </Button>
+
                 </Box>
             </Card>
         </Box>
