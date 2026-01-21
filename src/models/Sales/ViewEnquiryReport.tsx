@@ -1,4 +1,4 @@
-import {  useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import type { GridColDef } from '@mui/x-data-grid';
 import { Box, Button, TextField } from "@mui/material";
@@ -7,7 +7,6 @@ import { baseUrl } from "../../const/BaseUrl";
 import { exporttoexcel } from "../../components/utils/exporttoexcel";
 import { toast } from "react-toastify";
 import ExportButton from "../../components/resusablecontrols/ExportButton";
-//import { useNavigate } from "react-router-dom";
 
 export default function ViewEnquiryReport() {
     const [rows, setRows] = useState<any[]>([]);
@@ -25,9 +24,9 @@ export default function ViewEnquiryReport() {
         { field: "job_Createdon", headerName: "Job_Createdon", width: 150 },
         { field: "salesperson", headerName: "salesperson", width: 150 },
         { field: "completeresponsibility", headerName: "completeresponsibility", width: 200 },
-        { field: "quoteCreatedby", headerName:"quoteCreatedby", width:200},
+        { field: "quoteCreatedby", headerName: "quoteCreatedby", width: 200 },
         { field: "status", headerName: "status", width: 120 },
-        { field: "remarks", headerName: "remarks", width:200 },
+        { field: "remarks", headerName: "remarks", width: 200 },
         { field: "cancelledremarks", headerName: "cancelledremarks", width: 200 },
     ];
 
@@ -89,12 +88,12 @@ export default function ViewEnquiryReport() {
         toast.success("✅ View Enquiry Report exported!", { position: "bottom-right" });
     };
 
-    
-//     useEffect(() => {
-//        // checkAccess();
-//         fetchData();
-//    // }, [navigate, baseUrl, loginId]);
-//        }, []);
+
+    //     useEffect(() => {
+    //        // checkAccess();
+    //         fetchData();
+    //    // }, [navigate, baseUrl, loginId]);
+    //        }, []);
 
     return (
         <Box sx={{ padding: "100px", mt: "30px", ml: "20px" }}>
@@ -129,18 +128,19 @@ export default function ViewEnquiryReport() {
                         },
                     }}
                 />
-                <Button variant="contained"    onClick={fetchData} style={{ height: 35 }}> View Data </Button>
+                <Button variant="contained" onClick={fetchData} style={{ height: 35 }}> View Data </Button>
                 {/* <Button variant="contained"   onClick={handleViewEnqExport} style={{ height: 35 }}>Export to Excel</Button> */}
-             <ExportButton label="Export to Excel" onClick={handleViewEnqExport} />
+                <ExportButton label="Export to Excel" onClick={handleViewEnqExport} />
             </Box>
-            <CustomDataGrid
-               // autoHeight={true}
-                rows={rows}
-                columns={columns}
-                title="View Enquiry Report"
-                loading={loading}
-                gridheight={400}
-            />
+            {rows.length > 0 && (
+                <CustomDataGrid
+                    rows={rows}
+                    columns={columns}
+                    title="View Enquiry Report"
+                    loading={loading}
+                    gridheight={400}
+                />
+            )}
         </Box>
     );
 }

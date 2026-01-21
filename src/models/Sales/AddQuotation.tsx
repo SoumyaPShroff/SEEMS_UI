@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Box, Button, TextField, IconButton, Typography, Card, MenuItem } from "@mui/material";
 import { Add, Delete } from "@mui/icons-material";
 import SelectControl from "../../components/resusablecontrols/SelectControl";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import axios from "axios";
 import { baseUrl } from "../../const/BaseUrl";
 import { OFF_TERMS_AND_CONDITIONS } from "./const/QuoteOffTermsConditions";
@@ -33,6 +33,22 @@ interface QuotationItem {
     incTaxAmount: number;
     locationId: string;
     boardRef: string;
+}
+
+interface EnquiryHeaderResponse {
+  customer: string;
+  contactName: string;
+  location: string;
+  address: string;
+  enquirytype: string;
+  locationid: string;
+  boardref: string;
+}
+
+interface QuotationApiResponse {
+  board_ref: string;
+  tandc: string;
+  items: any[];
 }
 
 const emptyItem = (locationId = "", boardRef = ""): QuotationItem => ({
@@ -69,7 +85,7 @@ const currencyOptions = [
 const AddQuotation: React.FC = () => {
     console.log("🔥 AddQuotation component mounted");
     // return null;
-    const navigate = useNavigate();
+    //const navigate = useNavigate();
     const { enquiryNo, quoteNo } = useParams();
     // Header fields
     const [customer, setCustomer] = useState("");
@@ -105,8 +121,9 @@ const AddQuotation: React.FC = () => {
     const isEditMode = Boolean(selectedQuoteNo);
     const [deletedSlNos, setDeletedSlNos] = useState<number[]>([]);
     const [currentVersion, setCurrentVersion] = useState<number>(1);
+
     useEffect(() => {
-        axios.get(`${baseUrl}/api/Sales/QuoteBoardDescriptions`)
+        axios.get<DescriptionItem[]>(`${baseUrl}/api/Sales/QuoteBoardDescriptions`)
             .then(r => setDescriptions(r.data));
     }, []);
 
@@ -116,7 +133,8 @@ const AddQuotation: React.FC = () => {
 
         const headerUrl = `${baseUrl}/api/Sales/EnqCustLocContData?penquiryNo=${enquiryNo}`;
 
-        axios.get(headerUrl)
+       // axios.get(headerUrl)
+       axios.get<EnquiryHeaderResponse>(headerUrl)
             .then(res => {
                 const data = res.data;
                 setCustomer(data.customer);
@@ -134,7 +152,8 @@ const AddQuotation: React.FC = () => {
 
         const descUrl = `${baseUrl}/api/Sales/QuoteBoardDescriptions`;
 
-        axios.get(descUrl)
+      //  axios.get(descUrl)
+      axios.get<DescriptionItem[]>(descUrl)
             .then(res => {
                 setDescriptions(res.data);
             })
@@ -159,8 +178,8 @@ const AddQuotation: React.FC = () => {
         const loadQuotes = async () => {
             try {
                 const url = `${baseUrl}/api/Sales/QuotationDetailsByEnqQuote/${enquiryNo}`;
-                const { data } = await axios.get(url);
-
+              //  const { data } = await axios.get(url);
+                const { data } = await axios.get<QuotationApiResponse>(url);
                 const list = Array.isArray(data) ? data : [data];
                 setQuotes(list);
 
@@ -183,8 +202,9 @@ const AddQuotation: React.FC = () => {
         const fetchQuotation = async () => {
             try {
                 const url = `${baseUrl}/api/Sales/QuotationDetailsByEnqQuote/${enquiryNo}?quoteNo=${selectedQuoteNo}`;
-                const { data } = await axios.get(url);
-
+               // const { data } = await axios.get(url);
+                const { data } = await axios.get<QuotationApiResponse>(url);
+                
                 if (!data) return;
 
                 // Set board ref and terms
@@ -262,30 +282,6 @@ const AddQuotation: React.FC = () => {
     };
 
     // -------------------------
-    // Helpers
-    // -------------------------
-    const recalcRow = (row: QuotationItem): QuotationItem => {
-        const desc = descriptions.find(d => d.idNo === row.descriptionId);
-
-        let taxRate = 0;
-        if (row.currency === "INR") taxRate = desc?.tax_INR ?? 0;
-        if (row.currency === "USD") taxRate = desc?.tax_USD ?? 0;
-        if (row.currency === "EURO") taxRate = desc?.tax_EURO ?? 0;
-
-        const amount = row.qty * row.rate;
-        const taxAmount = (amount * taxRate) / 100;
-
-        return {
-            ...row,
-            taxName: desc?.taxname ?? "",
-            taxRate,
-            amount,
-            taxAmount,
-            incTaxAmount: amount + taxAmount,
-        };
-    };
-
-    // -------------------------
     // Row change
     // -------------------------
     const handleItemChange = <K extends keyof QuotationItem>(
@@ -354,6 +350,7 @@ const AddQuotation: React.FC = () => {
                 taxAmount: 0,
                 incTaxAmount: 0,
                 locationId: defaultLocationId,
+                boardRef: boardRef,
             },
         ]);
     };
@@ -371,18 +368,15 @@ const AddQuotation: React.FC = () => {
         setItems(prev => prev.filter((_, i) => i !== index));
     };
 
-    // -------------------------
-    // Totals
-    // -------------------------
-    const totalAmount = items.reduce(
-        (sum, item) => sum + (Number(item.amount) || 0),
-        0
-    );
+    // const totalAmount = items.reduce(
+    //     (sum, item) => sum + (Number(item.amount) || 0),
+    //     0
+    // );
 
-    const totalTaxAmount = items.reduce(
-        (sum, item) => sum + (Number(item.taxAmount) || 0),
-        0
-    );
+    // const totalTaxAmount = items.reduce(
+    //     (sum, item) => sum + (Number(item.taxAmount) || 0),
+    //     0
+    // );
 
     const grandTotal = items.reduce(
         (sum, item) => sum + (Number(item.incTaxAmount) || 0),
@@ -435,6 +429,7 @@ const AddQuotation: React.FC = () => {
             toast.error("Failed to save quotation");
         }
     };
+
     useEffect(() => {
         if (!selectedQuoteNo || quotes.length === 0) return;
 
@@ -443,6 +438,7 @@ const AddQuotation: React.FC = () => {
             setCurrentVersion(q.versionNo);
         }
     }, [selectedQuoteNo, quotes]);
+
     const handleSaveNewVersion = async () => {
         try {
             const newVersion = currentVersion + 1;
@@ -557,7 +553,6 @@ const AddQuotation: React.FC = () => {
                                     label: d.layout,
                                 }))}
                                 required
-
                             />
                         </Box>
                         {/* First Row */}
@@ -571,7 +566,6 @@ const AddQuotation: React.FC = () => {
                                     value: cur,
                                     label: cur,
                                 }))}
-                                size="small"
                                 sx={{
                                     "& input": { title: "" },
                                     "& .MuiSelect-select": { title: "" },
@@ -612,7 +606,6 @@ const AddQuotation: React.FC = () => {
                                 sx={{ minWidth: 100 }}
 
                             />
-
                             <TextField
                                 label="Amount"
                                 value={item.amount}

@@ -435,9 +435,9 @@ const RptBillingPlanner: React.FC = () => {
     { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 450, },
     { field: "customer", headerName: "Customer", flex: 1, minWidth: 300 },
     { field: "startDate", headerName: "Start Date", flex: 1, minWidth: 100 },
-    { field: "plannedEndDate", headerName: "Planned End Date", flex: 1, minWidth: 150 },
-    { field: "totalHrs", headerName: "Total Hours", flex: 1, minWidth: 100 },
-    { field: "plannedHrs", headerName: "Planned Hours", flex: 1, minWidth: 120 },
+    { field: "plannedEndDate", headerName: "Planned End Date", flex: 1, minWidth: 160 },
+    { field: "totalHrs", headerName: "Total Hours", flex: 1, minWidth: 120 },
+    { field: "plannedHrs", headerName: "Planned Hours", flex: 1, minWidth: 140 },
     { field: "bilHrs_CurrentMonth", headerName: "BilHrs_CurrentMonth", flex: 1, minWidth: 160 },
     { field: "billPerctg_CurMonth", headerName: "BillPerctg_CurMonth", flex: 1, minWidth: 160 },
     { field: "projectComp_Perc", headerName: "ProjectComp_Perc", flex: 1, minWidth: 160 },
@@ -451,9 +451,9 @@ const RptBillingPlanner: React.FC = () => {
     { field: "govt_tender", headerName: "govt_tender", flex: 1, minWidth: 100 },
     { field: "estimatedHours", headerName: "Estimated Hours", flex: 1, minWidth: 150 },
     { field: "poNumber", headerName: "PO Number", flex: 1, minWidth: 250 },
-    { field: "hourlyRate", headerName: "HourlyRate", flex: 1, minWidth: 100 },
+    { field: "hourlyRate", headerName: "HourlyRate", flex: 1, minWidth: 120 },
     { field: "poRcvd", headerName: "PoRcvd", flex: 1, minWidth: 100 },
-    { field: "poAmount", headerName: "PO Amount", flex: 1, minWidth: 100 },
+    { field: "poAmount", headerName: "PO Amount", flex: 1, minWidth: 120 },
     { field: "billingType", headerName: "BillingType", flex: 1, minWidth: 100 },
     { field: "expectedDeliveryDate", headerName: "ExpectedDeliveryDate", flex: 1, minWidth: 150 },
     { field: "actualEndDate", headerName: "ActualEndDate", flex: 1, minWidth: 150 },
@@ -463,14 +463,14 @@ const RptBillingPlanner: React.FC = () => {
     { field: "totalInvoicedHrs", headerName: "Total Invoiced Hrs", flex: 1, minWidth: 150 },
     { field: "totalInvoicedAmt", headerName: "Total InvoicedAmt", flex: 1, minWidth: 150 },
     { field: "type", headerName: "Type", flex: 1, minWidth: 90 },
-    { field: "costCenter", headerName: "Cost Center", flex: 1, minWidth: 100 },
+    { field: "costCenter", headerName: "Cost Center", flex: 1, minWidth: 120 },
     { field: "projectManager", headerName: "Project Manager", flex: 1, minWidth: 150 },
     { field: "salesManager", headerName: "Sales Manager", flex: 1, minWidth: 150 },
     { field: "jobtitle", headerName: "Job Title", flex: 1, minWidth: 100 },
     { field: "rejectedHrs", headerName: "Rejected Hrs", flex: 1, minWidth: 120 },
     { field: "projectmanagerid", headerName: "projectmanagerid", flex: 1, minWidth: 80 },
     { field: "poDate", headerName: "PO Date", flex: 1, minWidth: 100 },
-    { field: "realisedDate", headerName: "Realised Date", flex: 1, minWidth: 120 },
+    { field: "realisedDate", headerName: "Realised Date", flex: 1, minWidth: 130 },
   ];
 
   const getRowClassName = (params: any): string => {
@@ -538,14 +538,14 @@ const RptBillingPlanner: React.FC = () => {
     { field: "startDate", headerName: "Start Date", flex: 1, minWidth: 120 },
     { field: "enddate", headerName: "End Date", flex: 1, minWidth: 150 },
     { field: "costCenter", headerName: "CostCenter", flex: 1, minWidth: 120 },
-    { field: "projectManager", headerName: "Project Manager", flex: 1, minWidth: 120 },
-    { field: "flag_Raisedon", headerName: "Flag Raised Date", flex: 1, minWidth: 100 },
-    { field: "totTimesheetHrs", headerName: "Total Timesheet Hrs", flex: 1, minWidth: 100 },
-    { field: "approvedHrs", headerName: "Approved Hrsr", flex: 1, minWidth: 120 },
+    { field: "projectManager", headerName: "Project Manager", flex: 1, minWidth: 160 },
+    { field: "flag_Raisedon", headerName: "Flag Raised Date", flex: 1, minWidth: 130 },
+    { field: "totTimesheetHrs", headerName: "Total Timesheet Hrs", flex: 1, minWidth: 160 },
+    { field: "approvedHrs", headerName: "Approved Hrs", flex: 1, minWidth: 150 },
     { field: "rateperhour", headerName: "Rate Per hr", flex: 1, minWidth: 120 },
-    { field: "poDate", headerName: "PO Date", flex: 1, minWidth: 100 },
-    { field: "poNumber", headerName: "PO Number", flex: 1, minWidth: 100 },
-    { field: "unBilledAmount", headerName: "UnBilledAmt", flex: 1, minWidth: 100 },
+    { field: "poDate", headerName: "PO Date", flex: 1, minWidth: 120 },
+    { field: "poNumber", headerName: "PO Number", flex: 1, minWidth: 140 },
+    { field: "unBilledAmount", headerName: "UnBilledAmt", flex: 1, minWidth: 130 },
     { field: "enquiryNo", headerName: "Enquiryno", flex: 1, minWidth: 100 },
     { field: "enquiryType", headerName: "Enquiry Type", flex: 1, minWidth: 100 },
     { field: "type", headerName: "Type", flex: 1, minWidth: 100 },
@@ -707,7 +707,10 @@ const RptBillingPlanner: React.FC = () => {
 
       {/* ✅ Show results only after data is ready */}
       <>
-        <div>{renderSummaryTable()}</div>
+        {/* <div>{renderSummaryTable()}</div> */}
+        {!loadingData && showResults && data?.length > 0 && (
+          <div>{renderSummaryTable()}</div>
+        )}
         {/* === Row 1: 3 charts === */}
         {!loadingData && showResults && data?.length > 0 && (
           <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", marginBottom: "30px", marginTop: "10px" }}>

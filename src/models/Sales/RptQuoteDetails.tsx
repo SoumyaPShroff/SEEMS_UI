@@ -10,7 +10,17 @@ import ExportButton from "../../components/resusablecontrols/ExportButton";
 import SearchIcon from "@mui/icons-material/Search";
 import IconButton from "@mui/material/IconButton";
 import { formatDateYYYYMMDD } from "../../components/utils/DateUtils";
- 
+
+interface QuoteDetails {
+  enquiryno: string;
+  quoteNo: string;
+  customer: string;
+  createdon: string;
+  name: string;
+  totalquoteAmt: number;
+  versionno: number;
+}
+
 export default function RptQuoteDetails() {
     const [rows, setRows] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
@@ -51,12 +61,14 @@ export default function RptQuoteDetails() {
             }
             console.log("Calling API:", url); // 🔍 debug once
 
-            const response = await axios.get(url);
+           // const response = await axios.get(url);
+            axios.get<QuoteDetails[]>(url).then(response => {
             const mapped = response.data.map((item: any, index: number) => ({
                 id: index + 1,
                 ...item,
             }));
             setRows(mapped);
+            });
         } catch (err) {
             console.error(err);
             toast.error("Failed to load quote details");
@@ -129,10 +141,6 @@ export default function RptQuoteDetails() {
                         "& input": {
                             padding: "6px 6px",
                             textAlign: "center", // ✅ CENTER TEXT
-                        },
-                        "& .MuiInputLabel-root": {
-                            left: "50%",
-                            transform: "translateX(-50%)", // optional: center label when not shrunk
                         },
                     }}
                 />

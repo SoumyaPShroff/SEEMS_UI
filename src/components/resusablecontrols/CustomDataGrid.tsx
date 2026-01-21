@@ -10,9 +10,7 @@ interface CustomDataGridProps {
   rowHeight?: number;
   getRowClassName?: (params: any) => string;
   sx?: object;
-  //autoHeight?: boolean;   // ← add this
   gridheight?: number | string; // ← height for scroll
-  // ✅ TYPES ONLY (NO commas, NO values)
   columnVisibilityModel?: GridColumnVisibilityModel;
   onColumnVisibilityModelChange?: (
     model: GridColumnVisibilityModel
@@ -28,43 +26,94 @@ const CustomDataGrid: React.FC<CustomDataGridProps> = ({
   getRowClassName,
   sx = {},
   gridheight,
-  // ✅ MUST be here
   columnVisibilityModel,
   onColumnVisibilityModelChange,
 }) => {
+  
   const defaultSx = {
-    // Actual text inside each header cell
-    "& .MuiDataGrid-columnHeaderTitle": {
-      color: "SlateGrey",
-      fontWeight: "bold",
-      fontSize: "14px",
-    },
-    // ✅ vertical borders between columns (body cells)
-    "& .MuiDataGrid-cell": {
-      borderRight: "1px solid #e0e0e0",
-    },
+// ===== GRID OUTER BORDER =====
+  border: "1px solid #0b0202",
 
-    // ✅ vertical borders between columns (header cells)
-    "& .MuiDataGrid-columnHeader": {
-      borderRight: "1px solid #e0e0e0",
+  // ===== HEADER ROW =====
+  "& .MuiDataGrid-columnHeaders": {
+    backgroundColor: "#f5f7fa",
+    borderBottom: "1px solid #0b0202",
+  },
+
+  // Header text
+  "& .MuiDataGrid-columnHeaderTitle": {
+    fontWeight: 700,
+    fontSize: "16px",
+    color: "#1a6286",
+    letterSpacing: "0.3px",
+  },
+
+  // Header cells
+  "& .MuiDataGrid-columnHeader": {
+    borderRight: "1.5px solid #0b0202",
+  },
+
+    // 🔥 REMOVE BLUE BORDER ON HOVER / FOCUS
+  "& .MuiDataGrid-columnHeader:hover": {
+    borderRight: "1.5px solid #0b0202",
+  },
+
+  "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within": {
+    outline: "none",
+    borderRight: "1.5px solid #0b0202",
+  },
+
+    // ===== COLUMN RESIZER (🔥 THIS IS THE FIX) =====
+  "& .MuiDataGrid-columnSeparator": {
+    color: "#0b0202",        // controls the resize line color
+    minWidth: "2px",
+  },
+
+  "& .MuiDataGrid-columnSeparator--resizing": {
+    color: "#0b0202",
+  },
+
+  // optional: hide resize icon (but keep resize)
+  "& .MuiDataGrid-iconSeparator": {
+    display: "none",
+  },
+  
+  // ===== BODY CELLS =====
+  "& .MuiDataGrid-cell": {
+    borderRight: "1.5px solid #0b0202",
+    color: "#263238",
+    fontSize: "14px",
+  },
+
+  // ===== ROW SEPARATORS =====
+  "& .MuiDataGrid-row": {
+    borderBottom: "1.5px solid #0b0202",
+  },
+
+  // ===== HOVER EFFECT =====
+  "& .MuiDataGrid-row:hover": {
+    backgroundColor: "#f0f4ff",
+  },
+    // Filler column fix - removes ghost column border - since mui has extra filler column
+  "& .MuiDataGrid-filler": {
+    borderRight: "none",
+  },
+
+    "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within": {
+      outline: "none",
     },
-    "& .MuiDataGrid-filler": {
-      borderRight: "none",
+    // Hover effect
+    "& .MuiDataGrid-columnHeader:hover": {
+      backgroundColor: "#e3f2fd",
     },
-    // ✅ optional: bottom border for rows
-    "& .MuiDataGrid-row": {
-      borderBottom: "1px solid #e0e0e0",
-    },
-  };
+};
 
   return (
     <div
       style={{
-        // height: "auto",
         height: gridheight, // <-- important for vertical scroll
         width: "100%",
         background: "#fff",
-        //  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
         borderRadius: "8px",
         padding: "10px",
       }}
@@ -86,7 +135,6 @@ const CustomDataGrid: React.FC<CustomDataGridProps> = ({
       )}
       <div style={{ height: gridheight, width: "100%" }}>
         <DataGrid
-          //  autoHeight
           rows={rows}
           columns={columns}
           loading={loading}

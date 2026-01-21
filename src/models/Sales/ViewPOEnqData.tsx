@@ -1,4 +1,4 @@
-import {useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import type { GridColDef } from '@mui/x-data-grid';
 import { Box } from "@mui/material";//, Button
@@ -13,67 +13,67 @@ import ExportButton from "../../components/resusablecontrols/ExportButton";
 export default function ViewPOEnqData() {
     const [rows, setRows] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
-   // const navigate = useNavigate();
-   // const loginId = sessionStorage.getItem("SessionUserID") || "guest";
+    // const navigate = useNavigate();
+    // const loginId = sessionStorage.getItem("SessionUserID") || "guest";
 
     const columns: GridColDef[] = [
-        { field: "penquiryno", headerName: "Enquiryno"},
+        { field: "penquiryno", headerName: "Enquiryno" },
         { field: "pponumber", headerName: "POnumber" },
-        { field: "podate", headerName: "PODate"},
+        { field: "podate", headerName: "PODate" },
         { field: "ppoamount", headerName: "POAmt" },
         { field: "pbalanceamt", headerName: "BalAmt" },
-        { field: "layQty", headerName: "LayQty"},
+        { field: "layQty", headerName: "LayQty" },
         { field: "layRateperhr", headerName: "LayRate" },
-        { field: "playout", headerName: "LayAmt"},
+        { field: "playout", headerName: "LayAmt" },
         { field: "analyQty", headerName: "AnalysQty" },
         { field: "analyRateperhr", headerName: "AnalysRate" },
         { field: "panalysis", headerName: "AnalysAmt" },
         { field: "vaQty", headerName: "VAQty" },
         { field: "vaRateperhr", headerName: "VARate" },
-        { field: "pva", headerName: "VAAmt"},
+        { field: "pva", headerName: "VAAmt" },
         { field: "npiQty", headerName: "NPIQty" },
-        { field: "npiRateperhr", headerName: "NPIRate"},
+        { field: "npiRateperhr", headerName: "NPIRate" },
         { field: "pnpi", headerName: "NPIAmt" },
         { field: "libQty", headerName: "LibQty" },
-        { field: "libRateperhr", headerName: "LibRate"},
+        { field: "libRateperhr", headerName: "LibRate" },
         { field: "plibrary", headerName: "LibAmt" },
         { field: "dfmQty", headerName: "DFMQty" },
-        { field: "dfmRateperhr", headerName: "DFMRate"},
-        { field: "dfm", headerName: "DFMAmt"},
-        { field: "onsiteQty", headerName: "onsiteQty"},
+        { field: "dfmRateperhr", headerName: "DFMRate" },
+        { field: "dfm", headerName: "DFMAmt" },
+        { field: "onsiteQty", headerName: "onsiteQty" },
         { field: "onsiteRateperhr", headerName: "onsiteRate" },
-        { field: "onsite", headerName: "onsiteAmt"},
-        { field: "ppaymentterm", headerName: "paymentterm"},
+        { field: "onsite", headerName: "onsiteAmt" },
+        { field: "ppaymentterm", headerName: "paymentterm" },
         { field: "pcurrency_id", headerName: "currency" },
         { field: "pconvrate", headerName: "convrate" },
-        { field: "pcomments", headerName: "comments"},
-        { field: "pquoteno", headerName: "quoteno"},
+        { field: "pcomments", headerName: "comments" },
+        { field: "pquoteno", headerName: "quoteno" },
         { field: "pcreatedon", headerName: "createdon" },
         { field: "pcreatedby", headerName: "createdby" },
         { field: "pupdatedby", headerName: "updatedby" },
         { field: "pupdatedon", headerName: "updatedon" },
- 
+
     ];
-// const checkAccess = async () => {
-//       try {
-//         // Step 1: Get user role
-//         const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
-//         const userRole = userRoleRes.data;
+    // const checkAccess = async () => {
+    //       try {
+    //         // Step 1: Get user role
+    //         const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
+    //         const userRole = userRoleRes.data;
 
-//         // Step 2: Verify internal rights
-//         const roleCheck = await axios.get<boolean>(
-//           `${baseUrl}/UserRoleInternalRights/${userRole}/salesmgmtdashboard`
-//         );
+    //         // Step 2: Verify internal rights
+    //         const roleCheck = await axios.get<boolean>(
+    //           `${baseUrl}/UserRoleInternalRights/${userRole}/salesmgmtdashboard`
+    //         );
 
-//         // Step 3: If not authorized, redirect
-//         if (!roleCheck.data) {
-//           navigate("/blank");
-//         }
-//       } catch (error) {
-//         console.error("Error checking role:", error);
-//         navigate("/blank");
-//       }
-//     };
+    //         // Step 3: If not authorized, redirect
+    //         if (!roleCheck.data) {
+    //           navigate("/blank");
+    //         }
+    //       } catch (error) {
+    //         console.error("Error checking role:", error);
+    //         navigate("/blank");
+    //       }
+    //     };
 
     const fetchData = async () => {
         setLoading(true);
@@ -105,10 +105,10 @@ export default function ViewPOEnqData() {
     };
 
     useEffect(() => {
-       // checkAccess();
-       fetchData();
-   // }, [navigate, baseUrl, loginId]);
-     }, []);
+        // checkAccess();
+        fetchData();
+        // }, [navigate, baseUrl, loginId]);
+    }, []);
 
     return (
         <Box sx={{ padding: "100px", mt: "30px", ml: "20px" }}>
@@ -117,14 +117,16 @@ export default function ViewPOEnqData() {
                 {/* <Button variant="contained"   onClick={handleViewEnqExport} style={{ height: 35 }}>Export to Excel</Button> */}
                 <ExportButton label="Export to Excel" onClick={handleViewEnqExport} />
             </Box>
-            <CustomDataGrid
-              //  autoHeight={true}
-                rows={rows}
-                columns={columns}
-                title="View PO Enquiry Data"
-                loading={loading}
-                gridheight={400}
-            />
+            {rows.length > 0 && (
+                <CustomDataGrid
+                    //  autoHeight={true}
+                    rows={rows}
+                    columns={columns}
+                    title="View PO Enquiry Data"
+                    loading={loading}
+                    gridheight={400}
+                />
+            )}
         </Box>
     );
 }
