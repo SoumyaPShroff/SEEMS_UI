@@ -55,7 +55,7 @@ const CustomDataGrid: React.FC<CustomDataGridProps> = ({
 
     // 🔥 REMOVE BLUE BORDER ON HOVER / FOCUS
   "& .MuiDataGrid-columnHeader:hover": {
-    borderRight: "1.5px solid #0b0202",
+    backgroundColor: "#e3f2fd",
   },
 
   "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within": {
@@ -98,14 +98,6 @@ const CustomDataGrid: React.FC<CustomDataGridProps> = ({
   "& .MuiDataGrid-filler": {
     borderRight: "none",
   },
-
-    "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within": {
-      outline: "none",
-    },
-    // Hover effect
-    "& .MuiDataGrid-columnHeader:hover": {
-      backgroundColor: "#e3f2fd",
-    },
 };
 
   return (

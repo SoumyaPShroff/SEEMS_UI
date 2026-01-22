@@ -1,4 +1,3 @@
-//import React  from "react";
 import React, { useEffect, useState } from "react";
 import { Box, Button, TextField, IconButton, Typography, Card, MenuItem } from "@mui/material";
 import { Add, Delete } from "@mui/icons-material";
@@ -36,19 +35,19 @@ interface QuotationItem {
 }
 
 interface EnquiryHeaderResponse {
-  customer: string;
-  contactName: string;
-  location: string;
-  address: string;
-  enquirytype: string;
-  locationid: string;
-  boardref: string;
+    customer: string;
+    contactName: string;
+    location: string;
+    address: string;
+    enquirytype: string;
+    locationid: string;
+    boardref: string;
 }
 
 interface QuotationApiResponse {
-  board_ref: string;
-  tandc: string;
-  items: any[];
+    board_ref: string;
+    tandc: string;
+    items: any[];
 }
 
 const emptyItem = (locationId = "", boardRef = ""): QuotationItem => ({
@@ -84,8 +83,6 @@ const currencyOptions = [
 
 const AddQuotation: React.FC = () => {
     console.log("🔥 AddQuotation component mounted");
-    // return null;
-    //const navigate = useNavigate();
     const { enquiryNo, quoteNo } = useParams();
     // Header fields
     const [customer, setCustomer] = useState("");
@@ -132,9 +129,7 @@ const AddQuotation: React.FC = () => {
         if (!enquiryNo) return;
 
         const headerUrl = `${baseUrl}/api/Sales/EnqCustLocContData?penquiryNo=${enquiryNo}`;
-
-       // axios.get(headerUrl)
-       axios.get<EnquiryHeaderResponse>(headerUrl)
+        axios.get<EnquiryHeaderResponse>(headerUrl)
             .then(res => {
                 const data = res.data;
                 setCustomer(data.customer);
@@ -151,9 +146,7 @@ const AddQuotation: React.FC = () => {
             });
 
         const descUrl = `${baseUrl}/api/Sales/QuoteBoardDescriptions`;
-
-      //  axios.get(descUrl)
-      axios.get<DescriptionItem[]>(descUrl)
+        axios.get<DescriptionItem[]>(descUrl)
             .then(res => {
                 setDescriptions(res.data);
             })
@@ -178,7 +171,7 @@ const AddQuotation: React.FC = () => {
         const loadQuotes = async () => {
             try {
                 const url = `${baseUrl}/api/Sales/QuotationDetailsByEnqQuote/${enquiryNo}`;
-              //  const { data } = await axios.get(url);
+                //  const { data } = await axios.get(url);
                 const { data } = await axios.get<QuotationApiResponse>(url);
                 const list = Array.isArray(data) ? data : [data];
                 setQuotes(list);
@@ -202,9 +195,8 @@ const AddQuotation: React.FC = () => {
         const fetchQuotation = async () => {
             try {
                 const url = `${baseUrl}/api/Sales/QuotationDetailsByEnqQuote/${enquiryNo}?quoteNo=${selectedQuoteNo}`;
-               // const { data } = await axios.get(url);
                 const { data } = await axios.get<QuotationApiResponse>(url);
-                
+
                 if (!data) return;
 
                 // Set board ref and terms
@@ -214,9 +206,7 @@ const AddQuotation: React.FC = () => {
                 // Map API items to QuotationItem
                 const mappedItems: QuotationItem[] = (data.items || []).map((apiItem: any) => {
                     const desc = descriptions.find(d => d.layout === apiItem.layout);
-
                     const descriptionId = desc?.idNo ?? 0;
-
                     const currency =
                         apiItem.currency_id === 1 ? "INR" :
                             apiItem.currency_id === 2 ? "USD" : "EURO";
@@ -368,16 +358,6 @@ const AddQuotation: React.FC = () => {
         setItems(prev => prev.filter((_, i) => i !== index));
     };
 
-    // const totalAmount = items.reduce(
-    //     (sum, item) => sum + (Number(item.amount) || 0),
-    //     0
-    // );
-
-    // const totalTaxAmount = items.reduce(
-    //     (sum, item) => sum + (Number(item.taxAmount) || 0),
-    //     0
-    // );
-
     const grandTotal = items.reduce(
         (sum, item) => sum + (Number(item.incTaxAmount) || 0),
         0
@@ -401,7 +381,6 @@ const AddQuotation: React.FC = () => {
                     }
                     return {
                         slNo: i.slNo ?? 0, // 🔴 IMPORTANT: 0 for new rows
-                        // layout: desc?.layout ?? "", //dont send empty string to backend
                         layout: desc.layout,
                         quantity: i.qty,
                         unit_rate: i.rate,
@@ -492,7 +471,7 @@ const AddQuotation: React.FC = () => {
     // -------------------------
     return (
 
-        <Box sx={{ maxWidth: 1300, mt: 20, ml: 15 }}>
+        <Box sx={{ maxWidth: 1300, mt: 20, ml: 20 }}>
             <Box sx={{ mb: 2, display: "flex", gap: 2, alignItems: "center" }}>
                 {/* Quote selector */}
                 <TextField select label="Select Quote" value={selectedQuoteNo ?? ""}
@@ -530,7 +509,6 @@ const AddQuotation: React.FC = () => {
                         size="small"
                     />
                 </Box>
-                {/* <Typography variant="h6">Items</Typography> */}
 
                 {items.map((item, index) => (
                     <Box
@@ -569,7 +547,7 @@ const AddQuotation: React.FC = () => {
                                 sx={{
                                     "& input": { title: "" },
                                     "& .MuiSelect-select": { title: "" },
-                                     minWidth: 100
+                                    minWidth: 100
                                 }}
                             />
                             <TextField
@@ -659,43 +637,6 @@ const AddQuotation: React.FC = () => {
                 ))}
 
                 <Button variant="outlined" startIcon={<Add />} sx={{ mt: 2 }} onClick={addNewItem}>Add New Line Item</Button>
-                {/* {enquiryType === 'ONSITE' ? (
-                    <Box sx={{ mt: 2, p: 2, display: "flex", flexDirection: "row", gap: 2, }}>
-                        <TextField
-                            label="Validity"
-                            // value={item.validity}
-                            size="small"
-                            sx={{ minWidth: 80 }}
-                          //  InputProps={{ readOnly: true }}
-                        />
-
-                        <TextField
-                            label="Invoice raised day"
-                            //  value={item.taxRate}
-                            size="small"
-                            sx={{ minWidth: 80 }}
-                          //  InputProps={{ readOnly: true }}
-                        />
-
-                        <TextField
-                            label="Payment"
-                            //  value={item.taxAmount.toFixed(2)}
-                            size="small"
-                          //  InputProps={{ readOnly: true }}
-                        />
-
-                        <TextField
-                            label="Minimum Commitment of days"
-                            //  value={item.incTaxAmount.toFixed(2)}
-                            size="small"
-                           // InputProps={{ readOnly: true }}
-                            sx={{ minWidth: 250 }}
-                        />
-                        {/* </Box> */}
-                {/* </Box>*/}
-                {/* ) */}
-                {/*     : null} */}
-                {/* Total */}
                 <Box sx={{ mt: 3, textAlign: "right" }}>
                     <Typography variant="h6">Grand Total: ₹ {grandTotal.toFixed(2)}</Typography>
                 </Box>
@@ -733,5 +674,4 @@ const AddQuotation: React.FC = () => {
         </Box>
     );
 };
-
 export default AddQuotation;
