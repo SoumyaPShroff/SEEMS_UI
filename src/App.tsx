@@ -17,7 +17,7 @@ import ViewEnquiryReport from './models/Sales/ViewEnquiryReport';
 import ViewPOEnqData from './models/Sales/ViewPOEnqData';
 import OnsiteEnquiry from './models/Sales/OnsiteEnquiry';
 import AddQuotation from './models/Sales/AddQuotation';
-import RptQuoteDetails from './models/Sales/RptQuoteDetails';
+// import RptQuoteDetails from './models/Sales/RptQuoteDetails';
 import Feasibility from './models/Sales/Feasibility';
 
 const App: React.FC = () => {
@@ -61,7 +61,7 @@ const App: React.FC = () => {
           <Route path="ViewEnquiryReport" element={<ViewEnquiryReport />} />
           <Route path="ViewPOEnqData" element={<ViewPOEnqData />} />
           <Route path="AddQuotation/:enquiryNo" element={<AddQuotation />} />
-          <Route path="RptQuoteDetails" element={<RptQuoteDetails />} />
+          {/* <Route path="RptQuoteDetails" element={<RptQuoteDetails />} /> */}
           <Route path="Feasibility/:enquiryno" element={<Feasibility />} />
         </Route>
         {/* Password + Blank */}

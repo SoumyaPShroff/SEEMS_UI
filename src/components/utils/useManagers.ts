@@ -26,24 +26,36 @@ export const useManagers = (loginId: string, pageName: string) => {
 
       if (!hasSpecialRole) {
         // Step 3: Get cost center from user session or API
-       // const costCenterRes = await axios.get(`${baseUrl}/ManagerCostcenterInfo/${loginId}`);
-        const costCenterRes = await axios.get<CostCenterInfo[]>(`${baseUrl}/ManagerCostcenterInfo/${loginId}`);
-        const userCostCenterInfo = costCenterRes.data?.[0];
-        if (userCostCenterInfo) {
-          // Step 4: Set dropdown to user's cost center only
-          setManagers([
-            {
-              hopc1id: userCostCenterInfo.hopc1id,
-              hopc1name: userCostCenterInfo.hopc1name,
-              costcenter: userCostCenterInfo.costcenter,
-            }
-          ]);
+        // const costCenterRes = await axios.get<CostCenterInfo[]>(`${baseUrl}/ManagerCostcenterInfo/${loginId}`);
+        // const userCostCenterInfo = costCenterRes.data?.[0];
+        // if (userCostCenterInfo) {
+        //   // Step 4: Set dropdown to user's cost center only
+        //   setManagers([
+        //     {
+        //       hopc1id: userCostCenterInfo.hopc1id,
+        //       hopc1name: userCostCenterInfo.hopc1name,
+        //       costcenter: userCostCenterInfo.costcenter,
+        //     }
+        //   ]);
+
+         // fill mutliple cost centers for same user (eg. managers with multiple cost centers)
+        const costCenterRes = await axios.get<CostCenterInfo[]>(
+          `${baseUrl}/ManagerCostcenterInfo/${loginId}`
+        );
+
+        if (costCenterRes.data && costCenterRes.data.length > 0) {
+          setManagers(
+            costCenterRes.data.map(item => ({
+              hopc1id: item.hopc1id,
+              hopc1name: item.hopc1name,
+              costcenter: item.costcenter,
+            }))
+          );
         } else {
           console.warn("No manager info found for", loginId);
         }
       } else {
         //fill All
-        //const res = await axios.get<any[]>(`${baseUrl}/HOPCManagerList`);
         const res = await axios.get<CostCenterInfo[]>(`${baseUrl}/HOPCManagerList`);
         const data = res.data || [];
         const allOption = { hopc1id: "All", hopc1name: "All", costcenter: "All" };

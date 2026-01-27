@@ -41,12 +41,12 @@ const CustomDataGrid: React.FC<CustomDataGridProps> = ({
   },
 
   // Header text
-  "& .MuiDataGrid-columnHeaderTitle": {
-    fontWeight: 700,
-    fontSize: "16px",
-    color: "#1a6286",
-    letterSpacing: "0.3px",
-  },
+"& .MuiDataGrid-columnHeader .MuiDataGrid-columnHeaderTitle": {
+  fontWeight: 700,
+  fontSize: "16px",
+  color: "#1a6286",
+  letterSpacing: "0.3px",
+},
 
   // Header cells
   "& .MuiDataGrid-columnHeader": {
@@ -81,7 +81,7 @@ const CustomDataGrid: React.FC<CustomDataGridProps> = ({
   // ===== BODY CELLS =====
   "& .MuiDataGrid-cell": {
     borderRight: "1.5px solid #0b0202",
-    color: "#263238",
+   // color: "#263238",       //do not set color here to allow row-based coloring (this will override row colors based on legends)
     fontSize: "14px",
   },
 
@@ -98,6 +98,10 @@ const CustomDataGrid: React.FC<CustomDataGridProps> = ({
   "& .MuiDataGrid-filler": {
     borderRight: "none",
   },
+  //Prevent header text dimming on focus (rare edge case)
+  "& .MuiDataGrid-columnHeader:focus .MuiDataGrid-columnHeaderTitle": {
+  fontWeight: 700,
+},
 };
 
   return (

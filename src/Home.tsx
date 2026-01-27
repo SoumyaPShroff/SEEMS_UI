@@ -2,6 +2,11 @@
 import Sidebar from "./components/Sidebar";
 import { Outlet } from "react-router-dom";
 
+interface HomeProps {
+  userId: string | null;
+  setUserId: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
 const Home: React.FC<HomeProps> = ({ userId, setUserId }) => {
 
   if (!userId) return null;

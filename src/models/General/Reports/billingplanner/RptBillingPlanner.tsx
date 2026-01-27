@@ -157,6 +157,13 @@ const RptBillingPlanner: React.FC = () => {
     { value: 12, label: "December" },
   ];
 
+// useEffect(() => {
+//   document.body.style.overflow = "hidden";
+//   return () => {
+//     document.body.style.overflow = "auto";
+//   };
+// }, []);
+
   const years = Array.from({ length: 12 }, (_, i) => {
     const y = 2020 + i;
     return { value: y, label: String(y) };
@@ -431,6 +438,7 @@ const RptBillingPlanner: React.FC = () => {
     );
   }, [columnVisibilityModel]);
 
+
   const columns: GridColDef[] = [
     { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 450, },
     { field: "customer", headerName: "Customer", flex: 1, minWidth: 300 },
@@ -479,6 +487,9 @@ const RptBillingPlanner: React.FC = () => {
     const dtStr: string = params.row.flagRaisedOn || "";
     const poDateStr: string = params.row.poDate;
     const requestDateStr: string = params.row.realisedDate;
+    const flagDate = new Date(dtStr);
+    const key = `${jobNo}_${flagDate.getMonth() + 1}_${flagDate.getFullYear()}`;
+
     // 🟥 Case 1 — PO not received
     if (poRcvd === "NO") {
       //new logic
@@ -498,9 +509,6 @@ const RptBillingPlanner: React.FC = () => {
 
     // 🟦 Case 2 — Flag date present
     if (dtStr) {
-      const flagDate = new Date(dtStr);
-      const key = `${jobNo}_${flagDate.getMonth() + 1}_${flagDate.getFullYear()}`;
-
       // 🟩 Case 2a — Invoice exists
       if (invoiceDict.has(key)) {
         return "row-green";
@@ -608,10 +616,16 @@ const RptBillingPlanner: React.FC = () => {
           <SelectControl
             name="costcenter"
             label="Select Manager"
-            value={selectedManager?.costcenter ?? "All"}
-            width="200px"
+            value={
+              selectedManager?.hopc1id === "All"
+                ? "All"
+                : `${selectedManager?.hopc1id}_${selectedManager?.costcenter}`
+            } width="200px"
             options={managers.map((manager: Manager) => ({
-              value: manager.costcenter || "All",
+              value:
+                manager.hopc1id === "All"
+                  ? "All"
+                  : `${manager.hopc1id}_${manager.costcenter}`,
               label:
                 manager.hopc1name === "All"
                   ? "All"
@@ -620,17 +634,25 @@ const RptBillingPlanner: React.FC = () => {
             onChange={(e: any) => {
               const selectedValue = e.target.value;
 
-              const manager = managers.find(
-                (m: Manager) => m.costcenter === selectedValue
-              );
-
-              setSelectedManager(
-                manager || {
+              if (selectedValue === "All") {
+                setSelectedManager({
                   hopc1id: "All",
                   hopc1name: "All",
                   costcenter: "All",
-                }
+                });
+                return;
+              }
+
+              const [hopc1id, costcenter] = selectedValue.split("_");
+
+              const manager = managers.find(
+                (m: Manager) =>
+                  m.hopc1id === hopc1id && m.costcenter === costcenter
               );
+
+              if (manager) {
+                setSelectedManager(manager);
+              }
             }}
           />
         </Box>
