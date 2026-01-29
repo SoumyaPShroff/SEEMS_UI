@@ -1,41 +1,119 @@
-@page {
-  size: A4;
-  margin: 15mm;
+.quote-report {
+  /* font-family: "Helvetica", Arial, sans-serif; */
+   font-family: "Calibri", "Roboto", sans-serif;  
+  font-size: 14px;
+  color: #000;
+  padding: 20px;
+  width: 210mm;  /* A4 width */
+  min-height: 297mm;   /* A4 height */
+  border: 2px solid #000;
+  box-sizing: border-box;
+  background: #fff;
 }
 
+.print-btn {
+  text-align: right;
+  margin-bottom: 15px;
+  margin-top:40px;
+  position: relative;
+  justify-content: flex-end;
+}
+
+/* HEADER */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.logo img {
+  width: 110px;
+}
+
+.company-info {
+  text-align: right;
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* TITLE */
+.title {
+  text-align: center;
+  margin: 15px 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* INFO SECTION */
+.info-section {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  gap: 20px;
+}
+
+.to-section,
+.doc-section {
+  width: 48%; 
+  max-width: 48%;
+}
+
+.to-section p {
+  white-space: normal;
+  overflow-wrap: break-word; /* better than word-break */
+  word-break: break-word;
+}
+
+.doc-section {
+  text-align: right;
+}
+
+/* TABLE */
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.items-table th,
+.items-table td {
+  border: 1px solid #7f7f7f;
+  padding: 8px;
+  text-align: center;
+}
+
+.items-table th {
+  font-weight: bold;
+}
+
+.items-table td:nth-child(2) {
+  text-align: left;
+}
+
+/* OUTER PAGE BOX */
+.quote-wrapper {
+  display: flex;
+  justify-content: center;
+  background: #f5f5f5;
+  padding: 20px;
+}
+
+/* PRINT */
+/* Hide only during print */
 @media print {
-  body {
-    font-family: Tahoma, Arial, sans-serif;
-    font-size: 12px;
-    color: #000;
+   body * {
+    visibility: hidden;
   }
 
-  button,
+  .quote-wrapper,
+  .quote-wrapper * {
+    visibility: visible;
+  }
   .no-print {
     display: none !important;
   }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    page-break-inside: avoid;
-  }
-
-  th, td {
-    border: 1px solid #000;
-    padding: 6px;
-    text-align: center;
-  }
-
-  thead {
-    display: table-header-group;
-  }
-
-  tr {
-    page-break-inside: avoid;
-  }
-
-  .section {
-    page-break-inside: avoid;
+  @page {
+    size: A4;
+    margin: 15mm;
   }
 }

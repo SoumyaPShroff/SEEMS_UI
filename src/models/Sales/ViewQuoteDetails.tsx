@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import type { GridColDef } from '@mui/x-data-grid';
-import { Box, Button,TextField  } from "@mui/material";
+import { Box, Button, TextField } from "@mui/material";
 import CustomDataGrid from "../../components/resusablecontrols/CustomDataGrid";
 import { baseUrl } from "../../const/BaseUrl";
 import { exporttoexcel } from "../../components/utils/exporttoexcel";
@@ -10,23 +10,25 @@ import ExportButton from "../../components/resusablecontrols/ExportButton";
 import SearchIcon from "@mui/icons-material/Search";
 import IconButton from "@mui/material/IconButton";
 import { formatDateYYYYMMDD } from "../../components/utils/DateUtils";
+import { useNavigate } from "react-router-dom";
 
 interface QuoteDetails {
-  enquiryno: string;
-  quoteNo: string;
-  customer: string;
-  createdon: string;
-  name: string;
-  totalquoteAmt: number;
-  versionno: number;
+    enquiryno: string;
+    quoteNo: string;
+    customer: string;
+    createdon: string;
+    name: string;
+    totalquoteAmt: number;
+    versionno: number;
 }
 
-export default function RptQuoteDetails() {
+export default function ViewQuoteDetails() {
     const [rows, setRows] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [startDate, setStartDate] = useState<string>("");
     const [endDate, setEndDate] = useState<string>("");
     const [searchText, setSearchText] = useState<string>("");;
+    const navigate = useNavigate();
     const columns: GridColDef[] = [
         { field: "enquiryno", headerName: "enquiryno", width: 150 },
         { field: "quoteNo", headerName: "quoteNo", width: 150 },
@@ -35,6 +37,26 @@ export default function RptQuoteDetails() {
         { field: "name", headerName: "name", width: 150 },
         { field: "totalquoteAmt", headerName: "totalquoteamt", width: 150 },
         { field: "versionno", headerName: "versionno", width: 120 },
+        // ⭐ NEW COLUMN
+        {
+            field: "viewQuote",
+            headerName: "View Quote",
+            width: 140,
+            sortable: false,
+            filterable: false,
+            renderCell: (params) => (
+                <Button
+                    variant="text"
+                    size="small"
+                    sx={{ textTransform: "none" }}
+                    onClick={() =>
+                        navigate(`/Home/ViewQuoteReport/${params.row.quoteNo}/${params.row.versionno}/${params.row.enquiryno}`)
+                    }
+                >
+                    Generate Quote
+                </Button>
+            ),
+        },
     ];
 
     const fetchData = async () => {
@@ -44,7 +66,7 @@ export default function RptQuoteDetails() {
 
             // 🔹 Priority 1: Quote No (query param)
             if (searchText.trim()) {
-                url = `${baseUrl}/api/Sales/RptQuoteDetails?quoteno=${encodeURIComponent(searchText.trim())}`;
+                url = `${baseUrl}/api/Sales/ViewQuoteDetails?quoteno=${encodeURIComponent(searchText.trim())}`;
             }
             // 🔹 Priority 2: Date range
             else {
@@ -57,17 +79,17 @@ export default function RptQuoteDetails() {
                 const fromDate = formatDateYYYYMMDD(startDate);
                 const toDate = formatDateYYYYMMDD(endDate);
 
-                url = `${baseUrl}/api/Sales/RptQuoteDetails?startdate=${fromDate}&enddate=${toDate}`;
+                url = `${baseUrl}/api/Sales/ViewQuoteDetails?startdate=${fromDate}&enddate=${toDate}`;
             }
             console.log("Calling API:", url); // 🔍 debug once
 
-           // const response = await axios.get(url);
+            // const response = await axios.get(url);
             axios.get<QuoteDetails[]>(url).then(response => {
-            const mapped = response.data.map((item: any, index: number) => ({
-                id: index + 1,
-                ...item,
-            }));
-            setRows(mapped);
+                const mapped = response.data.map((item: any, index: number) => ({
+                    id: index + 1,
+                    ...item,
+                }));
+                setRows(mapped);
             });
         } catch (err) {
             console.error(err);
@@ -88,8 +110,8 @@ export default function RptQuoteDetails() {
     };
 
     return (
-        <Box sx={{ padding: "100px", mt: "30px", ml: "20px" }}>
-            <Box sx={{ display: "flex", alignItems: "left", gap: 2 }}>
+        <Box sx={{ padding: "100px", mt: "30px", ml: "25px" }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <TextField
                     label="Start Date"
                     type="date"
@@ -101,7 +123,7 @@ export default function RptQuoteDetails() {
                             height: 35,   // ← adjust height here
                         },
                         "& input": {
-                            padding: "6px 14px", // optional to adjust inner text padding
+                            padding: "6px 18px", // optional to adjust inner text padding
                         },
                     }}
                 />
@@ -116,7 +138,7 @@ export default function RptQuoteDetails() {
                             height: 35,   // ← adjust height here
                         },
                         "& input": {
-                            padding: "6px 14px", // optional to adjust inner text padding
+                            padding: "6px 18px", // optional to adjust inner text padding
                         },
                     }}
                 />
@@ -139,8 +161,8 @@ export default function RptQuoteDetails() {
                             height: 40,
                         },
                         "& input": {
-                            padding: "6px 6px",
-                            textAlign: "center", // ✅ CENTER TEXT
+                            padding: "2px 2px",
+                            textAlign: "center",
                         },
                     }}
                 />
