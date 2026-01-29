@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import type { GridColDef } from '@mui/x-data-grid';
 import { Box, Button, TextField } from "@mui/material";
@@ -11,6 +11,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import IconButton from "@mui/material/IconButton";
 import { formatDateYYYYMMDD } from "../../components/utils/DateUtils";
 import { useNavigate } from "react-router-dom";
+import { getCurrentMonthDates } from "../../components/utils/DateUtils";
 
 interface QuoteDetails {
     enquiryno: string;
@@ -24,19 +25,21 @@ interface QuoteDetails {
 
 export default function ViewQuoteDetails() {
     const [rows, setRows] = useState<any[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [startDate, setStartDate] = useState<string>("");
-    const [endDate, setEndDate] = useState<string>("");
-    const [searchText, setSearchText] = useState<string>("");;
+    const { startdate: initialStart, enddate: initialEnd } = getCurrentMonthDates();
+    const [startDate, setStartDate] = useState<string>(initialStart);
+    const [endDate, setEndDate] = useState<string>(initialEnd);
+    const [searchText, setSearchText] = useState<string>("");
     const navigate = useNavigate();
+    const [loading, setLoading] = useState<boolean>(false);
+
     const columns: GridColDef[] = [
-        { field: "enquiryno", headerName: "enquiryno", width: 150 },
-        { field: "quoteNo", headerName: "quoteNo", width: 150 },
+        { field: "enquiryno", headerName: "enquiryno", width: 120 },
+        { field: "quoteNo", headerName: "quoteNo", width: 120 },
         { field: "customer", headerName: "customer", width: 350 },
-        { field: "createdon", headerName: "createdon", width: 150 },
-        { field: "name", headerName: "name", width: 150 },
-        { field: "totalquoteAmt", headerName: "totalquoteamt", width: 150 },
-        { field: "versionno", headerName: "versionno", width: 120 },
+        { field: "createdon", headerName: "createdon", width: 120 },
+        { field: "name", headerName: "name", width: 160 },
+        { field: "totalquoteAmt", headerName: "totalquoteamt", width: 160 },
+        { field: "versionno", headerName: "versionno", width: 130 },
         // ⭐ NEW COLUMN
         {
             field: "viewQuote",
@@ -50,14 +53,22 @@ export default function ViewQuoteDetails() {
                     size="small"
                     sx={{ textTransform: "none" }}
                     onClick={() =>
-                        navigate(`/Home/ViewQuoteReport/${params.row.quoteNo}/${params.row.versionno}/${params.row.enquiryno}`)
-                    }
+                        navigate(`/Home/ViewQuoteReport/${params.row.quoteNo}/${params.row.versionno}/${params.row.enquiryno}`,
+                        )}
                 >
                     Generate Quote
                 </Button>
             ),
         },
     ];
+
+    useEffect(() => {
+        if (!startDate || !endDate) {
+            toast.warning("Please select start and end dates");
+            return;
+        }
+        fetchData();
+    }, [startDate, endDate]);
 
     const fetchData = async () => {
         setLoading(true);
@@ -81,9 +92,7 @@ export default function ViewQuoteDetails() {
 
                 url = `${baseUrl}/api/Sales/ViewQuoteDetails?startdate=${fromDate}&enddate=${toDate}`;
             }
-            console.log("Calling API:", url); // 🔍 debug once
 
-            // const response = await axios.get(url);
             axios.get<QuoteDetails[]>(url).then(response => {
                 const mapped = response.data.map((item: any, index: number) => ({
                     id: index + 1,
@@ -104,9 +113,8 @@ export default function ViewQuoteDetails() {
             toast.warning("⚠️ No data available to export.", { position: "bottom-right" });
             return;
         }
-
-        exporttoexcel(rows, "View Quote Report", "View Quote Report.xlsx");
-        toast.success("✅ View Quote Report exported!", { position: "bottom-right" });
+        exporttoexcel(rows, "View Quote Details", "View Quote Details.xlsx");
+        toast.success("✅ View Quote Details exported!", { position: "bottom-right" });
     };
 
     return (
@@ -183,7 +191,7 @@ export default function ViewQuoteDetails() {
                 <CustomDataGrid
                     rows={rows}
                     columns={columns}
-                    title="View Quote Report"
+                    title="View Quote Details"
                     loading={loading}
                     gridheight={400}
                 />

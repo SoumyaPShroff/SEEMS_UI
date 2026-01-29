@@ -124,12 +124,10 @@ const ViewQuoteReport: React.FC = () => {
               <th>Total</th>
             </tr>
           </thead>
-
           <tbody>
             <tr>
               <td colSpan={5} style={{ textAlign: "left" }}>Board Reference: {header.boardRef}</td>
             </tr>
-
             {items.map(i => (
               <tr key={i.slNo}>
                 <td>{i.slNo}</td>
@@ -140,7 +138,6 @@ const ViewQuoteReport: React.FC = () => {
               </tr>
             ))}
           </tbody>
-
           <tfoot>
             <tr>
               <td colSpan={4} style={{ textAlign: "right", fontWeight: "bold" }}>Total</td>
@@ -152,7 +149,6 @@ const ViewQuoteReport: React.FC = () => {
         <p style={{ whiteSpace: "pre-line" }}>{termsAndConditions}</p>
         <br />
         <p><b>FOR SIENNA ECAD TECHNOLOGIES PVT LTD</b></p>
-        <br />
         <br />
         <div className="quote-footer">
           <p><b>{header.createdByName}</b></p>

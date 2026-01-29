@@ -5,7 +5,7 @@
   color: #000;
   padding: 20px;
   width: 210mm;  /* A4 width */
-  min-height: 297mm;   /* A4 height */
+  min-height: 320mm;   /* A4 height 297 */
   border: 2px solid #000;
   box-sizing: border-box;
   background: #fff;
