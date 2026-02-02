@@ -45,8 +45,8 @@ const Divider = styled.div`
 
 const MyProfileBanner = () => {
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
-const [profile, setProfile] = useState<EmployeeProfile | null>(null);
-const [loading, setLoading] = useState<boolean>(true);
+  const [profile, setProfile] = useState<EmployeeProfile | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -62,7 +62,7 @@ const [loading, setLoading] = useState<boolean>(true);
     };
 
     fetchProfile();
-  },[loginId]);
+  }, [loginId]);
 
   if (loading) return null; // or a loader
   if (!profile) return null;

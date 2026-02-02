@@ -9,6 +9,7 @@ import { baseUrl } from "../const/BaseUrl";
 import logo from "../const/Images/Sienna-Ecad-logo.jpg";
 import { motion } from "framer-motion";
 import { FaBars, FaTimes } from "react-icons/fa";
+import homeIcon from "../const/Images/Home.jpg";
 
 // import Breadcrumbs from "./Breadcrumbs";
 
@@ -65,6 +66,7 @@ const NavIcon = styled.div`
   font-size: 1.8rem;
   cursor: pointer;
   color: #ffffff;
+   gap: 12px;
 
   &:hover {
     background: rgba(255, 255, 255, 0.15);
@@ -131,12 +133,7 @@ const SidebarWrap = styled.div`
    COMPONENT
 ====================================================== */
 
-const Sidebar: React.FC<SidebarProps> = ({
-  sessionUserID,
-  setUserId,
-  collapsed,
-  setCollapsed,
-}) => {
+const Sidebar: React.FC<SidebarProps> = ({sessionUserID, setUserId,collapsed, setCollapsed,}) => {
   const [userName, setUserName] = useState("");
   const navigate = useNavigate();
   const menu = useSideBarData();
@@ -187,6 +184,23 @@ const Sidebar: React.FC<SidebarProps> = ({
           >
             {collapsed ? <FaBars /> : <FaTimes />}
           </motion.div>
+           
+          <motion.img
+            src={homeIcon}          // import homeIcon from "..."
+            style={{ width: 22, height: 22 }}
+            alt="Home"
+    style={{ width: 22, height: 22 }}
+    onClick={e => {
+      e.stopPropagation();     // 👈 prevents sidebar toggle
+      navigate("/");
+    }}
+    onKeyDown={e => {
+      if (e.key === "Enter") {
+        e.stopPropagation();
+        navigate("/");
+      }
+    }}
+          />
         </NavIcon>
         <HeaderCenter >
           <Logo src={logo} alt="logo" />

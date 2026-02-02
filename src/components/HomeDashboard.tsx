@@ -1,7 +1,9 @@
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { FaUsers, FaLaptop, FaClipboardList, FaClock } from "react-icons/fa";
 import MyProfileBanner from  "../components/MyProfileBanner";
+import { baseUrl } from "../const/BaseUrl"
 
 /* ================= STYLES ================= */
 const ActionCard = styled.div`
@@ -82,10 +84,35 @@ const Cards = styled.div`
   margin-top: 200px;
 `;
 
+interface EmployeeProfile {
+  iDno: string;
+  costcenter: string;
+  reporttoperson: string;
+  teamdescription: string;
+  reporteeCount: number;
+}
+
 /* ================= COMPONENT ================= */
 
 const HomeDashboard = () => {
   const navigate = useNavigate();
+  const loginId = sessionStorage.getItem("SessionUserID") || "guest";
+  const [profile, setProfile] = useState<EmployeeProfile | null>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch(`${baseUrl}/EmployeeDetails/${loginId}`);
+        const data: EmployeeProfile[] = await res.json();
+        setProfile(data[0] ?? null);
+      } catch (error) {
+        console.error("Failed to fetch team memebers", error);
+      } finally {
+      }
+    };
+
+    fetchProfile();
+  }, [loginId]);
 
   return (
     <>
@@ -94,7 +121,7 @@ const HomeDashboard = () => {
       {/* ===== Action Cards ===== */}
       <Cards>
         <ActionCard onClick={() => navigate("/Home/MyTeam")}>
-            <Badge>4 Members</Badge>
+          <Badge>{profile?.reporteeCount ?? 0} Members</Badge>
           <CardIcon><FaUsers /></CardIcon>
           <CardTitle>My Team</CardTitle>
           <CardDesc>View your team members and details</CardDesc>
