@@ -3,6 +3,13 @@ import styled from "styled-components";
 import { motion } from "framer-motion";
 import { baseUrl } from "../const/BaseUrl"
 
+interface EmployeeProfile {
+  iDno: string;
+  costcenter: string;
+  reporttoperson: string;
+  teamdescription: string;
+}
+
 const FlashWrapper = styled(motion.div)`
   position: fixed;
   top: 90px;          /* below top nav */
@@ -24,12 +31,6 @@ const FlashWrapper = styled(motion.div)`
     0 20px 40px rgba(0,0,0,0.35),
     inset 0 0 0 1px rgba(255,255,255,0.15);
 `;
-
-const Name = styled.div`
-  font-size: 16px;
-  font-weight: 600;
-`;
-
 const Detail = styled.div`
   font-size: 15px;
   opacity: 0.9;
@@ -44,15 +45,15 @@ const Divider = styled.div`
 
 const MyProfileBanner = () => {
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+const [profile, setProfile] = useState<EmployeeProfile | null>(null);
+const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const res = await fetch(`${baseUrl}/EmployeeDetails/${loginId}`);
-        const data = await res.json();
-        setProfile(data[0]);
+        const data: EmployeeProfile[] = await res.json();
+        setProfile(data[0] ?? null);
       } catch (error) {
         console.error("Failed to fetch profile", error);
       } finally {
@@ -61,7 +62,7 @@ const MyProfileBanner = () => {
     };
 
     fetchProfile();
-  }, []);
+  },[loginId]);
 
   if (loading) return null; // or a loader
   if (!profile) return null;

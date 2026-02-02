@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import * as IoIcons from "react-icons/io";
 import * as RiIcons from "react-icons/ri";
 import { baseUrl } from "../const/BaseUrl";
  

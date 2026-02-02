@@ -118,13 +118,13 @@ const SubMenu: React.FC<SubMenuProps> = ({ item, collapsed, isFlyout = false, })
     return location.pathname === path;
   };
 
-  const isAnyChildActive = (items?: SubMenuItem[]) =>
-    items?.some(
-      sub =>
-        isRouteActive(sub.path) ||
-        isAnyChildActive(sub.subNav)
-    );
-
+  const isAnyChildActive = (items?: SubMenuItem[]): boolean =>
+  items?.some(
+    sub =>
+      isRouteActive(sub.path) ||
+      isAnyChildActive(sub.subNav)
+  ) ?? false;
+  
   /* ---------- Flatten edge case ---------- */
   const effectiveSubNav =
     item.subNav &&

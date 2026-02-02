@@ -156,14 +156,7 @@ const RptBillingPlanner: React.FC = () => {
     { value: 11, label: "November" },
     { value: 12, label: "December" },
   ];
-
-// useEffect(() => {
-//   document.body.style.overflow = "hidden";
-//   return () => {
-//     document.body.style.overflow = "auto";
-//   };
-// }, []);
-
+ 
   const years = Array.from({ length: 12 }, (_, i) => {
     const y = 2020 + i;
     return { value: y, label: String(y) };
@@ -249,7 +242,6 @@ const RptBillingPlanner: React.FC = () => {
       const pendingResponse = await axios.get<BillingData[]>(invPendingUrl);
       setInvoicePendingData(pendingResponse.data);
 
-      // if (pendingResponse.data && pendingResponse.data.length > 0) {
       const summary = buildPendingSummary(pendingResponse.data);
       setPendingSummary(summary);
       //}
@@ -350,7 +342,7 @@ const RptBillingPlanner: React.FC = () => {
     );
 
     return (
-      <div style={{ marginTop: "20px", textAlign: "center" }}>
+      <div style={{ marginTop: "20px", textAlign: "center", marginLeft: "40px" , marginRight: "40px"  }}>
         <table
           style={{
             width: "100%",
@@ -437,7 +429,6 @@ const RptBillingPlanner: React.FC = () => {
       JSON.stringify(columnVisibilityModel)
     );
   }, [columnVisibilityModel]);
-
 
   const columns: GridColDef[] = [
     { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 450, },
@@ -603,7 +594,7 @@ const RptBillingPlanner: React.FC = () => {
   };
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{ width: "100%" , backgroundColor: "white" }}>
       <Box
         sx={{
           display: "flex",
@@ -735,8 +726,8 @@ const RptBillingPlanner: React.FC = () => {
         )}
         {/* === Row 1: 3 charts === */}
         {!loadingData && showResults && data?.length > 0 && (
-          <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", marginBottom: "30px", marginTop: "10px" }}>
-            <div style={{ flex: 1, background: "#fff", border: "1px solid #d1d1d1", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", marginBottom: "30px", marginTop: "10px" , marginLeft: "20px" }}>
+            <div style={{ flex: 1, background: "#fff", border: "1px solid #d1d1d1", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px", width: "500px" }}>
               <ProjectionVsTargetChart data={data} />
             </div>
 
@@ -750,8 +741,9 @@ const RptBillingPlanner: React.FC = () => {
           style={{
             display: "flex",
             justifyContent: "center",
-            gap: "20px",
+            gap: "15px",
             marginBottom: "40px",
+            marginLeft: "20px",
           }}
         >
           {!loadingData && showResults && data?.length > 0 && (
@@ -765,7 +757,7 @@ const RptBillingPlanner: React.FC = () => {
             </div>
           )}
           {!loadingData && showResults && data?.length > 0 && (
-            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", border: "1px solid #d1d1d1", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
+            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", border: "1px solid #d1d1d1", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px", width: "250px"  }}>
               <DesignVsWipChart
                 totalDesignVA={totalDesignVA}
                 totalWip={wipSumData}
@@ -775,7 +767,7 @@ const RptBillingPlanner: React.FC = () => {
           )}
         </div>
         {!loadingData && showResults && data?.length > 0 && (
-          <div style={{ textAlign: "right", padding: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "20px" }}>
+          <div style={{ textAlign: "right", backgroundColor: "white", padding: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "20px" }}>
             <ExportButton label="Export to Excel" onClick={handleBillExport} />
 
             {/* 🟦🟥🟩 Legends */}

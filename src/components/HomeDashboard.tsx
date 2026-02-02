@@ -2,39 +2,8 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { FaUsers, FaLaptop, FaClipboardList, FaClock } from "react-icons/fa";
 import MyProfileBanner from  "../components/MyProfileBanner";
-import { color } from "framer-motion";
+
 /* ================= STYLES ================= */
-
-const PageTitle = styled.h2`
-  margin-bottom: 16px;
-  color: #1f2937;
-`;
-
-const InfoCard = styled.div`
-  background: #ffffff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  margin-bottom: 32px;
-`;
-
-const InfoGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 12px;
-`;
-
-const InfoItem = styled.div`
-  font-size: 14px;
-  color: #374151;
-
-  span {
-    display: block;
-    font-weight: 600;
-    color: #111827;
-  }
-`;
-
 const ActionCard = styled.div`
  background: linear-gradient(
   135deg,

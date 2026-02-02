@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
-import * as FaIcons from "react-icons/fa";
 import { useSideBarData } from "./SideBarData";
 import SubMenu from "./SubMenu";
 import { IconContext } from "react-icons/lib";
@@ -49,13 +48,11 @@ const Nav = styled.div`
   background: linear-gradient(to right, #23458dff, #4fb695ff);
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.25);
 `;
-const HeaderCenter = styled.div<{ collapsed: boolean }>`
+const HeaderCenter = styled.div`
   display: flex;
   align-items: center;
   gap: 20px;
-  margin-left: ${({ collapsed }) => (collapsed ? "72px" : "240px")};
-  transition: margin-left 0.25s ease;
-    min-width: 0;            /* IMPORTANT */
+   margin-left: 240px;
   overflow: hidden;
 `;
 
@@ -143,9 +140,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [userName, setUserName] = useState("");
   const navigate = useNavigate();
   const menu = useSideBarData();
-  const enhancedMenu = [
-    { title: "Home", path: "/Home", subNav: menu }
-  ];
   const isMobile = window.innerWidth < 768;
 
   /* ---------- Logout ---------- */
@@ -194,7 +188,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             {collapsed ? <FaBars /> : <FaTimes />}
           </motion.div>
         </NavIcon>
-        <HeaderCenter>
+        <HeaderCenter >
           <Logo src={logo} alt="logo" />
           <h1 style={{ color: "white", fontSize: "30px",overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             Welcome to Sienna ECAD Enterprise Management System

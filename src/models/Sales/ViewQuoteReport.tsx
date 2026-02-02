@@ -4,7 +4,6 @@ import { useParams } from "react-router-dom";
 import { baseUrl } from "../../const/BaseUrl";
 import '../../components/resusablecontrols/styles/Print.css';
 import logo from '../../const/Images/Sienna-Ecad-logo.jpg';
-import { fontWeight, textAlign } from "@mui/system";
 
 interface QuoteHeader {
   quoteNo: string;
@@ -36,36 +35,39 @@ interface QuoteReportResponse {
   name: string;
 }
 
-type Props = {
-  quoteNo: string;
-  versionNo: number;
-  enquiryNo: string;
-};
+// type Props = {
+//   quoteNo: string;
+//   versionNo: number;
+//   enquiryNo: string;
+// };
 
 const ViewQuoteReport: React.FC = () => {
-  const { quoteNo, versionNo, enquiryNo } = useParams<{ quoteNo: string; versionNo: number; enquiryNo: string; }>();
+  const { quoteNo, versionNo, enquiryNo } = useParams<{ quoteNo: string; versionNo: string; enquiryNo: string; }>();
   const [data, setData] = useState<QuoteReportResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!quoteNo || !versionNo || !enquiryNo) return;
+    const versionNoNum = Number(versionNo);
+    if (Number.isNaN(versionNoNum)) return;
+
     setLoading(true);
 
     axios
       .get<QuoteReportResponse>(
-        `${baseUrl}/api/Sales/ViewQuotationReport/${quoteNo}/${versionNo}/${enquiryNo}`
+        `${baseUrl}/api/Sales/ViewQuotationReport/${quoteNo}/${versionNoNum}/${enquiryNo}`
       )
       .then(res => setData(res.data))
       .catch(err => {
         console.error(err);
       })
-      .finally(() => setLoading(false));
+      .then(() => setLoading(false));
   }, [quoteNo, versionNo, enquiryNo]);
 
   if (loading) return <p>Loading quotation...</p>;
   if (!data) return <p>No quotation data found.</p>;
 
-  const { header, items, grandTotal, termsAndConditions, name } = data;
+  const { header, items, grandTotal, termsAndConditions } = data;
 
   return (
     <div className="quote-wrapper">
