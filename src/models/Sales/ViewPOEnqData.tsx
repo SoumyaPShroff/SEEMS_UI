@@ -111,7 +111,7 @@ export default function ViewPOEnqData() {
     }, []);
 
     return (
-        <Box sx={{ padding: "100px", mt: "30px", ml: "20px" }}>
+        <Box sx={{ padding: "50px", mt: "10px", ml: "10px" }}>
             <Box sx={{ display: "flex", alignItems: "left", gap: 2 }}>
                 {/* <Button variant="contained"    onClick={fetchData} style={{ height: 35 }}> View Data </Button> */}
                 {/* <Button variant="contained"   onClick={handleViewEnqExport} style={{ height: 35 }}>Export to Excel</Button> */}
@@ -119,7 +119,6 @@ export default function ViewPOEnqData() {
             </Box>
             {rows.length > 0 && (
                 <CustomDataGrid
-                    //  autoHeight={true}
                     rows={rows}
                     columns={columns}
                     title="View PO Enquiry Data"

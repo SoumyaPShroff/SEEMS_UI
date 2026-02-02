@@ -118,7 +118,7 @@ export default function ViewQuoteDetails() {
     };
 
     return (
-        <Box sx={{ padding: "100px", mt: "30px", ml: "25px" }}>
+        <Box sx={{ padding: "50px", mt: "10px", ml: "12px" }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <TextField
                     label="Start Date"

@@ -7,7 +7,7 @@ import { baseUrl } from "../const/BaseUrl";
 interface SidebarItem {
   title: string;
   path?: string;
-  icon?: React.ReactNode;
+  icon?: string;
   iconOpened?: React.ReactNode;
   iconClosed?: React.ReactNode;
   subNav?: SidebarItem[];
@@ -33,7 +33,7 @@ export const useSideBarData = () => {
           if (!main) {
             main = {
              title: item.mainmenu,
-              icon: <IoIcons.IoIosPaper />,
+              icon:  item.menuimage,
               iconClosed: <RiIcons.RiArrowDownSFill />,
               iconOpened: <RiIcons.RiArrowUpSFill />,
               subNav: [],
@@ -46,7 +46,7 @@ export const useSideBarData = () => {
           if (!sub) {
             sub = {
               title: item.submenu,
-              icon: <IoIcons.IoIosPaper />,
+              icon:  item.subimage,
               iconClosed: <RiIcons.RiArrowDownSFill />,
               iconOpened: <RiIcons.RiArrowUpSFill />,
               subNav: [],
@@ -57,12 +57,8 @@ export const useSideBarData = () => {
           // Page item
           sub.subNav?.push({
             title: item.pagename, //display menu name
-            // path: item.route || "#", // link from API route
             path: item.route ? `/Home/${item.route}` : "#", //default using /Home/
-            // path: item.route
-            //   ? item.route
-            //   : `${item.pagename}`, //works for pagename without routes
-            icon: <IoIcons.IoIosPaper />,
+            icon:   item.pageimage,
           });
         });
 

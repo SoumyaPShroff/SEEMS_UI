@@ -253,10 +253,10 @@ const ViewAllEnquiries = () => {
   };
 
   return (
-    <Box sx={{ height: "100%", width: "100%", padding: "100px", mt: "20px", ml: "-30px" }}>
+    <Box sx={{ height: "100%", width: "100%", padding: "40px", mt: "20px", ml: "-5px" }}>
       <InputLabel style={{ textAlign: "left" }}>Status</InputLabel>
-      <FormControl>
-        <Select value={status} onChange={(e) => setStatus(e.target.value)} style={{ height: "35px" }}>
+      <FormControl sx={{ mb: 2, display: "flex", flexDirection: "row", gap: 2 }} >
+        <Select value={status} onChange={(e) => setStatus(e.target.value)} style={{ height: "35px", width: "230px" }}>
           <MenuItem value="Open">Open</MenuItem>
           <MenuItem value="Confirmed">Confirmed</MenuItem>
           <MenuItem value="Tentative">Tentative</MenuItem>
@@ -266,12 +266,10 @@ const ViewAllEnquiries = () => {
           <MenuItem value="Rejected By Sienna">Rejected By Sienna</MenuItem>
           <MenuItem value="All">All</MenuItem>
         </Select>
+         <ExportButton label="Export to Excel" onClick={handleViewEnqExport} />
+        <Button variant="contained"   onClick={() => navigate("/Home/AddEnquiry")}>Add Enquiry</Button>  
       </FormControl>
-      <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "left", gap: 2, mb: 2, }}>
-        <ExportButton label="Export to Excel" onClick={handleViewEnqExport} />
-        <Button variant="contained" color="primary" onClick={() => navigate("/Home/AddEnquiry")}> Add Enquiry</Button>
-        <Button variant="contained" color="primary" onClick={() => navigate("/home/enquiryregister")}>Enquiry Register</Button>
-      </Box>
+
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
           <CircularProgress />
@@ -285,12 +283,11 @@ const ViewAllEnquiries = () => {
         </Typography>
       ) : (
         <CustomDataGrid
-         // autoHeight
           rows={rows}
           columns={columns}
           title="View All Enquiries"
-          // getRowId={(row) => row.Enquiryno} // ✅ alternate approach
           loading={loading}
+          gridheight={800}
         />
       )}
     </Box>

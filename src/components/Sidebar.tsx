@@ -1,65 +1,103 @@
-// Sidebar.js
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import * as FaIcons from "react-icons/fa";
-import * as AiIcons from "react-icons/ai";
 import { useSideBarData } from "./SideBarData";
 import SubMenu from "./SubMenu";
 import { IconContext } from "react-icons/lib";
 import axios from "axios";
 import { baseUrl } from "../const/BaseUrl";
-import { motion, AnimatePresence } from "framer-motion";
-import logo from '../const/Images/Sienna-Ecad-logo.jpg';
+import logo from "../const/Images/Sienna-Ecad-logo.jpg";
+import { motion } from "framer-motion";
+import { FaBars, FaTimes } from "react-icons/fa";
 
+// import Breadcrumbs from "./Breadcrumbs";
+
+/* ======================================================
+   PROPS
+====================================================== */
 interface SidebarProps {
-    sessionUserID: string;
-    setUserId: React.Dispatch<React.SetStateAction<string | null>>;
+  sessionUserID: string;
+  setUserId: React.Dispatch<React.SetStateAction<string | null>>;
+  collapsed: boolean;
+  setCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-// === Top Navbar ===
+/* ======================================================
+   THEME (Screenshot-matched)
+====================================================== */
+export const theme = {
+  sidebarBg: "linear-gradient(to bottom, #23458dff, #4fb695ff)",
+  sidebarHover: "#3f6ad8",
+  sidebarActive: "#6f675f",
+  textPrimary: "#ffffff",
+  textMuted: "#cfd8dc",
+};
+
+/* ======================================================
+   STYLES
+====================================================== */
+
 const Nav = styled.div`
   height: 80px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   position: fixed;
   top: 0;
   width: 100%;
   z-index: 1000;
-  left: 0;
-
-  /* ✅ Gradient Header Equivalent */
-  background: linear-gradient(to right, #23458dff, #4fb695ff); /* blue-600 → teal-500 */
-  color: white;
-
+  background: linear-gradient(to right, #23458dff, #4fb695ff);
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.25);
-  padding: 0 20px;
+`;
+const HeaderCenter = styled.div<{ collapsed: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-left: ${({ collapsed }) => (collapsed ? "72px" : "240px")};
+  transition: margin-left 0.25s ease;
+    min-width: 0;            /* IMPORTANT */
+  overflow: hidden;
 `;
 
-const NavIcon = styled(Link)`
-  margin-left: 2rem;
-  font-size: 2rem;
+const NavIcon = styled.div`
+  width: 72px;                 /* aligns with collapsed sidebar */
   height: 80px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: #ffffff;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #1abc9c;
+    outline-offset: -2px;
+  }
 `;
 
-const SidebarWrap = styled.div`
-  width: 100%;
+const Logo = styled.img`
+  height: 60px;
+  width: 80px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
 `;
 
 const RightCorner = styled.div`
+  margin-left: auto;
   display: flex;
   align-items: center;
-  margin-left: auto;
-  margin-right: 20px;
-  padding: 30px;
+  gap: 8px;
+    padding-right: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;      /* IMPORTANT */
   color: #2c3e50;
 
   a {
-    text-decoration: none;
     color: #2c3e50;
+    text-decoration: none;
     font-weight: 500;
 
     &:hover {
@@ -68,139 +106,124 @@ const RightCorner = styled.div`
   }
 `;
 
-const HeaderLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
+const SideNav = styled.aside<{ collapsed: boolean; mobile: boolean }>`
+  position: fixed;
+  top: 80px;
+  left: 1;
+  height: calc(100vh - 80px);
+  width: ${({ collapsed }) => (collapsed ? "72px" : "240px")};
+  background: ${theme.sidebarBg};
+  overflow-x: hidden;
+  transition: all 0.25s ease;
+  box-shadow: 3px 0 10px rgba(0, 0, 0, 0.25);
+  z-index: 900;
+
+  ${({ mobile, collapsed }) =>
+    mobile &&
+    `
+    width: 240px;
+    transform: ${collapsed ? "translateX(-100%)" : "translateX(0)"};
+  `}
 `;
 
-const Logo = styled.img`
-  height:60px;
-  width: 80px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+const SidebarWrap = styled.div`
+  width: 100%;
 `;
 
-const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId }) => {
-    const [sidebar, setSidebar] = useState(false);
-    const [activeMenu, setActiveMenu] = useState<string | null>(null);
-    const [userName, setUserName] = useState("");
-    const navigate = useNavigate();
-    const location = useLocation();
-    const showSidebar = () => setSidebar(!sidebar);
-    const menu = useSideBarData();
+/* ======================================================
+   COMPONENT
+====================================================== */
 
-    const handleLogout = (e: React.MouseEvent<HTMLElement>) => {
-        e.preventDefault();
-        sessionStorage.removeItem("SessionUserID");
-        setUserId(null);
-        navigate("/Login", { replace: true });         // replace=true - block to go back to protected page (prev page) for secure purpose
+const Sidebar: React.FC<SidebarProps> = ({
+  sessionUserID,
+  setUserId,
+  collapsed,
+  setCollapsed,
+}) => {
+  const [userName, setUserName] = useState("");
+  const navigate = useNavigate();
+  const menu = useSideBarData();
+  const enhancedMenu = [
+    { title: "Home", path: "/Home", subNav: menu }
+  ];
+  const isMobile = window.innerWidth < 768;
+
+  /* ---------- Logout ---------- */
+  const handleLogout = (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    sessionStorage.removeItem("SessionUserID");
+    setUserId(null);
+    navigate("/Login", { replace: true });
+  };
+
+  /* ---------- Fetch Username ---------- */
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        const res = await axios.get<string>(
+          `${baseUrl}/UserName/${sessionUserID}`
+        );
+        setUserName(res.data || "");
+      } catch (err) {
+        console.error(err);
+      }
     };
 
-    useEffect(() => {
-        const fetchUserName = async () => {
-            try {
-                const response = await axios.get<string>(`${baseUrl}/UserName/${sessionUserID}`);
-                setUserName(response.data || "");
-            } catch (error) {
-                console.error("Error fetching username:", error);
-            }
-        };
+    if (sessionUserID) fetchUserName();
+  }, [sessionUserID]);
 
-        if (sessionUserID) {
-            fetchUserName();
-        } else {
-            navigate('/');
-        }
-    }, [sessionUserID, navigate]);
+  /* ======================================================
+     RENDER
+  ===================================================== */
 
-    // ✅ Automatically close sidebar when route changes
-    useEffect(() => {
-        setSidebar(false);
-    }, [location.pathname]);
+  return (
+    <IconContext.Provider value={{ color: theme.textPrimary }}>
+      {/* ================= TOP NAV ================= */}
+      <Nav>
+        <NavIcon
+          role="button"
+          tabIndex={0}
+          onClick={() => setCollapsed(prev => !prev)}
+          onKeyDown={(e) => e.key === "Enter" && setCollapsed(prev => !prev)}
+        >
+          <motion.div
+            initial={false}
+            animate={{ rotate: collapsed ? 0 : 90 }}
+            transition={{ duration: 0.25 }}
+          >
+            {collapsed ? <FaBars /> : <FaTimes />}
+          </motion.div>
+        </NavIcon>
+        <HeaderCenter>
+          <Logo src={logo} alt="logo" />
+          <h1 style={{ color: "white", fontSize: "30px",overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            Welcome to Sienna ECAD Enterprise Management System
+          </h1>
+        </HeaderCenter>
 
-    return (
-        <>
+        <RightCorner>
+          <span>{userName || "User"}</span>
+          <span>|</span>
+          <Link to="/Login" onClick={handleLogout}>
+            Log Out
+          </Link>
+        </RightCorner>
+      </Nav>
 
-            <IconContext.Provider value={{ color: "#5D6D7E" }}>
-                {/* === Top Nav === */}
-                <Nav>
-                    <HeaderLeft>
-                        <NavIcon to="#" >
-                            <FaIcons.FaBars onClick={showSidebar} />
-                        </NavIcon>
-                    </HeaderLeft>
-                    {/* Wrap Logo + Header in a flex container */}
-                    <div style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "20px",          // Medium space between logo and header
-                        marginLeft: "240px"   // Push away from the menu icon
-                    }}>
-                        <Logo src={logo} alt="logo" />
-
-                        <h1 style={{
-                            color: "white",
-                            fontSize: "28px",
-                            margin: 0
-                        }}>
-                            Welcome to Sienna ECAD Enterprise Management System
-                        </h1>
-                    </div>
-                    <RightCorner>
-                        <span>{userName ? userName : "User"}</span>
-                        <span style={{ margin: "0 2px" }}>|</span>
-                        {/* <a href="/login" onClick={handleLogout}>
-                            Log Out
-                        </a> */}
-                        <Link to="/Login" onClick={handleLogout}>
-                            Log Out
-                        </Link>
-                    </RightCorner>
-                </Nav>
-
-                {/* === Animated Sidebar === */}
-                <AnimatePresence>
-                    {sidebar && (
-                        <motion.nav
-                            key="sidebar"
-                            initial={{ x: "-100%" }}
-                            animate={{ x: 0 }}
-                            exit={{ x: "-100%" }}
-                            transition={{ duration: 0.35, ease: "easeInOut" }}
-                            style={{
-                                background: "#34495e",
-                                width: "250px",
-                                height: "calc(100vh - 80px)",
-                                position: "fixed",
-                                top: "80px",
-                                left: 0,
-                                zIndex: 999,
-                                overflowY: "auto",
-                                boxShadow: "3px 0px 10px rgba(0,0,0,0.3)",
-                            }}
-                        >
-                            <SidebarWrap>
-                                <NavIcon to="#">
-                                    <AiIcons.AiOutlineClose onClick={showSidebar} />
-                                </NavIcon>
-
-                                {/* {SideBarData.map((item, index) => (   */}
-                                {menu.map((item, index) => (
-                                    <SubMenu
-                                        key={index}
-                                        item={item}
-                                        activeMenu={activeMenu}
-                                        setActiveMenu={setActiveMenu}
-                                        closeSidebar={() => setSidebar(false)}
-                                    />
-                                ))}
-                            </SidebarWrap>
-                        </motion.nav>
-                    )}
-                </AnimatePresence>
-            </IconContext.Provider>
-        </>
-    );
+      {/* ================= SIDEBAR ================= */}
+      <SideNav collapsed={collapsed} mobile={isMobile}>
+        <SidebarWrap>
+          {menu.map((item, index) => (
+            <SubMenu
+              key={index}
+              item={item}
+              collapsed={collapsed}
+            />
+          ))}
+        </SidebarWrap>
+      </SideNav>
+    </IconContext.Provider>
+  );
 };
 
 export default Sidebar;

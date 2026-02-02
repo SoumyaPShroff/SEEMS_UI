@@ -471,7 +471,7 @@ const AddQuotation: React.FC = () => {
     // -------------------------
     return (
 
-        <Box sx={{ maxWidth: 1300, mt: 20, ml: 20 }}>
+        <Box sx={{ padding: "20px", maxWidth: 1300, mt: 15, ml: 5 }}>
             <Box sx={{ mb: 2, display: "flex", gap: 2, alignItems: "center" }}>
                 {/* Quote selector */}
                 <TextField select label="Select Quote" value={selectedQuoteNo ?? ""}

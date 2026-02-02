@@ -20,6 +20,7 @@ import AddQuotation from './models/Sales/AddQuotation';
 import ViewQuoteDetails from './models/Sales/ViewQuoteDetails';
 import Feasibility from './models/Sales/Feasibility';
 import ViewQuoteReport from "./models/Sales/ViewQuoteReport";
+import HomeDashboard from './components/HomeDashboard';
 
 const App: React.FC = () => {
   const [userId, setUserId] = useState(sessionStorage.getItem('SessionUserID'));
@@ -49,6 +50,7 @@ const App: React.FC = () => {
            element={userId ? <Home userId={userId} setUserId={setUserId} /> : <Navigate to="/Login" replace />} // passing serverUserID as prop
 
         >
+          <Route index element={<HomeDashboard/>} />
           {/* <Route index element={<Home />} /> */}
           <Route path="RptBillingPlanner" element={<RptBillingPlanner />} />
           <Route path="SalesDashboard" element={<SalesDashboard />} />
