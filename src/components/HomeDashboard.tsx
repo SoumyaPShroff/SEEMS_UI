@@ -34,7 +34,7 @@ const ActionCard = styled.div`
     box-shadow:
       0 14px 30px rgba(35,69,141,0.18),
       0 6px 12px rgba(79,182,149,0.25);
-  }  
+  } 
 `;
 
 const Badge = styled.span`

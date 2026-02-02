@@ -14,7 +14,7 @@ const PageContent = styled.div<{ collapsed: boolean }>`
   margin-top: 80px;
   transition: margin-left 0.25s ease;
   min-height: calc(100vh - 80px);
-  background: #f5f7fa; /* professional light background */
+  background: white; /* professional light background */
 `;
 
 const Home: React.FC<HomeProps> = ({ userId, setUserId }) => {
