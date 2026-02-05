@@ -21,6 +21,7 @@ import ViewQuoteDetails from './models/Sales/ViewQuoteDetails';
 import Feasibility from './models/Sales/Feasibility';
 import ViewQuoteReport from "./models/Sales/ViewQuoteReport";
 import HomeDashboard from './components/HomeDashboard';
+import ComingSoon from './components/ComingSoon';
 
 const App: React.FC = () => {
   const [userId, setUserId] = useState(sessionStorage.getItem('SessionUserID'));
@@ -72,8 +73,8 @@ const App: React.FC = () => {
         <Route path="/ResetPassword" element={<ResetPassword />} />
         <Route path="/ForgotPassword" element={<ForgotPassword />} />
         <Route path="/blank" element={<Blank />} />
+        <Route path="/Home/ComingSoon" element={<ComingSoon />} />
       </Routes>
-
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
     </Router>
 

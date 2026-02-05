@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import Sidebar from "./components/Sidebar";
 import { Outlet } from "react-router-dom";
 import styled from "styled-components";
+import { FavouritesProvider } from "./components/FavouritesContext";
+
 
 interface HomeProps {
   userId: string | null;
@@ -23,6 +25,7 @@ const Home: React.FC<HomeProps> = ({ userId, setUserId }) => {
 
   return (
     <>
+      <FavouritesProvider sessionUserID={userId}>
       <Sidebar
         sessionUserID={userId}
         setUserId={setUserId}
@@ -34,7 +37,7 @@ const Home: React.FC<HomeProps> = ({ userId, setUserId }) => {
       <PageContent collapsed={collapsed}>
         <Outlet />
       </PageContent>
-      {/* <Outlet /> */}
+      </FavouritesProvider>
     </>
   );
 };

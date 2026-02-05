@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSideBarData } from "./SideBarData";
+import type { SidebarItem } from "./SideBarData";
 import SubMenu from "./SubMenu";
 import { IconContext } from "react-icons/lib";
 import axios from "axios";
 import { baseUrl } from "../const/BaseUrl";
 import logo from "../const/Images/Sienna-Ecad-logo.jpg";
 import { motion } from "framer-motion";
-import { FaBars, FaTimes } from "react-icons/fa";
+import { FaBars, FaTimes, FaStar, FaRegStar, FaUserCircle } from "react-icons/fa";
 import homeIcon from "../const/Images/Home.jpg";
+import { useFavourites } from "./FavouritesContext";
+import MyProfileBanner from "./MyProfileBanner";
 
 // import Breadcrumbs from "./Breadcrumbs";
 
@@ -105,23 +108,23 @@ const RightCorner = styled.div`
   }
 `;
 
-const SideNav = styled.aside<{ collapsed: boolean; mobile: boolean }>`
+const SideNav = styled.aside<{ $collapsed: boolean; $mobile: boolean }>`
   position: fixed;
   top: 80px;
   left: 1;
   height: calc(100vh - 80px);
-  width: ${({ collapsed }) => (collapsed ? "72px" : "240px")};
+  width: ${({ $collapsed }) => ($collapsed ? "72px" : "240px")};
   background: ${theme.sidebarBg};
   overflow-x: hidden;
   transition: all 0.25s ease;
   box-shadow: 3px 0 10px rgba(0, 0, 0, 0.25);
   z-index: 900;
 
-  ${({ mobile, collapsed }) =>
-    mobile &&
+  ${({ $mobile, $collapsed }) =>
+    $mobile &&
     `
     width: 240px;
-    transform: ${collapsed ? "translateX(-100%)" : "translateX(0)"};
+    transform: ${$collapsed ? "translateX(-100%)" : "translateX(0)"};
   `}
 `;
 
@@ -133,11 +136,16 @@ const SidebarWrap = styled.div`
    COMPONENT
 ====================================================== */
 
-const Sidebar: React.FC<SidebarProps> = ({sessionUserID, setUserId,collapsed, setCollapsed,}) => {
+const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, setCollapsed, }) => {
   const [userName, setUserName] = useState("");
+  const [showProfile, setShowProfile] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const menu = useSideBarData();
   const isMobile = window.innerWidth < 768;
+
+  // Use Context for favourites
+  const { isFavourite, addFavourite, removeFavourite } = useFavourites();
 
   /* ---------- Logout ---------- */
   const handleLogout = (e: React.MouseEvent<HTMLElement>) => {
@@ -163,6 +171,35 @@ const Sidebar: React.FC<SidebarProps> = ({sessionUserID, setUserId,collapsed, se
     if (sessionUserID) fetchUserName();
   }, [sessionUserID]);
 
+  /* ---------- Find Active Item for Header Star ---------- */
+  const findActiveItem = (items: SidebarItem[], path: string): SidebarItem | undefined => {
+    const normPath = path.toLowerCase().replace(/\/+$/, "");
+    for (const item of items) {
+      if (item.path && item.path.toLowerCase().replace(/\/+$/, "") === normPath) return item;
+      if (item.subNav) {
+        const found = findActiveItem(item.subNav, path);
+        if (found) return found;
+      }
+    }
+    return undefined;
+  };
+
+  const activeItem = findActiveItem(menu, location.pathname);
+  const isActiveFav = activeItem?.pageId ? isFavourite(activeItem.pageId) : false;
+
+  const toggleHeaderFavourite = async () => {
+    if (!activeItem?.pageId) return;
+    try {
+      if (isActiveFav) {
+        await removeFavourite(activeItem.pageId);
+      } else {
+        await addFavourite(activeItem.pageId, activeItem.title, activeItem.route || '');
+      }
+    } catch (error) {
+      console.error("Failed to toggle favourite", error);
+    }
+  };
+
   /* ======================================================
      RENDER
   ===================================================== */
@@ -184,32 +221,47 @@ const Sidebar: React.FC<SidebarProps> = ({sessionUserID, setUserId,collapsed, se
           >
             {collapsed ? <FaBars /> : <FaTimes />}
           </motion.div>
-           
+
           <motion.img
             src={homeIcon}          // import homeIcon from "..."
-            style={{ width: 22, height: 22 }}
             alt="Home"
-    style={{ width: 22, height: 22 }}
-    onClick={e => {
-      e.stopPropagation();     // 👈 prevents sidebar toggle
-      navigate("/");
-    }}
-    onKeyDown={e => {
-      if (e.key === "Enter") {
-        e.stopPropagation();
-        navigate("/");
-      }
-    }}
+            style={{ width: 22, height: 22 }}
+            onClick={e => {
+              e.stopPropagation();     // 👈 prevents sidebar toggle
+              navigate("/");
+            }}
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                e.stopPropagation();
+                navigate("/");
+              }
+            }}
           />
         </NavIcon>
         <HeaderCenter >
           <Logo src={logo} alt="logo" />
-          <h1 style={{ color: "white", fontSize: "30px",overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <h1 style={{ color: "white", fontSize: "30px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             Welcome to Sienna ECAD Enterprise Management System
           </h1>
         </HeaderCenter>
 
         <RightCorner>
+          {activeItem?.pageId && (
+            <span
+              onClick={toggleHeaderFavourite}
+              style={{ cursor: "pointer", marginRight: "15px", fontSize: "1.2rem", display: "flex", alignItems: "center" }}
+              title={isActiveFav ? "Remove from favourites" : "Add to favourites"}
+            >
+              {isActiveFav ? <FaStar color="#FFD700" /> : <FaRegStar color="#ffffff" />}
+            </span>
+          )}
+          <span
+            onClick={() => setShowProfile(!showProfile)}
+            style={{ cursor: "pointer", marginRight: "8px", fontSize: "1.5rem", display: "flex", alignItems: "center" }}
+            title="View Profile"
+          >
+            <FaUserCircle />
+          </span>
           <span>{userName || "User"}</span>
           <span>|</span>
           <Link to="/Login" onClick={handleLogout}>
@@ -219,7 +271,7 @@ const Sidebar: React.FC<SidebarProps> = ({sessionUserID, setUserId,collapsed, se
       </Nav>
 
       {/* ================= SIDEBAR ================= */}
-      <SideNav collapsed={collapsed} mobile={isMobile}>
+      <SideNav $collapsed={collapsed} $mobile={isMobile}>
         <SidebarWrap>
           {menu.map((item, index) => (
             <SubMenu
@@ -230,6 +282,7 @@ const Sidebar: React.FC<SidebarProps> = ({sessionUserID, setUserId,collapsed, se
           ))}
         </SidebarWrap>
       </SideNav>
+      {showProfile && <MyProfileBanner />}
     </IconContext.Provider>
   );
 };

@@ -159,8 +159,8 @@ const ViewAllEnquiries = () => {
         );
       },
     },
-    { field: "esti", headerName: "Esti", flex: 1, minWidth: 50 },
-    { field: "completeResponsibility", headerName: "PM Resp", flex: 1, minWidth: 120 },
+    { field: "esti", headerName: "Esti", flex: 1, minWidth:70 },
+    { field: "completeResponsibility", headerName: "PM Resp", flex: 1, minWidth: 130 },
     { field: "enquiryType", headerName: "EnqType", flex: 1, minWidth: 100 },
     { field: "boardRef", headerName: "Board Ref", flex: 1, minWidth: 100 },
     { field: "referenceBy", headerName: "Reference By", flex: 1, minWidth: 100 },

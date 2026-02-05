@@ -156,7 +156,7 @@ const RptBillingPlanner: React.FC = () => {
     { value: 11, label: "November" },
     { value: 12, label: "December" },
   ];
- 
+
   const years = Array.from({ length: 12 }, (_, i) => {
     const y = 2020 + i;
     return { value: y, label: String(y) };
@@ -321,6 +321,7 @@ const RptBillingPlanner: React.FC = () => {
         </td>
         {Object.keys(row).map((key) => {
           const isGrandTotal = key === "GrandTotal";
+          const val = row[key as keyof TotalsRow];
           return (
             <td
               key={key}
@@ -330,11 +331,11 @@ const RptBillingPlanner: React.FC = () => {
                 border: "2px solid #ccc",
                 fontFamily: "'Segoe UI', Roboto, sans-serif",
                 color: isGrandTotal ? "#506dbdff" : "inherit",
-                fontWeight: isGrandTotal ? "bold" : "normal",
+                fontWeight: val === 0 ? "normal" : "bold",
               }}
             >
               {/* {row[key as keyof TotalsRow].toFixed(2)} */}
-              {formatInLakhs(row[key as keyof TotalsRow])}
+              {formatInLakhs(val)}
             </td>
           );
         })}
@@ -342,15 +343,8 @@ const RptBillingPlanner: React.FC = () => {
     );
 
     return (
-      <div style={{ marginTop: "20px", textAlign: "center", marginLeft: "40px" , marginRight: "40px"  }}>
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            marginTop: "10px",
-            fontSize: "13px",
-          }}
-        >
+      <div style={{ marginTop: "20px", display: "flex", justifyContent: "center", }}>
+        <table style={{ width: "70%", borderCollapse: "collapse", marginTop: "10px", fontSize: "13px", fontWeight: 600, }}>
           <thead>
             <tr style={{ backgroundColor: "#f2f2f2" }}>
               <th
@@ -369,6 +363,9 @@ const RptBillingPlanner: React.FC = () => {
                     border: "1px solid #ccc",
                     padding: "6px",
                     fontFamily: "'Segoe UI', Roboto, sans-serif",
+                    fontWeight: "bold",
+                    textAlign: "right",
+                    color: key === "GrandTotal" ? "rgb(57, 93, 194)" : "inherit",
                   }}
                 >
                   {key}
@@ -393,11 +390,14 @@ const RptBillingPlanner: React.FC = () => {
                   textAlign: "left",
                   padding: "4px 8px",
                   fontFamily: "'Segoe UI', Roboto, sans-serif",
+                  fontWeight: "bold",
                 }}
               >
                 Total
               </td>
-              {Object.keys(total).map((key) => (
+            {Object.keys(total).map((key) => {
+              const val = total[key as keyof TotalsRow];
+              return (
                 <td
                   key={key}
                   style={{
@@ -405,12 +405,14 @@ const RptBillingPlanner: React.FC = () => {
                     textAlign: "right",
                     padding: "4px 8px",
                     fontFamily: "'Segoe UI', Roboto, sans-serif",
+                    fontWeight: val === 0 ? "normal" : "bold",
                   }}
                 >
                   {/* {total[key as keyof TotalsRow].toFixed(2)} */}
-                  {formatInLakhs(total[key as keyof TotalsRow])}
+                  {formatInLakhs(val)}
                 </td>
-              ))}
+              );
+            })}
             </tr>
 
             {/* ✅ Not Invoiced row (pending summary only) */}
@@ -594,7 +596,14 @@ const RptBillingPlanner: React.FC = () => {
   };
 
   return (
-    <Box sx={{ width: "100%" , backgroundColor: "white" }}>
+    <Box 
+    sx={{
+    width: "100%",
+    maxWidth: "1400px",   // ✅ keeps page centered
+    margin: "0 auto",
+    backgroundColor: "white",
+  }}
+    >
       <Box
         sx={{
           display: "flex",
@@ -726,12 +735,12 @@ const RptBillingPlanner: React.FC = () => {
         )}
         {/* === Row 1: 3 charts === */}
         {!loadingData && showResults && data?.length > 0 && (
-          <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", marginBottom: "30px", marginTop: "10px" , marginLeft: "20px" }}>
-            <div style={{ flex: 1, background: "#fff", border: "1px solid #d1d1d1", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px", width: "500px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", marginBottom: "30px", marginTop: "10px", marginLeft: "20px" }}>
+            <div style={{ flex: 1, background: "#fff", border: "1px solid #d1d1d1", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "350px" }}>
               <ProjectionVsTargetChart data={data} />
             </div>
 
-            <div style={{ flex: 1, background: "#fff", maxWidth: "35%", border: "1px solid #d1d1d1", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "400px" }}>
+            <div style={{ flex: 1, background: "#fff", maxWidth: "35%", border: "1px solid #d1d1d1", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "350px" }}>
               <SegmentWiseBillingChart data={data} />
             </div>
           </div>
@@ -757,7 +766,7 @@ const RptBillingPlanner: React.FC = () => {
             </div>
           )}
           {!loadingData && showResults && data?.length > 0 && (
-            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", border: "1px solid #d1d1d1", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px", width: "250px"  }}>
+            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", border: "1px solid #d1d1d1", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px", width: "250px" }}>
               <DesignVsWipChart
                 totalDesignVA={totalDesignVA}
                 totalWip={wipSumData}
@@ -767,8 +776,8 @@ const RptBillingPlanner: React.FC = () => {
           )}
         </div>
         {!loadingData && showResults && data?.length > 0 && (
-          <div style={{ textAlign: "right", backgroundColor: "white", padding: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "20px" }}>
-            <ExportButton label="Export to Excel" onClick={handleBillExport} />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "2px 20px",}}>
+          <ExportButton label="Export to Excel" onClick={handleBillExport} />
 
             {/* 🟦🟥🟩 Legends */}
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -823,7 +832,6 @@ const RptBillingPlanner: React.FC = () => {
             style={{
               position: "relative",
               width: "100%",
-              marginTop: "20px",
             }}
           >
             <CustomDataGrid

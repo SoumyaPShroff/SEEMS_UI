@@ -1,40 +1,53 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { FaUsers, FaLaptop, FaClipboardList, FaClock } from "react-icons/fa";
-import MyProfileBanner from  "../components/MyProfileBanner";
+import { FaUsers, FaLaptop, FaClipboardList, FaClock, FaTrash } from "react-icons/fa";
 import { baseUrl } from "../const/BaseUrl"
+import { useFavourites } from "./FavouritesContext";
+//import { useSideBarData } from "./SideBarData";
+import type { SidebarItem } from "./SideBarData";
+
+interface EmployeeProfile {
+  iDno: string;
+  costcenter: string;
+  reporttoperson: string;
+  teamdescription: string;
+  reporteeCount: number;
+}
 
 /* ================= STYLES ================= */
-const ActionCard = styled.div`
- background: linear-gradient(
-  135deg,
-  #f8fafc 0%,
-  #90ced5 45%,
-  #ecfeff 100%
-);
+
+const ActionCard = styled.div<{ $isFavourite?: boolean }>`
+  width: 200px;
+  height: 200px;
+
   border-radius: 16px;
-  padding: 28px;
+  padding: 10px;
   cursor: pointer;
   border: 1px solid #e5e7eb;
 
-  box-shadow:
-    0 4px 10px rgba(0,0,0,0.05),
-    0 1px 2px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 6px;
 
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease,
-    border-color 0.25s ease;
+  position: relative; /* needed for Badge */
+
+  background: ${({ $isFavourite }) =>
+    $isFavourite
+      ? "linear-gradient(135deg, #fde68a 0%, #f59e0b 100%)"
+      : "linear-gradient(135deg, #f8fafc 0%, #90ced5 45%, #ecfeff 100%)"};
+
+  box-shadow: ${({ $isFavourite }) =>
+    $isFavourite
+      ? "0 0 0 2px rgba(245,158,11,0.5), 0 10px 24px rgba(245,158,11,0.35)"
+      : "0 4px 10px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04)"};
+
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 
   &:hover {
     transform: translateY(-6px);
-    border-color: #4fb695;
-
-    box-shadow:
-      0 14px 30px rgba(35,69,141,0.18),
-      0 6px 12px rgba(79,182,149,0.25);
-  } 
+  }
 `;
 
 const Badge = styled.span`
@@ -65,39 +78,75 @@ const CardIcon = styled.div`
   margin-bottom: 16px;
 `;
 
-const CardTitle = styled.h4`
+const CardTitle = styled.h4<{ $isFavourite?: boolean }>`
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 6px;
+  color: ${({ $isFavourite }) => ($isFavourite ? "#422006" : "#1f2937")};
 `;
 
-const CardDesc = styled.p`
+const CardDesc = styled.p<{ $isFavourite?: boolean }>`
   font-size: 14px;
   line-height: 1.4;
+  color: ${({ $isFavourite }) => ($isFavourite ? "#78350f" : "#6b7280")};
 `;
 
-const Cards = styled.div`
+const DashboardLayout = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 24px;
-  padding : 40px;
-  margin-top: 200px;
+  grid-template-columns: 300px 1fr;
+  gap: 32px;
+  padding: 40px;
 `;
 
-interface EmployeeProfile {
-  iDno: string;
-  costcenter: string;
-  reporttoperson: string;
-  teamdescription: string;
-  reporteeCount: number;
-}
+const FavouritesPanel = styled.div`
+  background: #fff7ed;
+  border-radius: 18px;
+  padding: 10px;
+  border: 1px solid #fde68a;
 
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 200px;
+`;
+
+const FavouritesTitle = styled.h3`
+  font-size: 16px;
+  font-weight: 700;
+  color: #92400e;
+`;
+
+const DefaultCardsGrid = styled.div`
+  display: flex;
+  gap:10px;
+`;
+
+const FavouriteCard = styled.div`
+  height: 30px;
+  border-radius: 14px;
+  padding: 6px 6px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: linear-gradient(135deg, #fde68a, #f59e0b);
+  cursor: pointer;
+
+  &:hover {
+    transform: translateX(4px);
+  }
+`;
 /* ================= COMPONENT ================= */
 
 const HomeDashboard = () => {
   const navigate = useNavigate();
-  const loginId = sessionStorage.getItem("SessionUserID") || "guest";
   const [profile, setProfile] = useState<EmployeeProfile | null>(null);
+  //addFavourite
+  const { favouriteLinks, removeFavourite } = useFavourites();
+  // const menu = useSideBarData();
+  const loginId = sessionStorage.getItem("SessionUserID") || "guest";
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -114,41 +163,98 @@ const HomeDashboard = () => {
     fetchProfile();
   }, [loginId]);
 
+  const flattenMenu = (items: SidebarItem[]): SidebarItem[] => {
+    return items.reduce((acc, item) => {
+      if (item.pageId && item.route) {
+        acc.push(item);
+      }
+      if (item.subNav) {
+        acc.push(...flattenMenu(item.subNav));
+      }
+      return acc;
+    }, [] as SidebarItem[]);
+  };
+
+  // const availableFaves = useMemo(() => {
+  //   const allPages = flattenMenu(menu);
+  //   const favIds = favouriteLinks.map(f => f.pageid);
+
+  //   return allPages.filter(page => page.pageId && !favIds.includes(page.pageId));
+  // }, [menu, favouriteLinks]);
+
+  const handleRemoveFavourite = async (e: React.MouseEvent, pageId: number) => {
+    e.stopPropagation(); // Prevent card navigation
+    try {
+      await removeFavourite(pageId);
+    } catch (error) {
+      console.error("Failed to remove favourite", error);
+    }
+  };
+
+  // const handleAddFavourite = async (e: React.MouseEvent, page: SidebarItem) => {
+  //   e.stopPropagation();
+  //   if (page.pageId && page.route) {
+  //     await addFavourite(page.pageId, page.title, page.route);
+  //     setShowAddFav(false); // close dropdown after adding
+  //   }
+  // };
+
   return (
     <>
-<MyProfileBanner />
-
       {/* ===== Action Cards ===== */}
-      <Cards>
-        <ActionCard onClick={() => navigate("/Home/MyTeam")}>
-          <Badge>{profile?.reporteeCount ?? 0} Members</Badge>
-          <CardIcon><FaUsers /></CardIcon>
-          <CardTitle>My Team</CardTitle>
-          <CardDesc>View your team members and details</CardDesc>
-          <CardDesc style={{ color: "#d52424" }}>Coming Soon - Feature under development </CardDesc>
-        </ActionCard>
+      <DashboardLayout>
+        {/* ⭐ FAVOURITES */}
+        <FavouritesPanel>
+          <FavouritesTitle>⭐ My Favourites</FavouritesTitle>
 
-        <ActionCard onClick={() => navigate("/Home/AddITRequest")}>
-          <CardIcon><FaLaptop /></CardIcon>
-          <CardTitle>Raise IT Request</CardTitle>
-          <CardDesc>Request IT support or assets</CardDesc>
-            <CardDesc style={{ color: "#d52424" }}>Coming Soon - Feature under development </CardDesc>
-        </ActionCard>
+          {favouriteLinks.map(fav => (
+            <FavouriteCard
+              key={fav.pageid}
+              onClick={() => navigate(`/Home/${fav.route}`)}
+            >
+              <span>{fav.pagename}</span>
+              <FaTrash
+                onClick={(e) => handleRemoveFavourite(e, fav.pageid)}
+                style={{ color: "#d18484" }}
+              />
+            </FavouriteCard>
+          ))}
+        </FavouritesPanel>
 
-        <ActionCard onClick={() => navigate("/Home/AddSeemsRequest")}>
-          <CardIcon><FaClipboardList /></CardIcon>
-          <CardTitle>Raise SEEMS Request</CardTitle>
-          <CardDesc>Submit SEEMS related requests</CardDesc>
-            <CardDesc style={{ color: "#d52424" }}>Coming Soon - Feature under development </CardDesc>
-        </ActionCard>
+        <DefaultCardsGrid>
+          {/* My Team */}
+          <ActionCard onClick={() => navigate("/Home/ComingSoon")}>
+            <Badge>{profile?.reporteeCount ?? 0} Members</Badge>
+            <CardIcon><FaUsers /></CardIcon>
+            <CardTitle>My Team</CardTitle>
+            <CardDesc>View your team members and details</CardDesc>
+            {/* <CardDesc style={{ color: "#d52424" }}>Coming Soon</CardDesc> */}
+          </ActionCard>
 
-        <ActionCard onClick={() => navigate("/Home/Timesheet")}>
-          <CardIcon><FaClock /></CardIcon>
-          <CardTitle>My Timesheet</CardTitle>
-          <CardDesc>Fill and manage your timesheet</CardDesc>
-            <CardDesc style={{ color: "#d52424" }}>Coming Soon - Feature under development </CardDesc>
-        </ActionCard>
-      </Cards>
+          <ActionCard onClick={() => navigate("/Home/ComingSoon")}>
+            <CardIcon><FaLaptop /></CardIcon>
+            <CardTitle>Raise IT Request</CardTitle>
+            <CardDesc>Request IT support or assets</CardDesc>
+            {/* <CardDesc style={{ color: "#d52424" }}>Coming Soon</CardDesc> */}
+          </ActionCard>
+
+          <ActionCard onClick={() => navigate("/Home/ComingSoon")}>
+            <CardIcon><FaClipboardList /></CardIcon>
+            <CardTitle>Raise SEEMS Request</CardTitle>
+            <CardDesc>Submit SEEMS related requests</CardDesc>
+            {/* <CardDesc style={{ color: "#d52424" }}>Coming Soon</CardDesc> */}
+          </ActionCard>
+
+          <ActionCard onClick={() => navigate("/Home/ComingSoon")}>
+            <CardIcon><FaClock /></CardIcon>
+            <CardTitle>My Timesheet</CardTitle>
+            <CardDesc>Fill and manage your timesheet</CardDesc>
+            {/* <CardDesc style={{ color: "#d52424" }}>Coming Soon - Feature under development </CardDesc> */}
+          </ActionCard>
+
+          {/* Other default cards */}
+        </DefaultCardsGrid>
+      </DashboardLayout>
     </>
   );
 };

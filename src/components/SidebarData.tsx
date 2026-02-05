@@ -3,13 +3,15 @@ import axios from "axios";
 import * as RiIcons from "react-icons/ri";
 import { baseUrl } from "../const/BaseUrl";
  
-interface SidebarItem {
+export interface SidebarItem {
   title: string;
   path?: string;
   icon?: string;
   iconOpened?: React.ReactNode;
   iconClosed?: React.ReactNode;
   subNav?: SidebarItem[];
+  pageId?: number;
+  route?: string;
 }
 
 export const useSideBarData = () => {
@@ -58,6 +60,8 @@ export const useSideBarData = () => {
             title: item.pagename, //display menu name
             path: item.route ? `/Home/${item.route}` : "#", //default using /Home/
             icon:   item.pageimage,
+            route: item.route,
+            pageId: item.pageid,
           });
         });
 

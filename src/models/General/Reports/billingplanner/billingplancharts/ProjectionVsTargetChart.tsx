@@ -88,6 +88,9 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
         {
           data: projectionValues,
           backgroundColor: categories.map((c) => barColors[c] || "#1976d2"),
+          categoryPercentage: 0.6,   // ⭐ reduce category space
+          barPercentage: 0.8,        // ⭐ reduce bar width
+          maxBarThickness: 50,       // ⭐ hard limit on bar width
           datalabels: {
             anchor: "end" as const,
             align: "top" as const,
@@ -148,7 +151,7 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
       x: {
         grid: { display: false },
         ticks: {
-          font: { size: 12 },
+          font: { size: 12, weight: "bold" as const, },
           maxRotation: 0,
         },
       },
@@ -169,7 +172,7 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
     return <p style={{ textAlign: "center", color: "#666" }}>No data to display</p>;
 
   return (
-    <div style={{ height: "350px", width: "100%" }}>
+    <div style={{ height: "350px" , width: "100%"}}>
       <Bar data={chartData} options={chartOptions} />
     </div>
   );

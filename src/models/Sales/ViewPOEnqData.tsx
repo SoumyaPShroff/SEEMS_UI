@@ -100,8 +100,8 @@ export default function ViewPOEnqData() {
             return;
         }
 
-        exporttoexcel(rows, "View PO Enquiry Data", "View PO Enquiry Data.xlsx");
-        toast.success("✅ View PO Enquiry Data exported!", { position: "bottom-right" });
+        exporttoexcel(rows, "View PO dump Data", "View PO dump Data.xlsx");
+        toast.success("✅ View PO dump Data exported!", { position: "bottom-right" });
     };
 
     useEffect(() => {
@@ -121,7 +121,7 @@ export default function ViewPOEnqData() {
                 <CustomDataGrid
                     rows={rows}
                     columns={columns}
-                    title="View PO Enquiry Data"
+                    title="View PO dump Data"
                     loading={loading}
                     gridheight={400}
                 />

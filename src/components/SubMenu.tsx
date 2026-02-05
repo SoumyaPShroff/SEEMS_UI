@@ -3,6 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import Label from "./resusablecontrols/Label";
+import { FaStar, FaRegStar } from "react-icons/fa";
+import { useFavourites } from "./FavouritesContext";
 
 /* ======================================================
    TYPES
@@ -15,6 +17,8 @@ interface SubMenuItem {
   iconOpened?: React.ReactNode;
   iconClosed?: React.ReactNode;
   subNav?: SubMenuItem[];
+  pageId?: number;
+  route?: string;
 }
 
 interface SubMenuProps {
@@ -27,16 +31,16 @@ interface SubMenuProps {
    STYLES
 ====================================================== */
 
-const SidebarRow = styled.div<{ active?: boolean }>`
+const SidebarRow = styled.div<{ $active?: boolean }>`
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 14px 20px;
-  color: ${({ active }) => (active ? "#ffffff" : "#cfd8dc")};
-  background: ${({ active }) => (active ? "#426c8c" : "transparent")};
+  color: ${({ $active }) => ($active ? "#ffffff" : "#cfd8dc")};
+  background: ${({ $active }) => ($active ? "#426c8c" : "transparent")};
   cursor: pointer;
   white-space: nowrap;
-
+  position: relative; 
   &:hover {
     background: #426c8c;
   }
@@ -45,27 +49,27 @@ const SidebarRow = styled.div<{ active?: boolean }>`
     outline: none;
     background: #426c8c;
   }
+      &:hover .fav-star {
+    opacity: 1;
+    transform: translateX(0);
+  }
 `;
 
 const DropdownContainer = styled(motion.div)`
   background: #2f5597;
 `;
 
-const DropdownLink = styled(Link) <{ active?: boolean }>`
+const DropdownLink = styled(Link) <{ $active?: boolean }>`
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   height: 44px;
   padding-left: 52px;
+  padding-right: 14px;
   text-decoration: none;
-  color: ${({ active }) => (active ? "#ffffff" : "#ecf0f1")};
-  background: ${({ active }) => (active ? "#1abc9c" : "transparent")};
+  color: ${({ $active }) => ($active ? "#ffffff" : "#ecf0f1")};
+  background: ${({ $active }) => ($active ? "#1abc9c" : "transparent")};
   font-size: 14px;
-
-    color: ${({ active }) => (active ? "#ffffff" : "#ecf0f1")};
-  background: ${({ active }) => (active ? "#1abc9c" : "transparent")};
-
-
   &:hover {
     background: #426c8c;
     color: #ffffff; 
@@ -85,11 +89,7 @@ const MenuIcon = ({
     <img
       src={src}
       alt=""
-      width={size}
-      height={size}
-      style={{
-        flexShrink: 0,
-      }}
+      style={{ width: size, height: size, flexShrink: 0 }}
     />
   );
 };
@@ -104,6 +104,19 @@ const Flyout = styled(motion.div)`
   z-index: 2000;
 `;
 
+const FavouriteStar = styled.span`
+  display: flex;
+  align-items: center;
+  opacity: 2;
+  transform: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  &.fav-star {
+    pointer-events: auto;
+  }
+`;
+
 /* ======================================================
    COMPONENT
 ====================================================== */
@@ -111,6 +124,9 @@ const Flyout = styled(motion.div)`
 const SubMenu: React.FC<SubMenuProps> = ({ item, collapsed, isFlyout = false, }) => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const { isFavourite: checkIsFavourite, addFavourite, removeFavourite } = useFavourites();
+
+  const isFavourite = item.pageId ? checkIsFavourite(item.pageId) : false;
 
   /* ---------- Active route helpers ---------- */
   const isRouteActive = (path?: string) => {
@@ -119,12 +135,12 @@ const SubMenu: React.FC<SubMenuProps> = ({ item, collapsed, isFlyout = false, })
   };
 
   const isAnyChildActive = (items?: SubMenuItem[]): boolean =>
-  items?.some(
-    sub =>
-      isRouteActive(sub.path) ||
-      isAnyChildActive(sub.subNav)
-  ) ?? false;
-  
+    items?.some(
+      sub =>
+        isRouteActive(sub.path) ||
+        isAnyChildActive(sub.subNav)
+    ) ?? false;
+
   /* ---------- Flatten edge case ---------- */
   const effectiveSubNav =
     item.subNav &&
@@ -135,29 +151,38 @@ const SubMenu: React.FC<SubMenuProps> = ({ item, collapsed, isFlyout = false, })
       : item.subNav;
 
   /* ---------- Auto-open when route active ---------- collpases once page loads*/
-  // useEffect(() => {
-  //   if (!collapsed && isAnyChildActive(effectiveSubNav)) {
-  //     setOpen(true);
-  //   }
-  // }, [location.pathname]);
-useEffect(() => {
-  if (!collapsed && isAnyChildActive(effectiveSubNav)) {
-    setOpen(true);
-  } else if (collapsed) {
-    setOpen(false); // auto-close when sidebar is collapsed
-  }
-}, [location.pathname, collapsed]);
+  useEffect(() => {
+    if (!collapsed && isAnyChildActive(effectiveSubNav)) {
+      setOpen(true);
+    } else if (collapsed) {
+      setOpen(false); // auto-close when sidebar is collapsed
+    }
+  }, [location.pathname, collapsed]);
+
+  const toggleFavourite = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // 🚨 prevents menu click / navigation
+    if (!item.pageId) return;
+
+    try {
+      if (isFavourite) {
+        await removeFavourite(item.pageId);
+      } else {
+        await addFavourite(item.pageId, item.title, item.route || '');
+      }
+    } catch (err) {
+      console.error("Favourite toggle failed", err);
+    }
+  };
 
   /* ======================================================
      RENDER
   ===================================================== */
-
   return (
     <>
       {/* ================= PARENT ROW + FLYOUT WRAPPER ================= */}
       <div style={{ position: "relative" }}>
         <SidebarRow
-          active={
+          $active={
             isRouteActive(item.path) ||
             isAnyChildActive(effectiveSubNav)
           }
@@ -187,7 +212,22 @@ useEffect(() => {
 
           {/* Text */}
           {(!collapsed || isFlyout) && (
-            <Label text={item.title} variant="menu" />
+            <>
+              <Label text={item.title} variant="menu" />
+              {item.pageId && (
+                <FavouriteStar
+                  className="fav-star"
+                  onClick={toggleFavourite}
+                  title={isFavourite ? "Remove from favourites" : "Add to favourites"}
+                >
+                  {isFavourite ? (
+                    <FaStar color="#FFD700" size={20} />
+                  ) : (
+                    <FaRegStar size={14} />
+                  )}
+                </FavouriteStar>
+              )}
+            </>
           )}
 
           {/* Arrow */}
@@ -202,7 +242,7 @@ useEffect(() => {
         <AnimatePresence>
           {collapsed && open && effectiveSubNav && (
             <Flyout
-               initial={{ opacity: 0, x: -10 }}
+              initial={{ opacity: 0, x: -10 }}
               //animate={{ opacity: 1, x: 0 }}
               animate={{ opacity: 1, x: collapsed ? 0 : 0 }} // fix x position
               exit={{ opacity: 0, x: -10 }}
@@ -220,12 +260,55 @@ useEffect(() => {
                   <DropdownLink
                     key={index}
                     to={subItem.path ?? "#"}
-                    active={isRouteActive(subItem.path)}
-                    onClick={() => setOpen(false)}
+                    $active={isRouteActive(subItem.path)}
                   >
+
+                    {(() => {
+                      const pageId = subItem.pageId;
+                      if (!pageId) return null;
+
+                      // const fav = checkIsFavourite(pageId);
+
+                      return (
+                        <FavouriteStar
+                          className="fav-star"
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            // if (checkIsFavourite(subItem.pageId)) {
+                            //   await removeFavourite(subItem.pageId);
+                            if (checkIsFavourite(pageId)) {
+                              await removeFavourite(pageId);
+                            } else {
+                              await addFavourite(
+                                // subItem.pageId,
+                                pageId,
+                                subItem.title,
+                                subItem.route || ""
+                              );
+                            }
+                          }}
+                          title={
+                            // checkIsFavourite(subItem.pageId)
+                            checkIsFavourite(pageId)
+                              ? "Remove from favourites"
+                              : "Add to favourites"
+                          }
+                        >
+                          {checkIsFavourite(pageId) ? (
+                            <FaStar color="#FFD700" size={14} />
+                          ) : (
+                            <FaRegStar size={14} />
+                          )}
+                        </FavouriteStar>
+                      );
+                    })()}
                     <MenuIcon src={subItem.icon} size={16} />
                     <Label text={subItem.title} variant="submenu" />
+
                   </DropdownLink>
+
                 )
               )}
             </Flyout>
@@ -253,8 +336,48 @@ useEffect(() => {
                 <DropdownLink
                   key={index}
                   to={subItem.path ?? "#"}
-                  active={isRouteActive(subItem.path)}
+                  $active={isRouteActive(subItem.path)}
                 >
+
+                  {(() => {
+                    const pageId = subItem.pageId;
+                    if (!pageId) return null;
+
+                    //  const fav = checkIsFavourite(pageId);
+
+                    return (
+                      <FavouriteStar
+                        className="fav-star"
+                        onClick={async (e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+
+                          // if (checkIsFavourite(subItem.pageId)) {
+                          //   await removeFavourite(subItem.pageId);
+                          if (checkIsFavourite(pageId)) {
+                            await removeFavourite(pageId);
+                          } else {
+                            await addFavourite(
+                              pageId,
+                              subItem.title,
+                              subItem.route || ""
+                            );
+                          }
+                        }}
+                        title={
+                          checkIsFavourite(pageId)
+                            ? "Remove from favourites"
+                            : "Add to favourites"
+                        }
+                      >
+                        {checkIsFavourite(pageId) ? (
+                          <FaStar color="#FFD700" size={14} />
+                        ) : (
+                          <FaRegStar size={14} />
+                        )}
+                      </FavouriteStar>
+                    );
+                  })()}
                   <MenuIcon src={subItem.icon} size={16} />
                   <Label text={subItem.title} variant="submenu" />
                 </DropdownLink>

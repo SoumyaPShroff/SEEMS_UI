@@ -279,7 +279,7 @@ const SegmentWiseBillingChart: React.FC<SegmentWiseBillingChartProps> = ({
       },
       x: {
         grid: { display: false },
-        ticks: { font: { size: 11 } },
+        ticks: { font: { size: 12,  weight: "bold" as const,} },
       },
     },
   };
