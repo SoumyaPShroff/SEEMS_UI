@@ -259,7 +259,11 @@ const SegmentWiseBillingChart: React.FC<SegmentWiseBillingChartProps> = ({
         color: "#0066CC",
         font: { size: 16, weight: "bold" as const },
       },
-      legend: { display: true, position: "bottom" },
+      legend: {
+        display: true,
+        position: "bottom",
+        align: "center",
+       labels: {font: { size: 10 }, boxWidth: 14, boxHeight: 14, padding: 8,},},
       tooltip: {
         callbacks: {
           label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y} L`,
@@ -285,7 +289,15 @@ const SegmentWiseBillingChart: React.FC<SegmentWiseBillingChartProps> = ({
   };
 
   return (
-    <div style={{ width: "100%", height: "100%", padding: "10px" }}>
+       <div
+  style={{
+    height: "100%",
+    width: "100%",
+    padding: "3px",
+    position: "relative",   // ⭐ fixes chart boundary drawing
+    overflow: "hidden",     // ⭐ stops lines escaping border
+  }}
+>
       <Chart
         type="bar"
         data={chartData}

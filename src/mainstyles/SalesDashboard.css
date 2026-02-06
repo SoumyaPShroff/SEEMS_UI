@@ -2,17 +2,19 @@
 .dashboard-container {
   min-height: 100vh;
   /* padding: 2rem; */
-    padding: 6rem 2rem 2rem; /* 👈 top padding for navbar (80px ≈ 5rem) */
+  padding: 3rem 2rem 2rem;
+  /* 👈 top padding for navbar (80px ≈ 5rem) */
   background: linear-gradient(to bottom right, #e0e7ff, #c7d2fe);
   display: flex;
   flex-direction: column;
-  /* gap: 1.5rem; */
+  gap: 1.5rem;
   font-family: 'Segoe UI', Roboto, sans-serif;
 }
 
 /* White section cards */
 .dashboard-section {
-  background: #ffffffcc; /* translucent white */
+  background: #ffffffcc;
+  /* translucent white */
   backdrop-filter: blur(10px);
   border: 1px solid #e2e8f0;
   border-radius: 16px;
@@ -20,38 +22,66 @@
   padding: 20px;
 }
 
+/* Grid for top section (table + chart) */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.chart-card {
+  padding: 10px;
+  height: 100%;
+  width: 100%;
+}
+
+.chart-title {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e3a8a;
+  text-align: center;
+}
+
 /* Filter bar */
 .filters-container {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding:8px 8px;
+  padding: 8px 8px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 /* Label and input inline */
 .filters-container label {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
   font-weight: 500;
-  font-size: 0.9rem;
-  color: #333;
 }
 
 .filters-container input[type="date"] {
-  margin-top: 4px;
-  padding: 6px 10px;
-  border: 1px solid #ccc;
+  padding: 4px 8px;
+  height: 30px;
+  font-size: 0.85rem;
   border-radius: 6px;
-  font-size: 0.9rem;
+  border: 1px solid #ccc;
 }
 
 /* Align button perfectly */
 .filters-container button {
-  align-self: flex-end;
-  margin-top: 0; /* remove previous top margin */
-  height: 38px;
+  height: 30px;
+  padding: 0 12px;
+  font-size: 0.85rem;
 }
+
 /* Loading & empty states */
 .empty-message,
 .loading-message {
@@ -60,20 +90,24 @@
   font-size: 1rem;
   padding: 20px;
 }
+
 /* Enhanced table styling */
 .summary-grid {
-  overflow-x: auto;
-  margin-top: 1rem;
+  padding: 0;
+  background: transparent;
 }
 
 .summary-table.enhanced {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 0.95rem;
-  background: #f9fafb;
+  border-collapse: separate;
+  /* 🔥 IMPORTANT */
+  border-spacing: 0;
+  /* 🔥 IMPORTANT */
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  background: #f9fafb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid #111;
 }
 
 .summary-table.enhanced th {
@@ -83,11 +117,12 @@
   padding: 10px 14px;
   font-weight: 600;
   letter-spacing: 0.3px;
+  border: 1px solid #000;
 }
 
 .summary-table.enhanced td {
   padding: 10px 14px;
-  border-bottom: 1px solid #e5e7eb;
+  border: 1px solid #000;
 }
 
 .summary-table.enhanced tr:nth-child(even) {
@@ -107,12 +142,13 @@
 }
 
 .summary-table.enhanced tfoot td {
-  border-top: 2px solid #c7d2fe;
+  border-top: 2px solid #000;
 }
+
 /* Three-Month Summary Table */
 .summary-table.three-month {
-  border: 2px solid #dc2626;
-  border-radius: 6px;
+  border: 1px solid #000;
+  border-radius: 4px;
   overflow: hidden;
 }
 
@@ -121,12 +157,12 @@
   background-color: #f9fafb;
   color: #1e3a8a;
   font-weight: 600;
-  border-bottom: 1px solid #ddd;
+  border: 1px solid #000;
 }
 
 .summary-table.three-month td {
   padding: 8px 12px;
-  border-bottom: 1px solid #e5e7eb;
+  border: 1px solid #000;
 }
 
 .summary-table.three-month tr:nth-child(even) {
@@ -136,13 +172,12 @@
 .subtotal-row {
   background: #f3f4f6;
   font-weight: 600;
-    color: #2563eb;
+  color: #2563eb;
 }
 
 .grand-total-row {
   background: #eef2ff;
   font-weight: 700;
-  border-top: 2px solid #cbd5e1;
 }
 
 .num {
@@ -164,4 +199,10 @@
   font-size: 0.9rem;
   font-weight: 500;
   margin-bottom: 6px;
+}
+
+@media (max-width: 992px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
 }

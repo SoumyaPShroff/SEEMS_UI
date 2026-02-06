@@ -153,6 +153,7 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
         ticks: {
           font: { size: 12, weight: "bold" as const, },
           maxRotation: 0,
+          minRotation: 0,
         },
       },
       y: {
@@ -172,7 +173,16 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
     return <p style={{ textAlign: "center", color: "#666" }}>No data to display</p>;
 
   return (
-    <div style={{ height: "350px" , width: "100%"}}>
+    // <div style={{ height: "100%", width: "100%" }}>
+    <div
+  style={{
+    height: "90%",
+    width: "90%",
+    padding: "3px",
+    position: "relative",   // ⭐ fixes chart boundary drawing
+    overflow: "hidden",     // ⭐ stops lines escaping border
+  }}
+>
       <Bar data={chartData} options={chartOptions} />
     </div>
   );

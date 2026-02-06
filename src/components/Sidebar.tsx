@@ -9,10 +9,11 @@ import axios from "axios";
 import { baseUrl } from "../const/BaseUrl";
 import logo from "../const/Images/Sienna-Ecad-logo.jpg";
 import { motion } from "framer-motion";
-import { FaBars, FaTimes, FaStar, FaRegStar, FaUserCircle } from "react-icons/fa";
+import { FaBars, FaTimes, FaStar, FaRegStar, FaUserCircle, FaBell } from "react-icons/fa";
 import homeIcon from "../const/Images/Home.jpg";
 import { useFavourites } from "./FavouritesContext";
 import MyProfileBanner from "./MyProfileBanner";
+import ReleaseNotesText from "./../components/ReleaseNotesText";
 
 // import Breadcrumbs from "./Breadcrumbs";
 
@@ -108,6 +109,17 @@ const RightCorner = styled.div`
   }
 `;
 
+const NotificationBadge = styled.span`
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background-color: red;
+  border-radius: 50%;
+  border: 1px solid white;
+`;
+
 const SideNav = styled.aside<{ $collapsed: boolean; $mobile: boolean }>`
   position: fixed;
   top: 80px;
@@ -138,11 +150,22 @@ const SidebarWrap = styled.div`
 
 const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, setCollapsed, }) => {
   const [userName, setUserName] = useState("");
+  const [hasNewReleases, setHasNewReleases] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const menu = useSideBarData();
   const isMobile = window.innerWidth < 768;
+
+  const LATEST_RELEASE_VERSION = ReleaseNotesText[0].version;
+  const LAST_SEEN_VERSION_KEY = 'lastSeenReleaseVersion';
+
+  useEffect(() => {
+    const lastSeenVersion = localStorage.getItem(LAST_SEEN_VERSION_KEY);
+    if (lastSeenVersion !== LATEST_RELEASE_VERSION) {
+      setHasNewReleases(true);
+    }
+  }, [LATEST_RELEASE_VERSION]);
 
   // Use Context for favourites
   const { isFavourite, addFavourite, removeFavourite } = useFavourites();
@@ -200,6 +223,12 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, 
     }
   };
 
+  const handleReleaseNotesClick = () => {
+    localStorage.setItem(LAST_SEEN_VERSION_KEY, LATEST_RELEASE_VERSION);
+    setHasNewReleases(false);
+    navigate("/Home/ReleaseNotesText");
+  };
+
   /* ======================================================
      RENDER
   ===================================================== */
@@ -255,6 +284,14 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, 
               {isActiveFav ? <FaStar color="#FFD700" /> : <FaRegStar color="#ffffff" />}
             </span>
           )}
+          <span
+            onClick={handleReleaseNotesClick}
+            style={{ position: 'relative', cursor: "pointer", marginRight: "15px", fontSize: "1.2rem", display: "flex", alignItems: "center" }}
+            title="New Releases"
+          >
+            <FaBell color="#ffffff" />
+            {hasNewReleases && <NotificationBadge />}
+          </span>
           <span
             onClick={() => setShowProfile(!showProfile)}
             style={{ cursor: "pointer", marginRight: "8px", fontSize: "1.5rem", display: "flex", alignItems: "center" }}

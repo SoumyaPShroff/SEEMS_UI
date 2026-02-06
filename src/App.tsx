@@ -22,6 +22,8 @@ import Feasibility from './models/Sales/Feasibility';
 import ViewQuoteReport from "./models/Sales/ViewQuoteReport";
 import HomeDashboard from './components/HomeDashboard';
 import ComingSoon from './components/ComingSoon';
+import ReleaseNotesText from './components/ReleaseNotesText';
+import ReleaseNotes from './components/ReleaseNotes';
 
 const App: React.FC = () => {
   const [userId, setUserId] = useState(sessionStorage.getItem('SessionUserID'));
@@ -74,6 +76,7 @@ const App: React.FC = () => {
         <Route path="/ForgotPassword" element={<ForgotPassword />} />
         <Route path="/blank" element={<Blank />} />
         <Route path="/Home/ComingSoon" element={<ComingSoon />} />
+        <Route path="/Home/ReleaseNotesText" element={<ReleaseNotes notes={ReleaseNotesText} />} />
       </Routes>
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
     </Router>

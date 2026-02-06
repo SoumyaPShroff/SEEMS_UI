@@ -17,6 +17,7 @@ import ExportButton from "../../../../components/resusablecontrols/ExportButton"
 import CustomDataGrid from "../../../../components/resusablecontrols/CustomDataGrid";
 import SelectControl from "../../../../components/resusablecontrols/SelectControl";
 import { formatInLakhs } from "../../../../components/utils/formatInLakhs";
+import SearchControl from "../../../../components/resusablecontrols/SearchControl";
 
 // ✅ Types
 interface BillingData {
@@ -136,6 +137,7 @@ const RptBillingPlanner: React.FC = () => {
   const [selectedManager, setSelectedManager] = useState<any>(null);
   const [summary, setSummary] = useState<any>(null);
   const [invoiceDict, setInvoiceDict] = useState<Set<string>>(new Set());
+  const [searchText, setSearchText] = useState("");
   const [showResults, setShowResults] = useState(false); // New state to control rendering
   const [wipSumData, setWipSumData] = useState(0);
   const [totalDesignVA, setTotalDesignVA] = useState(0);
@@ -216,6 +218,15 @@ const RptBillingPlanner: React.FC = () => {
   };
 
   const [columnVisibilityModel, setColumnVisibilityModel] = useState(defaultVisibleColumns);
+
+  const filteredData = React.useMemo(() => {
+    if (!searchText) return data;
+    return data.filter((row) =>
+      Object.values(row).some((val) =>
+        String(val).toLowerCase().includes(searchText.toLowerCase())
+      )
+    );
+  }, [data, searchText]);
 
   const handleGenerate = async () => {
     try {
@@ -395,24 +406,24 @@ const RptBillingPlanner: React.FC = () => {
               >
                 Total
               </td>
-            {Object.keys(total).map((key) => {
-              const val = total[key as keyof TotalsRow];
-              return (
-                <td
-                  key={key}
-                  style={{
-                    border: "1px solid #ccc",
-                    textAlign: "right",
-                    padding: "4px 8px",
-                    fontFamily: "'Segoe UI', Roboto, sans-serif",
-                    fontWeight: val === 0 ? "normal" : "bold",
-                  }}
-                >
-                  {/* {total[key as keyof TotalsRow].toFixed(2)} */}
-                  {formatInLakhs(val)}
-                </td>
-              );
-            })}
+              {Object.keys(total).map((key) => {
+                const val = total[key as keyof TotalsRow];
+                return (
+                  <td
+                    key={key}
+                    style={{
+                      border: "1px solid #ccc",
+                      textAlign: "right",
+                      padding: "4px 8px",
+                      fontFamily: "'Segoe UI', Roboto, sans-serif",
+                      fontWeight: val === 0 ? "normal" : "bold",
+                    }}
+                  >
+                    {/* {total[key as keyof TotalsRow].toFixed(2)} */}
+                    {formatInLakhs(val)}
+                  </td>
+                );
+              })}
             </tr>
 
             {/* ✅ Not Invoiced row (pending summary only) */}
@@ -525,7 +536,7 @@ const RptBillingPlanner: React.FC = () => {
   };
 
   const handleBillExport = () => {
-    exporttoexcel(data, "BillingPlanner", "BillingPlanner-Data.xlsx");
+    exporttoexcel(filteredData, "BillingPlanner", "BillingPlanner-Data.xlsx");
     toast.success("✅ Billing Planner Data exported!", { position: "top-right" });
   };
 
@@ -596,13 +607,13 @@ const RptBillingPlanner: React.FC = () => {
   };
 
   return (
-    <Box 
-    sx={{
-    width: "100%",
-    maxWidth: "1400px",   // ✅ keeps page centered
-    margin: "0 auto",
-    backgroundColor: "white",
-  }}
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: "1400px",   // ✅ keeps page centered
+        margin: "0 auto",
+        backgroundColor: "white",
+      }}
     >
       <Box
         sx={{
@@ -610,6 +621,7 @@ const RptBillingPlanner: React.FC = () => {
           justifyContent: "flex-start", // ✅ Left align
           padding: "24px",
           mt: 11,
+          gap: 2,
         }}
       >
         <Box sx={{ width: 300 }}>
@@ -735,49 +747,46 @@ const RptBillingPlanner: React.FC = () => {
         )}
         {/* === Row 1: 3 charts === */}
         {!loadingData && showResults && data?.length > 0 && (
-          <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", marginBottom: "30px", marginTop: "10px", marginLeft: "20px" }}>
-            <div style={{ flex: 1, background: "#fff", border: "1px solid #d1d1d1", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "350px" }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: "15px", marginBottom: "30px", marginTop: "10px", marginLeft: "20px" }}>
+            <div style={{ flex: 5.0, minWidth: 0, background: "#fff", border: "1px solid #d1d1d1", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "350px" }}>
               <ProjectionVsTargetChart data={data} />
             </div>
-
-            <div style={{ flex: 1, background: "#fff", maxWidth: "35%", border: "1px solid #d1d1d1", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "350px" }}>
+            <div style={{ flex: 3.0, minWidth: 0, background: "#fff", border: "1px solid #d1d1d1", borderRadius: "8px", padding: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "350px" }}>
               <SegmentWiseBillingChart data={data} />
             </div>
           </div>
         )}
+
         {/* === Row 2: 2 charts === */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "15px",
-            marginBottom: "40px",
-            marginLeft: "20px",
-          }}
-        >
+        <div  style={{ display: "flex",justifyContent: "center", gap: "15px",marginBottom: "40px",marginLeft: "20px",alignItems: "stretch",}} >
           {!loadingData && showResults && data?.length > 0 && (
-            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", border: "1px solid #d1d1d1", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
+            <div style={{ flex: 1, display: "flex", minWidth: 0, background: "#fff", borderRadius: "8px", border: "1px solid #d1d1d1", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
               <ProjectManagerChart data={data} />
             </div>
           )}
           {!loadingData && showResults && data?.length > 0 && (
-            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", border: "1px solid #d1d1d1", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px" }}>
+            <div style={{ flex: 1, minWidth: 0, display: "flex", background: "#fff", borderRadius: "8px", border: "1px solid #d1d1d1", boxShadow: "0 2px 8px rgba(0,0,0,0.1)"  }}>
               <SalesManagerChart data={data} />
             </div>
           )}
-          {!loadingData && showResults && data?.length > 0 && (
-            <div style={{ flex: 1, background: "#fff", borderRadius: "8px", border: "1px solid #d1d1d1", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "300px", width: "250px" }}>
+          {!loadingData && showResults && data?.length > 0 && (  
+          <div style={{ flex: 1,minWidth: 0,  background: "#fff", display: "flex", borderRadius: "8px", border: "1px solid #d1d1d1", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
               <DesignVsWipChart
                 totalDesignVA={totalDesignVA}
                 totalWip={wipSumData}
                 targetAbs={53900000}
               />
             </div>
-          )}
+             )}
         </div>
         {!loadingData && showResults && data?.length > 0 && (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "2px 20px",}}>
-          <ExportButton label="Export to Excel" onClick={handleBillExport} />
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "2px 20px", }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <Box sx={{ width: 400, marginLeft: "2px" }}>
+                <SearchControl onChange={setSearchText} value={searchText} label="Search" />
+              </Box>
+              <ExportButton label="Export to Excel" onClick={handleBillExport} />
+            </div>
 
             {/* 🟦🟥🟩 Legends */}
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -827,15 +836,17 @@ const RptBillingPlanner: React.FC = () => {
             </div>
           </div>
         )}
+
         {!loadingData && showResults && data?.length > 0 && (
           <div
             style={{
               position: "relative",
               width: "100%",
+              marginLeft: "10px",
             }}
           >
             <CustomDataGrid
-              rows={data}
+              rows={filteredData}
               columns={columns}
               columnVisibilityModel={columnVisibilityModel}
               onColumnVisibilityModelChange={(newModel) => setColumnVisibilityModel(newModel)}
@@ -851,7 +862,6 @@ const RptBillingPlanner: React.FC = () => {
         {!loadingData && showResults && data?.length > 0 &&
           Array.isArray(invoicePendingData) && invoicePendingData.length > 0 && (
             <div style={{ textAlign: "left", alignItems: "center", marginTop: "30px" }}>
-
               <CustomDataGrid
                 rows={invoicePendingData.map((r: any, i: number) => ({
                   id: r.id ?? i, // ✅ ensure every row has an ID

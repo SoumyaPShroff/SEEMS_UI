@@ -67,5 +67,10 @@ export const SalesManagerChart: React.FC<ChartProps> = ({ data }) => {
       },
     },
   };
-  return <Chart type="bar" data={chartData} options={chartOptions} plugins={[ChartDataLabels]} />
+  return (
+    // <div style={{ height: "100%", width: "100%", padding: "3px" }}>
+    <div  style={{  height: "100%", width: "100%", padding: "3px", position: "relative", overflow: "hidden",}}>
+      <Chart type="bar" data={chartData} options={chartOptions} plugins={[ChartDataLabels]} />
+    </div>
+  );
 };

@@ -122,7 +122,8 @@ const CustomDataGrid: React.FC<CustomDataGridProps> = ({
             marginBottom: "10px",
             fontWeight: 600,
             border: "1px solid #d1d1d1",
-            padding: "8px",
+            padding: "4px",
+            fontSize: "16px",
           }}
 
         >

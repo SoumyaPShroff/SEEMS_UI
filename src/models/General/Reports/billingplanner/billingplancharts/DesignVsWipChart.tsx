@@ -82,7 +82,11 @@ const DesignVsWipChart: React.FC<Props> = ({ totalDesignVA, totalWip, targetAbs 
       },
     },
   };
-  return <Chart type="bar" data={data} options={options} plugins={[ChartDataLabels]} />;
+  return (
+    <div style={{ width: "100%", height: "100%" }}>
+      <Chart type="bar" data={data} options={options} plugins={[ChartDataLabels]} />
+    </div>
+  );
 };
 
 export default DesignVsWipChart;
