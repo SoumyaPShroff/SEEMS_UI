@@ -26,6 +26,14 @@ const SalesDashboard: React.FC = () => {
   const [showData, setShowData] = useState(false);
   const navigate = useNavigate();
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
+  const hasCategoryData =  openOrders.length > 0 ||  tentativeOrders.length > 0 ||  confirmedOrders.length > 0 ||  quotedOrders.length > 0;
+  const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
+const toggleRow = (key: string) => {
+  setExpandedRows(prev => ({
+    ...prev,
+    [key]: !prev[key],
+  }));
+};
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -529,6 +537,7 @@ const SalesDashboard: React.FC = () => {
       )}
 
       {/* === Category Summary === */}
+      {!loading && showData && hasCategoryData && (
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
@@ -556,7 +565,8 @@ const SalesDashboard: React.FC = () => {
                 "VA",
                 "NPI",
               ].map((catKey, i) => {
-                const [expanded, setExpanded] = useState(false);
+               // const [expanded, setExpanded] = useState(false);
+               const expanded = expandedRows[catKey] || false;
                 const openSubs = filterOrders(openOrders, catKey);
                 const tentativeSubs = filterOrders(tentativeOrders, catKey);
                 const confirmedSubs = filterOrders(confirmedOrders, catKey);
@@ -573,7 +583,10 @@ const SalesDashboard: React.FC = () => {
                 return (
                   <React.Fragment key={i}>
                     {/* normal row */}
-                    <tr className="expandable-row" onClick={() => setExpanded(!expanded)} style={{ cursor: "pointer" }}>
+                    <tr className="expandable-row"
+                    //  onClick={() => setExpanded(!expanded)} 
+                     onClick={() => toggleRow(catKey)}
+                     style={{ cursor: "pointer" }}>
                       <td>{catKey}</td>
                       <td className="num">{formatCurrency(openTotal)}</td>
                       <td className="num">{formatCurrency(tentativeTotal)}</td>
@@ -748,7 +761,7 @@ const SalesDashboard: React.FC = () => {
           </table>
         </div>
       </motion.div>
-      {/* )} */}
+    )}
     </div>
   );
 };
