@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,7 +13,7 @@ import { useFavourites } from "./FavouritesContext";
 interface SubMenuItem {
   title: string;
   path?: string;
-  icon?: string;
+  icon?: React.ReactNode;
   iconOpened?: React.ReactNode;
   iconClosed?: React.ReactNode;
   subNav?: SubMenuItem[];
@@ -36,30 +36,50 @@ const SidebarRow = styled.div<{ $active?: boolean }>`
   align-items: center;
   gap: 16px;
   padding: 14px 20px;
-  color: ${({ $active }) => ($active ? "#ffffff" : "#cfd8dc")};
-  background: ${({ $active }) => ($active ? "#426c8c" : "transparent")};
+  color: ${({ $active }) => ($active ? "#f8fafc" : "#c7d2da")};
+  background: ${({ $active }) => ($active ? "#2e4760" : "transparent")};
   cursor: pointer;
   white-space: nowrap;
   position: relative; 
+  transition: background 0.2s ease, color 0.2s ease;
   &:hover {
-    background: #426c8c;
+    background: #243447;
+    color: #f1f5f9;
   }
+  &:hover ${"" /* make menu icons clearer on hover */} span[role="img"],
+  &:hover ${"" /* icon badge */} .menu-icon-badge {
+    color: #ffffff;
+    background: rgba(76, 201, 167, 0.25);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+  }
+
+  ${({ $active }) =>
+    $active &&
+    `
+    .menu-icon-badge {
+      color: #ffffff;
+      background: rgba(76, 201, 167, 0.22);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16);
+    }
+  `}
 
   &:focus-visible {
     outline: none;
-    background: #426c8c;
+    background: #243447;
   }
-      &:hover .fav-star {
+  &:hover .fav-star {
     opacity: 1;
     transform: translateX(0);
   }
 `;
 
 const DropdownContainer = styled(motion.div)`
-  background: #2f5597;
+  background: #1e2a38;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 `;
 
-const DropdownLink = styled(Link) <{ $active?: boolean }>`
+const DropdownLink = styled(Link)<{ $active?: boolean }>`
   display: flex;
   align-items: center;
   gap: 8px;
@@ -67,53 +87,98 @@ const DropdownLink = styled(Link) <{ $active?: boolean }>`
   padding-left: 52px;
   padding-right: 14px;
   text-decoration: none;
-  color: ${({ $active }) => ($active ? "#ffffff" : "#ecf0f1")};
-  background: ${({ $active }) => ($active ? "#1abc9c" : "transparent")};
+  color: ${({ $active }) => ($active ? "#f8fafc" : "#d7dee6")};
+  background: ${({ $active }) =>
+    $active ? "rgba(76, 201, 167, 0.22)" : "transparent"};
   font-size: 14px;
+  transition: background 0.2s ease, color 0.2s ease;
   &:hover {
-    background: #426c8c;
-    color: #ffffff; 
+    background: #243447;
+    color: #ffffff;
+  }
+  &:hover .menu-icon-badge {
+    color: #ffffff;
+    background: rgba(76, 201, 167, 0.25);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+  }
+
+  ${({ $active }) =>
+    $active &&
+    `
+    .menu-icon-badge {
+      color: #ffffff;
+      background: rgba(76, 201, 167, 0.22);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16);
+    }
+  `}
+
+  &:hover .fav-star {
+    opacity: 1;
+    transform: translateX(0);
   }
 `;
 
 const MenuIcon = ({
-  src,
+  icon,
   size = 25,
 }: {
-  src?: string;
+  icon?: React.ReactNode;
   size?: number;
 }) => {
-  if (!src) return null;
+  if (!icon) return null;
+
+  const renderedIcon = React.isValidElement(icon)
+    ? React.cloneElement(icon, { color: "currentColor" })
+    : icon;
 
   return (
-    <img
-      src={src}
-      alt=""
-      style={{ width: size, height: size, flexShrink: 0 }}
-    />
+    <IconBadge className="menu-icon-badge" $size={size}>
+      {renderedIcon}
+    </IconBadge>
   );
 };
+
+const IconBadge = styled.span<{ $size: number }>`
+  width: ${({ $size }) => $size + 14}px;
+  height: ${({ $size }) => $size + 14}px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #e6edf3;
+  font-size: ${({ $size }) => $size}px;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+`;
+
 //  left: 72px; /* collapsed sidebar width */
 const Flyout = styled(motion.div)`
   position: fixed;
   left: 72px;
-  background: #2f5597;
+  background: #1e2a38;
   min-width: 220px;
   border-radius: 6px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   z-index: 2000;
 `;
 
 const FavouriteStar = styled.span`
   display: flex;
   align-items: center;
-  opacity: 2;
-  transform: none;
+  opacity: 0;
+  transform: translateX(6px);
   transition: all 0.2s ease;
   cursor: pointer;
 
   &.fav-star {
     pointer-events: auto;
+  }
+
+  &.is-fav {
+    opacity: 1;
+    transform: translateX(0);
   }
 `;
 
@@ -127,7 +192,6 @@ const SubMenu: React.FC<SubMenuProps> = ({ item, collapsed, isFlyout = false, })
   const { isFavourite: checkIsFavourite, addFavourite, removeFavourite } = useFavourites();
 
   const isFavourite = item.pageId ? checkIsFavourite(item.pageId) : false;
-
   /* ---------- Active route helpers ---------- */
   const isRouteActive = (path?: string) => {
     if (!path) return false;
@@ -208,7 +272,7 @@ const SubMenu: React.FC<SubMenuProps> = ({ item, collapsed, isFlyout = false, })
           }}
         >
           {/* Icon */}
-          <MenuIcon src={item.icon} size={20} />
+          <MenuIcon icon={item.icon} size={20} />
 
           {/* Text */}
           {(!collapsed || isFlyout) && (
@@ -216,7 +280,7 @@ const SubMenu: React.FC<SubMenuProps> = ({ item, collapsed, isFlyout = false, })
               <Label text={item.title} variant="menu" />
               {item.pageId && (
                 <FavouriteStar
-                  className="fav-star"
+                  className={`fav-star ${isFavourite ? "is-fav" : ""}`}
                   onClick={toggleFavourite}
                   title={isFavourite ? "Remove from favourites" : "Add to favourites"}
                 >
@@ -271,7 +335,7 @@ const SubMenu: React.FC<SubMenuProps> = ({ item, collapsed, isFlyout = false, })
 
                       return (
                         <FavouriteStar
-                          className="fav-star"
+                          className={`fav-star ${checkIsFavourite(pageId) ? "is-fav" : ""}`}
                           onClick={async (e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -304,8 +368,12 @@ const SubMenu: React.FC<SubMenuProps> = ({ item, collapsed, isFlyout = false, })
                         </FavouriteStar>
                       );
                     })()}
-                    <MenuIcon src={subItem.icon} size={16} />
-                    <Label text={subItem.title} variant="submenu" />
+                    {(() => (
+                      <>
+                        <MenuIcon icon={subItem.icon} size={18} />
+                        <Label text={subItem.title} variant="submenu" />
+                      </>
+                    ))()}
 
                   </DropdownLink>
 
@@ -377,9 +445,13 @@ const SubMenu: React.FC<SubMenuProps> = ({ item, collapsed, isFlyout = false, })
                         )}
                       </FavouriteStar>
                     );
-                  })()}
-                  <MenuIcon src={subItem.icon} size={16} />
-                  <Label text={subItem.title} variant="submenu" />
+                    })()}
+                  {(() => (
+                    <>
+                    <MenuIcon icon={subItem.icon} size={18} />
+                      <Label text={subItem.title} variant="submenu" />
+                    </>
+                  ))()}
                 </DropdownLink>
               )
             )}
@@ -389,5 +461,25 @@ const SubMenu: React.FC<SubMenuProps> = ({ item, collapsed, isFlyout = false, })
     </>
   );
 };
+
+/*
+const getMenuEmoji = (title: string, route?: string) => {
+  const text = `${title} ${route ?? ""}`.toLowerCase();
+  if (text.includes("home")) return "🏠";
+  if (text.includes("dashboard")) return "📊";
+  if (text.includes("sales")) return "💼";
+  if (text.includes("report")) return "🧾";
+  if (text.includes("billing")) return "💳";
+  if (text.includes("project")) return "📁";
+  if (text.includes("team")) return "👥";
+  if (text.includes("profile") || text.includes("user")) return "🙂";
+  if (text.includes("support") || text.includes("help")) return "🛟";
+  if (text.includes("quote") || text.includes("quotation")) return "🧾";
+  if (text.includes("enquiry") || text.includes("inquiry")) return "🔍";
+  if (text.includes("calendar")) return "📅";
+  if (text.includes("settings")) return "⚙️";
+  return "";
+};
+*/
 
 export default SubMenu;

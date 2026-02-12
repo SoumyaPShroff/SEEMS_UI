@@ -69,7 +69,7 @@ const DesignVsWipChart: React.FC<Props> = ({ totalDesignVA, totalWip, targetAbs 
       datalabels: { display: true },
     },
     scales: {
-      x: { grid: { display: false }, ticks: { font: { size: 12 } } },
+      x: { grid: { display: false }, ticks: { font: { size: 12,weight: "bold" as const, } } },
       y: {
         max: targetAbs,
         min: 0,

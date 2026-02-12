@@ -176,8 +176,8 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
     // <div style={{ height: "100%", width: "100%" }}>
     <div
   style={{
-    height: "90%",
-    width: "90%",
+    height: "100%",
+    width: "100%",
     padding: "3px",
     position: "relative",   // ⭐ fixes chart boundary drawing
     overflow: "hidden",     // ⭐ stops lines escaping border

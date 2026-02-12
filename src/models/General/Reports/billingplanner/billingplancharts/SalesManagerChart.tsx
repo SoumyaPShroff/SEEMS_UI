@@ -55,12 +55,18 @@ export const SalesManagerChart: React.FC<ChartProps> = ({ data }) => {
       title: {
         display: true,
         text: "Sales Manager vs Billing Amount",
-        padding: 30,
+        padding: 20,
           font: { size: 16, weight: "bold" as const },
         color: "rgb(0,102,204)",
       },
     },
     scales: {
+        x: {
+    ticks: {
+      maxRotation: 45,
+      minRotation: 45,
+    },
+  },
       y: {
         beginAtZero: true,
         ticks: { callback: (v: string | number) => `${Number(v) / 100000} L` },
@@ -68,7 +74,6 @@ export const SalesManagerChart: React.FC<ChartProps> = ({ data }) => {
     },
   };
   return (
-    // <div style={{ height: "100%", width: "100%", padding: "3px" }}>
     <div  style={{  height: "100%", width: "100%", padding: "3px", position: "relative", overflow: "hidden",}}>
       <Chart type="bar" data={chartData} options={chartOptions} plugins={[ChartDataLabels]} />
     </div>

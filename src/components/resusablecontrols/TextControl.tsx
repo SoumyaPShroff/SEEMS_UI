@@ -6,17 +6,28 @@ interface TextControlProps {
   placeholder?: string;
   style?: React.CSSProperties;
   disabled?: boolean;
+  type?: "text" | "number";
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
 }
 
-const TextControl: React.FC<TextControlProps> = ({ value, onChange, placeholder, style, disabled }) => {
+const TextControl: React.FC<TextControlProps> = ({
+  value,
+  onChange,
+  placeholder,
+  style,
+  disabled,
+  type = "text",
+  inputMode,
+}) => {
   return (
     <input
-      type="text"
+      type={type}
       value={value}
       onChange={onChange}
       placeholder={placeholder}
       style={style}
       disabled={disabled}
+      inputMode={inputMode}
     />
   );
 };

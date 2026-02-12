@@ -31,12 +31,15 @@ const SelectControl: React.FC<SelectControlProps> = ({
   options,
   required = false,
   fullWidth = true,
-  height = 40,
+  height = 34,
   width = "100%",
   error = false,
   helperText,
   sx = {},
 }) => {
+  const controlFontFamily =
+    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu";
+
   // Find currently selected option (for Autocomplete to display correct label)
  // const selectedOption = options.find((opt) => opt.value === value) || null;
 const selectedOption =
@@ -49,11 +52,18 @@ const selectedOption =
       error={error}
       sx={{
         minWidth: width,
+        fontFamily: controlFontFamily,
         "& .MuiOutlinedInput-root": {
           height,
         },
         "& .MuiInputBase-input": {
-          padding: "6px 10px",
+          padding: "8px 10px",
+          fontFamily: controlFontFamily,
+          fontSize: "1rem",
+            fontWeight: 400,
+        },
+        "& .MuiInputLabel-root": {
+          fontFamily: controlFontFamily,
         },
         ...sx,
       }}
@@ -84,11 +94,19 @@ const selectedOption =
           />
         )}
         ListboxProps={{
-          style: { maxHeight: 250 },
+          style: { maxHeight: 250, fontFamily: controlFontFamily },
         }}
         sx={{
+          fontFamily: controlFontFamily,
           "& .MuiOutlinedInput-root": {
             height,
+          },
+          "& .MuiInputBase-input": {
+            fontFamily: controlFontFamily,
+            fontSize: "0.875rem",
+          },
+          "& .MuiInputLabel-root": {
+            fontFamily: controlFontFamily,
           },
         }}
       />

@@ -24,6 +24,7 @@ import HomeDashboard from './components/HomeDashboard';
 import ComingSoon from './components/ComingSoon';
 import ReleaseNotesText from './components/ReleaseNotesText';
 import ReleaseNotes from './components/ReleaseNotes';
+import PlannedHours from './models/Projects/PlannedHours';
 
 const App: React.FC = () => {
   const [userId, setUserId] = useState(sessionStorage.getItem('SessionUserID'));
@@ -70,6 +71,7 @@ const App: React.FC = () => {
           <Route path="ViewQuoteDetails" element={<ViewQuoteDetails />} /> 
           <Route path="ViewQuoteReport/:quoteNo/:versionNo/:enquiryNo" element={<ViewQuoteReport />} />
           <Route path="Feasibility/:enquiryno" element={<Feasibility />} />
+          <Route path="PlannedHours" element={<PlannedHours />} />
         </Route>
         {/* Password + Blank */}
         <Route path="/ResetPassword" element={<ResetPassword />} />

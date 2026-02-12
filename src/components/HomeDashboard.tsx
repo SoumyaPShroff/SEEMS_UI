@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import styled from "styled-components";
-import { FaUsers, FaLaptop, FaClipboardList, FaClock, FaTrash } from "react-icons/fa";
+import styled, { keyframes } from "styled-components";
+import { FaUsers, FaLaptop, FaClipboardList, FaClock, FaTrash, FaStar, FaRobot } from "react-icons/fa";
 import { baseUrl } from "../const/BaseUrl"
 import { useFavourites } from "./FavouritesContext";
-import type { SidebarItem } from "./SideBarData";
+import { actionCards } from "../const/DashboardActionCards";
 
 interface EmployeeProfile {
   iDno: string;
@@ -17,22 +17,21 @@ interface EmployeeProfile {
 /* ================= STYLES ================= */
 
 const ActionCard = styled.div<{ $isFavourite?: boolean; $gradient?: string }>`
-  width: 180px;
-  height: 140px;
-
+  width: 220px;
+  height: 80px;
   border-radius: 14px;
-  padding: 10px 12px; 
+  padding: 10px 12px;
   cursor: pointer;
   border: 1px solid #e5e7eb;
+  position: relative;
 
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
- 
+  align-items: center;
+  gap: 12px;
+
   background: ${({ $gradient }) => $gradient};
   box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 
-  cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
@@ -54,14 +53,14 @@ const Badge = styled.span`
 `;
 
 const CardIcon = styled.div`
- width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  font-size: 16px;
+  font-size: 15px;
   color: white;
 
   background: linear-gradient(135deg, #1e3a8a, #0ea5e9);
@@ -69,18 +68,26 @@ const CardIcon = styled.div`
 
   box-shadow: 0 4px 10px rgba(0,0,0,0.18);
 `;
- 
+
 const CardTitle = styled.h4<{ $isFavourite?: boolean }>`
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
-  margin-bottom: 6px;
+  margin: 0;
   color: ${({ $isFavourite }) => ($isFavourite ? "#422006" : "#1f2937")};
 `;
 
 const CardDesc = styled.p<{ $isFavourite?: boolean }>`
-  font-size: 14px;
-  line-height: 1.4;
+  font-size: 12px;
+  line-height: 1.25;
+  margin: 2px 0 0;
   color: ${({ $isFavourite }) => ($isFavourite ? "#78350f" : "#6b7280")};
+`;
+
+const CardBody = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
 `;
 
 const DashboardLayout = styled.div`
@@ -88,39 +95,14 @@ const DashboardLayout = styled.div`
   flex-direction: column;
   gap: 24px;
   padding: 40px;
-  margin-left : 200px;
+  margin-left:60px;
 
 `;
 
-// const FavouritesPanel = styled.div`
-//   background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%);
-//   border-radius: 18px;
-//   padding: 10px;
-//   align-self: start;                   /* height adjust automicatically*/
-//   display: flex;
-//   flex-direction: column;
-//   gap: 2px;
-//   width: 200px;
-//   margin-top: 10px;
-// `;
-
-const FavouritesPanel = styled.div`
-  // background: linear-gradient(
-  //   135deg,
-  //   #fff8dc 0%,     /* light champagne */
-  //   #f7d774 35%,    /* soft gold */
-  //   #e6b85c 65%,    /* classic gold */
-  //   #c9972b 100%    /* deep gold */
-  // );
-  background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%);
-  border-radius: 18px;
-  padding: 10px;
-  align-self: start;   /* height adjust automatically */
+const FavouritesSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  width: 200px;
-  margin-top: 10px;
+  gap: 10px;
 `;
 
 const FavouritesTitle = styled.h3`
@@ -135,33 +117,99 @@ const DefaultCardsGrid = styled.div`
   flex-wrap: wrap;
 `;
 
-const FavouriteLink = styled.div`
+const FavouritesCardsGrid = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+`;
 
-  font-size: 14px;
-  padding: 6px 4px;
-  border-bottom: 1px solid #fde68a;
+const FavouriteRemove = styled.button`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: none;
+  background: transparent;
+  color: #beb5b5;
+  padding: 4px;
   cursor: pointer;
 
-  color:  #1d4ed8; ;
-  font-weight: 500;
-
   &:hover {
-    color: rgb(43, 174, 23);
-    transform: translateX(4px);
+    color: #b45309;
   }
 `;
+
+/* ================= HELP BOT ================= */
+
+/* ================= HELP BOT INPUT ================= */
+
+const floatAnim = keyframes`
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+`;
+
+const HelpBotWrapper = styled.div`
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 999;
+`;
+
+const HelpBotBox = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  background: rgba(17,24,39,0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 999px;
+  padding: 8px 10px 8px 8px;
+
+  box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+`;
+
+const HelpBotIcon = styled.div`
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+  font-size: 20px;
+  cursor: default;
+
+  background: linear-gradient(135deg,#1e3a8a,#0ea5e9);
+  animation: ${floatAnim} 3s ease-in-out infinite;
+`;
+
+const HelpBotInput = styled.input`
+  border: none;
+  outline: none;
+  background: transparent;
+  color: white;
+
+  width: 220px;
+  font-size: 13px;
+
+  &::placeholder {
+    color: #9ca3af;
+  }
+`;
+
+
 /* ================= COMPONENT ================= */
 
 const HomeDashboard = () => {
-  const navigate = useNavigate();
   const [profile, setProfile] = useState<EmployeeProfile | null>(null);
   //addFavourite
   const { favouriteLinks, removeFavourite } = useFavourites();
   // const menu = useSideBarData();
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
+  const [helpText, setHelpText] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -178,18 +226,6 @@ const HomeDashboard = () => {
     fetchProfile();
   }, [loginId]);
 
-  const flattenMenu = (items: SidebarItem[]): SidebarItem[] => {
-    return items.reduce((acc, item) => {
-      if (item.pageId && item.route) {
-        acc.push(item);
-      }
-      if (item.subNav) {
-        acc.push(...flattenMenu(item.subNav));
-      }
-      return acc;
-    }, [] as SidebarItem[]);
-  };
-
   const handleRemoveFavourite = async (e: React.MouseEvent, pageId: number) => {
     e.stopPropagation(); // Prevent card navigation
     try {
@@ -204,53 +240,68 @@ const HomeDashboard = () => {
       {/* ===== Action Cards ===== */}
       <DashboardLayout>
         <DefaultCardsGrid>
-          {/* My Team */}
-          <ActionCard onClick={() => navigate("/Home/ComingSoon")} $gradient="linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)">
-            <Badge>{profile?.reporteeCount ?? 0} Members</Badge>
-            <CardIcon><FaUsers /></CardIcon>
-            <CardTitle>My Team</CardTitle>
-            <CardDesc>View your team members and details</CardDesc>
-          </ActionCard>
+          {actionCards.map(card => {
+            const badge =
+              card.key === "team"
+                ? `${profile?.reporteeCount ?? 0} Members`
+                : undefined;
 
-          <ActionCard onClick={() => navigate("/Home/ComingSoon")} $gradient="linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)">
-            <CardIcon><FaLaptop /></CardIcon>
-            <CardTitle>Raise IT Request</CardTitle>
-            <CardDesc>Request IT support or assets</CardDesc>
-          </ActionCard>
-
-          <ActionCard onClick={() => navigate("/Home/ComingSoon")} $gradient="linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%)">
-            <CardIcon><FaClipboardList /></CardIcon>
-            <CardTitle>Raise SEEMS Request</CardTitle>
-            <CardDesc>Submit SEEMS related requests</CardDesc>
-          </ActionCard>
-
-          <ActionCard onClick={() => navigate("/Home/ComingSoon")} $gradient="linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)">
-            <CardIcon><FaClock /></CardIcon>
-            <CardTitle>My Timesheet</CardTitle>
-            <CardDesc>Fill and manage your timesheet</CardDesc>
-          </ActionCard>
-
-          {/* Other default cards */}
+            return (
+              <ActionCard
+                key={card.key}
+                onClick={() => navigate(card.route)}
+                $gradient={card.gradient}
+              >
+                {badge && <Badge>{badge}</Badge>}
+                <CardIcon>{card.icon}</CardIcon>
+                <CardBody>
+                  <CardTitle>{card.title}</CardTitle>
+                  <CardDesc>{card.desc}</CardDesc>
+                </CardBody>
+              </ActionCard>
+            );
+          })}
         </DefaultCardsGrid>
-        {/* ⭐ FAVOURITES */}
-        <FavouritesPanel>
-          <FavouritesTitle>⭐ My Favourites</FavouritesTitle>
-
-          {favouriteLinks.map(fav => (
-            <FavouriteLink
-              key={fav.pageid}
-              onClick={() => navigate(`/Home/${fav.route}`)}
-            >
-              <span>• {fav.pagename}</span>
-
-              <FaTrash
-                onClick={(e) => handleRemoveFavourite(e, fav.pageid)}
-                style={{ fontSize: "12px", color: "#d18484" }}
-              />
-            </FavouriteLink>
-          ))}
-        </FavouritesPanel>
+        {/* FAVOURITES */}
+        <FavouritesSection>
+          <FavouritesTitle>My Favourites</FavouritesTitle>
+          <FavouritesCardsGrid>
+            {favouriteLinks.map(fav => (
+              <ActionCard
+                key={fav.pageid}
+                onClick={() => navigate(`/Home/${fav.route}`)}
+                //80deea
+                $gradient="linear-gradient(135deg,  #whitemoon 0%, #163033 100%)"
+              >
+                <FavouriteRemove
+                  onClick={(e) => handleRemoveFavourite(e, fav.pageid)}
+                  aria-label={`Remove ${fav.pagename} from favourites`}
+                >
+                  <FaTrash />
+                </FavouriteRemove>
+                <CardIcon><FaStar color="#f59e0b" /></CardIcon>
+                <CardBody>
+                  <CardTitle>{fav.pagename}</CardTitle>
+                  <CardDesc>Open favourite page</CardDesc>
+                </CardBody>
+              </ActionCard>
+            ))}
+          </FavouritesCardsGrid>
+        </FavouritesSection>
       </DashboardLayout>
+      <HelpBotWrapper>
+        <HelpBotBox>
+          <HelpBotIcon>
+            <FaRobot />
+          </HelpBotIcon>
+
+          <HelpBotInput
+            value={helpText}
+            onChange={(e) => setHelpText(e.target.value)}
+            placeholder="Ask me anything..."
+          />
+        </HelpBotBox>
+      </HelpBotWrapper>
     </>
   );
 };

@@ -30,41 +30,29 @@ export default function ViewEnquiryReport() {
         { field: "cancelledremarks", headerName: "cancelledremarks", width: 200 },
     ];
 
-    // const checkAccess = async () => {
-    //     try {
-    //         // Step 1: Get user role
-    //         const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
-    //         const userRole = userRoleRes.data;
-
-    //         // Step 2: Verify internal rights
-    //         const roleCheck = await axios.get<boolean>(
-    //             `${baseUrl}/UserRoleInternalRights/${userRole}/ViewEnquiryReport`
-    //         );
-
-    //         // Step 3: If not authorized, redirect
-    //         if (!roleCheck.data) {
-    //             navigate("/blank");
-    //         }
-    //     } catch (error) {
-    //         console.error("Error checking role:", error);
-    //         navigate("/blank");
-    //     }
-    // };
-
     const fetchData = async () => {
         setLoading(true);
         try {
+
+            // // Step 1: Get user role
+            // const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
+            // const userRole = userRoleRes.data;
+
+            // // Step 2: Get whether user has complete access
+            // const roleCheck = await axios.get<boolean>(
+            //     `${baseUrl}/UserRoleInternalRights/${userRole}/ViewEnquiryReport`
+            // );
+            // const roleFlag = roleCheck.data === true;
+            // sethasSpecialRole(roleFlag); // ✅ store in state
+
             let url = `${baseUrl}/api/Sales/RptViewEnquiryData/${startDate}/${endDate}`;
-
-            // // Pass only if both dates are selected
-            // if (startDate && endDate) {
-            //     url += `?startdate=${startDate}&enddate=${endDate}`;
-            // }
-
             const response = await axios.get(url);
-            //const data = response.data;
             const data = response.data as any[];
 
+            // If user does NOT have complete rights → include their ID
+            // if (!roleFlag) {
+            //     url += `?salesResponsibilityId=${loginId}`;
+            // }     
             const mapped = data.map((item: any, index: number) => ({
                 id: index + 1,
                 ...item,
@@ -87,13 +75,6 @@ export default function ViewEnquiryReport() {
         exporttoexcel(rows, "View Enquiry Report", "View Enquiry Report.xlsx");
         toast.success("✅ View Enquiry Report exported!", { position: "bottom-right" });
     };
-
-
-    //     useEffect(() => {
-    //        // checkAccess();
-    //         fetchData();
-    //    // }, [navigate, baseUrl, loginId]);
-    //        }, []);
 
     return (
         <Box sx={{ padding: "100px", mt: "30px", ml: "20px" }}>

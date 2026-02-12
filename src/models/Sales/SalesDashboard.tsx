@@ -28,12 +28,12 @@ const SalesDashboard: React.FC = () => {
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
   const hasCategoryData =  openOrders.length > 0 ||  tentativeOrders.length > 0 ||  confirmedOrders.length > 0 ||  quotedOrders.length > 0;
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
-const toggleRow = (key: string) => {
-  setExpandedRows(prev => ({
-    ...prev,
-    [key]: !prev[key],
-  }));
-};
+  const toggleRow = (key: string) => {
+    setExpandedRows(prev => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
 
   useEffect(() => {
     const checkAccess = async () => {

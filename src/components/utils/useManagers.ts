@@ -25,19 +25,6 @@ export const useManagers = (loginId: string, pageName: string) => {
       const hasSpecialRole = roleCheck.data === true;
 
       if (!hasSpecialRole) {
-        // Step 3: Get cost center from user session or API
-        // const costCenterRes = await axios.get<CostCenterInfo[]>(`${baseUrl}/ManagerCostcenterInfo/${loginId}`);
-        // const userCostCenterInfo = costCenterRes.data?.[0];
-        // if (userCostCenterInfo) {
-        //   // Step 4: Set dropdown to user's cost center only
-        //   setManagers([
-        //     {
-        //       hopc1id: userCostCenterInfo.hopc1id,
-        //       hopc1name: userCostCenterInfo.hopc1name,
-        //       costcenter: userCostCenterInfo.costcenter,
-        //     }
-        //   ]);
-
          // fill mutliple cost centers for same user (eg. managers with multiple cost centers)
         const costCenterRes = await axios.get<CostCenterInfo[]>(
           `${baseUrl}/ManagerCostcenterInfo/${loginId}`

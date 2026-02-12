@@ -13,14 +13,18 @@ type Props = {
 export default function ReleaseNotes({ notes = [] }: Props) {
   const styles = {
     container: {
-      maxWidth: "700px",
-      margin: "30px auto",
-      padding: "20px",
+      padding: "10px",
+      boxSizing: "border-box",
       fontFamily: "system-ui, Arial",
+      overflowX: "hidden",
+      width: "100%",
+      height: "100%",
     } as React.CSSProperties,
 
     headerTitle: {
       marginBottom: "4px",
+      color: "#2ea8d1",
+      fontWeight: 600
     } as React.CSSProperties,
 
     headerDesc: {
@@ -29,29 +33,31 @@ export default function ReleaseNotes({ notes = [] }: Props) {
     } as React.CSSProperties,
 
     list: {
-      marginTop: "20px",
       display: "flex",
-      flexDirection: "column",
-      gap: "16px",
+      flexDirection: "row",
     } as React.CSSProperties,
 
     card: {
-      background: "#ffffff",
+      background: "rgba(31,42,55,0.95)",
       borderRadius: "10px",
-      padding: "16px 18px",
+      padding: "15px 8px",
       border: "1px solid #e6e6e6",
       boxShadow: "0 3px 8px rgba(0,0,0,0.05)",
+      width: "100%",
+      height: "100%",
     } as React.CSSProperties,
 
     topRow: {
       display: "flex",
       justifyContent: "space-between",
       marginBottom: "8px",
+      flexWrap: "wrap",
+      gap: "8px",
     } as React.CSSProperties,
 
     version: {
       fontWeight: 600,
-      color: "#1f3c88",
+      color: "#2ea8d1",
     } as React.CSSProperties,
 
     date: {
@@ -62,10 +68,13 @@ export default function ReleaseNotes({ notes = [] }: Props) {
     changes: {
       paddingLeft: "18px",
       margin: 0,
+      overflowWrap: "anywhere",
     } as React.CSSProperties,
 
     changeItem: {
       margin: "6px 0",
+      wordBreak: "break-word",
+      whiteSpace: "normal",
     } as React.CSSProperties,
   };
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSideBarData } from "./SideBarData";
@@ -10,10 +10,11 @@ import { baseUrl } from "../const/BaseUrl";
 import logo from "../const/Images/Sienna-Ecad-logo.jpg";
 import { motion } from "framer-motion";
 import { FaBars, FaTimes, FaStar, FaRegStar, FaUserCircle, FaBell } from "react-icons/fa";
-import homeIcon from "../const/Images/Home.jpg";
+import { RiHome2Line } from "react-icons/ri";
 import { useFavourites } from "./FavouritesContext";
 import MyProfileBanner from "./MyProfileBanner";
 import ReleaseNotesText from "./../components/ReleaseNotesText";
+import ReleaseNotes from "./ReleaseNotes";
 
 // import Breadcrumbs from "./Breadcrumbs";
 
@@ -31,11 +32,11 @@ interface SidebarProps {
    THEME (Screenshot-matched)
 ====================================================== */
 export const theme = {
-  sidebarBg: "linear-gradient(to bottom, #23458dff, #4fb695ff)",
-  sidebarHover: "#3f6ad8",
-  sidebarActive: "#6f675f",
-  textPrimary: "#ffffff",
-  textMuted: "#cfd8dc",
+  sidebarBg: "linear-gradient(to bottom, #1f2a37, #233244)",
+  sidebarHover: "#243447",
+  sidebarActive: "#2e4760",
+  textPrimary: "#f8fafc",
+  textMuted: "#c7d2da",
 };
 
 /* ======================================================
@@ -50,14 +51,14 @@ const Nav = styled.div`
   top: 0;
   width: 100%;
   z-index: 1000;
-  background: linear-gradient(to right, #23458dff, #4fb695ff);
+  background: linear-gradient(to right, #1f2a37, #2a3a4d);
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.25);
 `;
 const HeaderCenter = styled.div`
   display: flex;
   align-items: center;
   gap: 20px;
-   margin-left: 240px;
+   margin-left: 260px;
   overflow: hidden;
 `;
 
@@ -96,15 +97,15 @@ const RightCorner = styled.div`
     padding-right: 20px;
   white-space: nowrap;
   flex-shrink: 0;      /* IMPORTANT */
-  color: #2c3e50;
+  color: #e2e8f0;
 
   a {
-    color: #2c3e50;
+    color: #e2e8f0;
     text-decoration: none;
     font-weight: 500;
 
     &:hover {
-      color: #1b2631;
+      color: #ffffff;
     }
   }
 `;
@@ -120,12 +121,27 @@ const NotificationBadge = styled.span`
   border: 1px solid white;
 `;
 
+const ReleaseNotesPopover = styled.div`
+  position: absolute;
+  top: 78px;
+  right: 0;
+  width: 520px;
+  max-height: 70vh;
+  overflow: auto;
+  overflow-x: hidden;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  z-index: 1100;
+`;
+
 const SideNav = styled.aside<{ $collapsed: boolean; $mobile: boolean }>`
   position: fixed;
   top: 80px;
   left: 1;
   height: calc(100vh - 80px);
-  width: ${({ $collapsed }) => ($collapsed ? "72px" : "240px")};
+  width: ${({ $collapsed }) => ($collapsed ? "72px" : "260px")};
   background: ${theme.sidebarBg};
   overflow-x: hidden;
   transition: all 0.25s ease;
@@ -135,7 +151,7 @@ const SideNav = styled.aside<{ $collapsed: boolean; $mobile: boolean }>`
   ${({ $mobile, $collapsed }) =>
     $mobile &&
     `
-    width: 240px;
+    width: 260px;
     transform: ${$collapsed ? "translateX(-100%)" : "translateX(0)"};
   `}
 `;
@@ -152,10 +168,12 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, 
   const [userName, setUserName] = useState("");
   const [hasNewReleases, setHasNewReleases] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showReleaseNotes, setShowReleaseNotes] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const menu = useSideBarData();
   const isMobile = window.innerWidth < 768;
+  const releasePopoverRef = useRef<HTMLDivElement | null>(null);
 
   const LATEST_RELEASE_VERSION = ReleaseNotesText[0].version;
   const LAST_SEEN_VERSION_KEY = 'lastSeenReleaseVersion';
@@ -226,8 +244,25 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, 
   const handleReleaseNotesClick = () => {
     localStorage.setItem(LAST_SEEN_VERSION_KEY, LATEST_RELEASE_VERSION);
     setHasNewReleases(false);
-    navigate("/Home/ReleaseNotesText");
+    setShowReleaseNotes(prev => !prev);
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (releasePopoverRef.current && !releasePopoverRef.current.contains(target)) {
+        setShowReleaseNotes(false);
+      }
+    };
+
+    if (showReleaseNotes) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showReleaseNotes]);
 
   /* ======================================================
      RENDER
@@ -251,12 +286,13 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, 
             {collapsed ? <FaBars /> : <FaTimes />}
           </motion.div>
 
-          <motion.img
-            src={homeIcon}          // import homeIcon from "..."
-            alt="Home"
-            style={{ width: 22, height: 22 }}
+          <motion.span
+            role="button"
+            tabIndex={0}
+            aria-label="Home"
+            style={{ width: 22, height: 22, display: "inline-flex", alignItems: "center", justifyContent: "center" }}
             onClick={e => {
-              e.stopPropagation();     // 👈 prevents sidebar toggle
+              e.stopPropagation();     // prevents sidebar toggle
               navigate("/");
             }}
             onKeyDown={e => {
@@ -265,10 +301,11 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, 
                 navigate("/");
               }
             }}
-          />
+          >
+            <RiHome2Line />
+          </motion.span>
         </NavIcon>
         <HeaderCenter >
-          <Logo src={logo} alt="logo" />
           <h1 style={{ color: "white", fontSize: "30px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             Welcome to Sienna ECAD Enterprise Management System
           </h1>
@@ -284,14 +321,21 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, 
               {isActiveFav ? <FaStar color="#FFD700" /> : <FaRegStar color="#ffffff" />}
             </span>
           )}
-          <span
-            onClick={handleReleaseNotesClick}
-            style={{ position: 'relative', cursor: "pointer", marginRight: "15px", fontSize: "1.2rem", display: "flex", alignItems: "center" }}
-            title="New Releases"
-          >
-            <FaBell color="#ffffff" />
-            {hasNewReleases && <NotificationBadge />}
-          </span>
+          <div ref={releasePopoverRef} style={{ position: "relative", display: "flex", alignItems: "center" }}>
+            <span
+              onClick={handleReleaseNotesClick}
+              style={{ position: 'relative', cursor: "pointer", marginRight: "15px", fontSize: "1.2rem", display: "flex", alignItems: "center" }}
+              title="New Releases"
+            >
+              <FaBell color="#ffffff" />
+              {hasNewReleases && <NotificationBadge />}
+            </span>
+            {showReleaseNotes && (
+              <ReleaseNotesPopover>
+                <ReleaseNotes notes={ReleaseNotesText} />
+              </ReleaseNotesPopover>
+            )}
+          </div>
           <span
             onClick={() => setShowProfile(!showProfile)}
             style={{ cursor: "pointer", marginRight: "8px", fontSize: "1.5rem", display: "flex", alignItems: "center" }}
@@ -325,3 +369,4 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, 
 };
 
 export default Sidebar;
+

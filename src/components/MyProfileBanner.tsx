@@ -18,8 +18,8 @@ const FlashWrapper = styled(motion.div)`
 
   background: linear-gradient(
     135deg,
-    rgba(35,69,141,0.95),
-    rgba(79,182,149,0.95)
+    rgba(31,42,55,0.95),
+    rgba(42,58,77,0.95)
   );
 
   color: #ffffff;
@@ -30,11 +30,17 @@ const FlashWrapper = styled(motion.div)`
   box-shadow:
     0 20px 40px rgba(0,0,0,0.35),
     inset 0 0 0 1px rgba(255,255,255,0.15);
+
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 `;
 const Detail = styled.div`
   font-size: 15px;
-  opacity: 0.9;
+  opacity: 1;
   margin-top: 4px;
+  font-weight: 500;
 `;
 
 const Divider = styled.div`

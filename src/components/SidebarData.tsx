@@ -6,7 +6,7 @@ import { baseUrl } from "../const/BaseUrl";
 export interface SidebarItem {
   title: string;
   path?: string;
-  icon?: string;
+  icon?: React.ReactNode;
   iconOpened?: React.ReactNode;
   iconClosed?: React.ReactNode;
   subNav?: SidebarItem[];
@@ -34,7 +34,7 @@ export const useSideBarData = () => {
           if (!main) {
             main = {
              title: item.mainmenu,
-              icon:  item.menuimage,
+              icon: resolveMenuIcon(item.mainmenu, item.route, item.menuimage),
               iconClosed: <RiIcons.RiArrowDownSFill />,
               iconOpened: <RiIcons.RiArrowUpSFill />,
               subNav: [],
@@ -47,7 +47,7 @@ export const useSideBarData = () => {
           if (!sub) {
             sub = {
               title: item.submenu,
-              icon:  item.subimage,
+              icon: resolveMenuIcon(item.submenu, item.route, item.subimage),
               iconClosed: <RiIcons.RiArrowDownSFill />,
               iconOpened: <RiIcons.RiArrowUpSFill />,
               subNav: [],
@@ -59,7 +59,7 @@ export const useSideBarData = () => {
           sub.subNav?.push({
             title: item.pagename, //display menu name
             path: item.route ? `/Home/${item.route}` : "#", //default using /Home/
-            icon:   item.pageimage,
+            icon: resolveMenuIcon(item.pagename, item.route, item.pageimage),
             route: item.route,
             pageId: item.pageid,
           });
@@ -75,4 +75,25 @@ export const useSideBarData = () => {
   }, []);
 
   return menu;
+};
+
+const resolveMenuIcon = (title: string, route?: string, image?: string) => {
+  const text = `${title} ${route ?? ""} ${image ?? ""}`.toLowerCase();
+
+  if (text.includes("dashboard")) return <RiIcons.RiDashboardLine />;
+  if (text.includes("home")) return <RiIcons.RiHome2Line />;
+  if (text.includes("sales")) return <RiIcons.RiBriefcaseLine />;
+  if (text.includes("report")) return <RiIcons.RiFileChartLine />;
+  if (text.includes("billing") || text.includes("finance")) return <RiIcons.RiMoneyDollarCircleLine />;
+  if (text.includes("quotation") || text.includes("quote")) return <RiIcons.RiFileTextLine />;
+  if (text.includes("enquiry") || text.includes("inquiry")) return <RiIcons.RiSearchLine />;
+  if (text.includes("project")) return <RiIcons.RiFolder2Line />;
+  if (text.includes("team")) return <RiIcons.RiTeamLine />;
+  if (text.includes("profile") || text.includes("user")) return <RiIcons.RiUser3Line />;
+  if (text.includes("support") || text.includes("help")) return <RiIcons.RiCustomerService2Line />;
+  if (text.includes("settings")) return <RiIcons.RiSettings3Line />;
+  if (text.includes("calendar")) return <RiIcons.RiCalendar2Line />;
+  if (text.includes("favourite") || text.includes("favorite")) return <RiIcons.RiStarLine />;
+
+  return <RiIcons.RiPieChartLine />;
 };
