@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Box, Card, CardContent, Typography, TextField, FormControlLabel, RadioGroup, Radio, Button } from "@mui/material";
+import { Box, Card, CardContent, Typography, TextField, Button } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import SelectControl from "../../components/resusablecontrols/SelectControl";
+import Label from "../../components/resusablecontrols/Label";
+import TextControl from "../../components/resusablecontrols/TextControl";
+import CompactRadioGroup from "../../components/resusablecontrols/CompactRadioGroup";
 import { baseUrl } from "../../const/BaseUrl";
 import { ToastContainer, toast } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
@@ -66,6 +69,17 @@ const OnsiteEnquiry: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
   const loginUser = sessionStorage.getItem("SessionUserName") || "guest";
+  const standardInputStyle: React.CSSProperties = {
+    width: "100%",
+    height: 34,
+    border: "1px solid #cfd8e3",
+    borderRadius: 6,
+    padding: "0 10px",
+    fontSize: 13,
+    boxSizing: "border-box",
+    backgroundColor: "#fff",
+    marginTop: 2,
+  };
 
   const [form, setForm] = useState<EnquiryForm>({
     enquirytype: "ONSITE",
@@ -566,253 +580,337 @@ fd.append(
   /* ---------------- UI ---------------- */
 
   return (
-    <Box sx={{ maxWidth: 1100, margin: "0 auto", mt: 0.5, px: { xs: 2, md: 0 } }}>
-      <Card sx={{ width: "100%", m: "auto", mt: 3, p: 4, borderRadius: 3, boxShadow: "0px 4px 20px #6594b3ff" }}>
-        <CardContent>
-          <Typography variant="h5" textAlign="center" mb={3} color="#1565c0" fontWeight="700">
+    <Box
+      sx={{
+        maxWidth: 850,
+        width: "100%",
+        mx: "auto",
+        mt: isEditMode ? 18 : 0.9,
+        px: { xs: 2, md: 0 },
+        fontFamily: "Arial",
+      }}
+    >
+      <Card
+        sx={{
+          width: "100%",
+          m: "auto",
+          mt: 1.25,
+          borderRadius: 3,
+          border: "1px solid #d8e5ff",
+          boxShadow: "0 10px 24px rgba(45, 82, 150, 0.12)",
+          background: "linear-gradient(180deg, #f9fbff 0%, #f3f7ff 100%)",
+          "& .MuiTypography-root, & .MuiInputBase-input, & .MuiFormControlLabel-label, & .MuiInputLabel-root": {
+            fontFamily: "Arial",
+          },
+        }}
+      >
+        <CardContent sx={{ p: { xs: 1.75, md: 2.5 } }}>
+          <Typography
+            variant="h5"
+            sx={{ textAlign: "center", mb: 2, fontWeight: 700, color: "#0f4ea6", letterSpacing: "0.01em", fontSize: { xs: "1.05rem", md: "1.22rem" } }}
+          >
             {isEditMode ? "Edit ONSITE Enquiry" : "Add ONSITE Enquiry"}
           </Typography>
 
-          <Box display="grid" gridTemplateColumns="repeat(12,1fr)" gap={2}>
-            {/* Radio Groups */}
-            <Box gridColumn="span 3">
-              <Typography>Tool License</Typography>
-              <RadioGroup row sx={{
-                justifyContent: "space-evenly", border: "1px solid #ccc", borderRadius: "8px", padding: "6px", height: "40px",
-              }}
-                name="toolLicense"
-                value={form.toolLicense}
-                onChange={handleChange}
-              >
-                <FormControlLabel value="1" control={<Radio />} label="With" />
-                <FormControlLabel value="2" control={<Radio />} label="Without" />
-              </RadioGroup>
+          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", md: "repeat(12, 1fr)" }, gap: 1.5, alignItems: "start" }}>
+            <Box sx={{ gridColumn: "1 / -1" }}>
+              <Card sx={{ borderRadius: 2, border: "1px solid #d5e1f8", boxShadow: "0 6px 14px rgba(33, 75, 149, 0.08)", background: "#ffffff" }}>
+                <CardContent sx={{ p: { xs: 1.5, md: 1.8 } }}>
+                  <Typography sx={{ fontSize: 13, fontWeight: 700, color: "#214b95", mb: 1.1 }}>CUSTOMER DETAILS</Typography>
+                  <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" }, columnGap: 1.5, rowGap: 2, alignItems: "start" }}>
+                    <Box>
+                      <SelectControl
+                        name="customerId"
+                        label="Customer"
+                        value={form.customerId}
+                        options={lookups.customers.map((c: any) => ({ value: String(c.itemno).trim(), label: c.customer }))}
+                        onChange={handleChange}
+                        required
+                      //  height={34}
+                      />
+                    </Box>
+                    <Box>
+                      <SelectControl
+                        name="locationId"
+                        label="Location"
+                        value={form.locationId}
+                        options={lookups.Locations.map((l: any) => ({ value: l.location_id.toString(), label: l.location }))}
+                        onChange={handleChange}
+                        required
+                       // height={34}
+                      />
+                    </Box>
+                    <Box>
+                      <SelectControl
+                        name="state"
+                        label="State"
+                        value={form.state}
+                        options={lookups.States.map((s: any) => ({ value: s.state, label: s.state }))}
+                        onChange={handleChange}
+                        required
+                     //   height={34}
+                      />
+                    </Box>
+                    <Box>
+                      <SelectControl
+                        name="contactName"
+                        label="Contact Name"
+                        value={form.contactName}
+                        options={lookups.Contacts.map((c: any) => ({ value: c.contact_id.toString(), label: c.contactName }))}
+                        onChange={handleChange}
+                        required
+                      //  height={34}
+                      />
+                    </Box>
+                    <Box>
+                      <Label text="Email Address" />
+                      <TextControl name="emailAddress" value={form.email11 || ""} onChange={() => { }} disabled={true} style={standardInputStyle} />
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
             </Box>
 
-            <Box gridColumn="span 4">
-              <Typography>Logistics</Typography>
-              <RadioGroup row sx={{ justifyContent: "space-evenly", height: "40px", border: "1px solid #ccc", borderRadius: "8px", padding: "6px", }} name="logistics" value={form.logistics} onChange={handleChange}>
-                <FormControlLabel value="1" control={<Radio />} label="Customer" />
-                <FormControlLabel value="2" control={<Radio />} label="Sienna ECAD" />
-              </RadioGroup>
+            <Box sx={{ gridColumn: "1 / -1" }}>
+              <Card sx={{ borderRadius: 2, border: "1px solid #d5e1f8", boxShadow: "0 6px 14px rgba(33, 75, 149, 0.08)", background: "#ffffff" }}>
+                <CardContent sx={{ p: { xs: 1.5, md: 1.8 } }}>
+                  <Typography sx={{ fontSize: 13, fontWeight: 700, color: "#214b95", mb: 1.1 }}>ENQUIRY DETAILS</Typography>
+                  <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" }, columnGap: 1.5, rowGap: 1.5, alignItems: "start" }}>
+                    <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" }, columnGap: 1.5, rowGap: 1.8 }}>
+                      <Box>
+                        <Label text="Board Ref" />
+                        <TextControl
+                          name="jobnames"
+                          value={form.jobnames || ""}
+                          onChange={handleChange}
+                          style={standardInputStyle}
+                        />
+                      </Box>
+                      <Box>
+                        <SelectControl
+                          name="toolId"
+                          label="Tool Name"
+                          value={form.toolId || ""}
+                          onChange={(e) => {
+                            handleChange(e);
+                            const selectedOption = lookups.StageTools.find(
+                              (t: any) => t.idno.toString() === e.target.value
+                            );
+                            setForm((prev) => ({
+                              ...prev,
+                              tool: selectedOption?.tools || ""
+                            }));
+                          }}
+                          options={lookups.StageTools.map((t: any) => ({
+                            value: t.idno.toString(),
+                            label: t.tools,
+                          }))}
+                          required
+                    //      height={34}
+                        />
+                      </Box>
+                      <Box>
+                        <SelectControl
+                          name="taskId"
+                          label="Task"
+                          value={form.taskId || ""}
+                          onChange={handleChange}
+                          options={lookups.HOPCTasks.map((t: any) => ({
+                            value: t.itemnumber.toString(),
+                            label: t.tasktype,
+                          }))}
+                          required
+                        //  height={34}
+                        />
+                      </Box>
+                      <Box>
+                        <SelectControl
+                          name="tm"
+                          label="Enquiry Billing Type"
+                          value={form.tm || ""}
+                          onChange={handleChange}
+                          options={[
+                            { value: "Fixed-Cost", label: "Fixed-Cost" },
+                            { value: "Time and Material", label: "Time and Material" },
+                            { value: "Fixed_Monthly Billing", label: "Fixed_Monthly Billing" },
+                          ]}
+                          required
+                       //   height={34}
+                        />
+                      </Box>
+                      <Box>
+                        <TextField label="Experience From" name="expFrom" value={form.expFrom} onChange={handleNumericChange} required size="small" />
+                      </Box>
+                      <Box>
+                        <TextField label="To" name="expTo" value={form.expTo} onChange={handleNumericChange} required size="small" />
+                      </Box>
+                      <Box>
+                        <TextField label="No of Resources" type="number" name="noOfResources" value={form.noOfResources}
+                          onChange={handleChange} required size="small" />
+                      </Box>
+                      <Box>
+                        <TextField type="date" label="Profile Request Last Date"
+                          name="profReqLastDate"
+                          value={form.profReqLastDate}
+                          onChange={handleChange} InputLabelProps={{ shrink: true }}
+                          size="small"
+                          required
+                        />
+                      </Box>
+                      <Box>
+                        <TextField type="date" label="Tentative Start Date"
+                          name="tentStartDate"
+                          value={form.tentStartDate || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setForm((p) => ({ ...p, tentStartDate: value }));
+                          }} InputLabelProps={{ shrink: true }}
+                          size="small"
+                          required />
+                      </Box>
+                      <Box>
+                        <SelectControl
+                          name="inputreceivedthru"
+                          label="Input Received Thru"
+                          value={form.inputreceivedthru || ""}
+                          onChange={handleChange}
+                          options={[
+                            { value: "Email", label: "Email" },
+                            { value: "FTP", label: "FTP" },
+                            { value: "Other", label: "Other" },
+                          ]}
+                          required
+                        //  height={34}
+                        />
+                      </Box>
+                    </Box>
+
+                    <Box sx={{ display: "grid", gridTemplateColumns: "1fr", rowGap: 1.2 }}>
+                      <Box>
+                        <Label text="Tool License" />
+                        <CompactRadioGroup
+                          name="toolLicense"
+                          value={form.toolLicense}
+                          onChange={handleChange}
+                          options={[{ value: "1", label: "With" }, { value: "2", label: "Without" }]}
+                       //   height={34}
+                        />
+                      </Box>
+                      <Box>
+                        <Label text="Logistics" />
+                        <CompactRadioGroup
+                          name="logistics"
+                          value={form.logistics}
+                          onChange={handleChange}
+                          options={[{ value: "1", label: "Customer" }, { value: "2", label: "Sienna ECAD" }]}
+                       //   height={34}
+                        />
+                      </Box>
+                      <Box>
+                        <Label text="Type" />
+                        <CompactRadioGroup
+                          name="type"
+                          value={form.type}
+                          onChange={handleChange}
+                          options={[{ value: "Export", label: "Export" }, { value: "Domestic", label: "Domestic" }]}
+                         // height={34}
+                        />
+                      </Box>
+                      <Box sx={{ display: "grid", gridTemplateColumns: "1fr 110px", gap: 1, alignItems: "start" }}>
+                        <Box>
+                          <Label text="Onsite Duration" />
+                          <CompactRadioGroup
+                            name="onsiteDurationType"
+                            value={form.onsiteDurationType}
+                            onChange={handleChange}
+                            options={[{ value: "1", label: "Days" }, { value: "2", label: "Months" }]}
+                          //  height={34}
+                          />
+                        </Box>
+                        <TextField type="number" size="small" sx={{ width: 92 }} onChange={handleTwoDigitNumber} name="onsiteDuration"
+                          label={form.onsiteDurationType === "1" ? "In Days" : "In Months"}
+                          value={form.onsiteDuration}
+                          required />
+                      </Box>
+                      <Box sx={{ display: "grid", gridTemplateColumns: "1fr 110px", gap: 1, alignItems: "start" }}>
+                        <Box>
+                          <Label text="Currency" />
+                          <CompactRadioGroup
+                            name="hourlyRateType"
+                            value={form.hourlyRateType}
+                            onChange={handleChange}
+                            options={[{ value: "1", label: "INR" }, { value: "2", label: "USD" }, { value: "3", label: "EURO" }]}
+                         //   height={34}
+                          />
+                        </Box>
+                        <TextField size="small" sx={{ width:98 }} label="Hourly Rate" name="hourlyReate" onChange={handleHourlyRateChange} value={form.hourlyReate} InputLabelProps={{ shrink: true }} required />
+                      </Box>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
             </Box>
 
-            <Box gridColumn="span 4">
-              <Typography>Type</Typography>
-              <RadioGroup
-                row
-                sx={{ justifyContent: "space-evenly", border: "1px solid #ccc", borderRadius: "8px", padding: "6px", height: "40px", }}
-                value={form.type}
-              >
-                <FormControlLabel value="Export" control={<Radio />} label="Export" />
-                <FormControlLabel value="Domestic" control={<Radio />} label="Domestic" />
-              </RadioGroup>
-            </Box>
-
-            {/* Customer / Location / State / Contact */}
-            <Box gridColumn="span 3">
-              <SelectControl name="customerId" label="Customer" value={form.customerId}
-                options={lookups.customers.map((c: any) => ({ value: String(c.itemno).trim(), label: c.customer, }))}
-                onChange={handleChange} required height={40} />
-            </Box>
-
-            <Box gridColumn="span 3">
-              <SelectControl name="locationId" label="Location" value={form.locationId}
-                options={lookups.Locations.map((l: any) => ({ value: l.location_id.toString(), label: l.location }))}
-                onChange={handleChange} required height={40} />
-            </Box>
-
-            <Box gridColumn="span 3">
-              <SelectControl name="state" label="State" value={form.state}
-                options={lookups.States.map((s: any) => ({ value: s.state, label: s.state }))}
-                onChange={handleChange} required height={40} />
-            </Box>
-
-            <Box gridColumn="span 3">
-              <SelectControl name="contactName" label="Contact Name" value={form.contactName}
-                options={lookups.Contacts.map((c: any) => ({ value: c.contact_id.toString(), label: c.contactName }))}
-                onChange={handleChange} required height={40} />
-            </Box>
-
-            <Box gridColumn="span 3">
-              <TextField label="Email Address" value={form.email11} disabled fullWidth size="small" />
-            </Box>
-
-            <Box gridColumn="span 3">
-              <SelectControl
-                name="toolId"
-                label="Tool Name"
-                value={form.toolId || ""}
-                onChange={(e) => {
-                  handleChange(e); // keeps toolId updated
-                  // get selected text
-                  const selectedOption = lookups.StageTools.find(
-                    (t: any) => t.idno.toString() === e.target.value
-                  );
-                  // update form.tool with label
-                  setForm((prev) => ({
-                    ...prev,
-                    tool: selectedOption?.tools || ""
-                  }));
-                }}
-
-                options={lookups.StageTools.map((t: any) => ({
-                  value: t.idno.toString(),
-                  label: t.tools,
-                }))}
-                required
-                height={40}
-              />
-            </Box>
-
-            <Box gridColumn="span 3">
-              <SelectControl
-                name="taskId"
-                label="Task"
-                value={form.taskId || ""}
-                onChange={handleChange}
-                options={lookups.HOPCTasks.map((t: any) => ({
-                  value: t.itemnumber.toString(),
-                  label: t.tasktype,
-                }))}
-                required
-                height={40}
-              />
-            </Box>
-
-            {/* Experience */}
-            <Box gridColumn="span 2">
-              <TextField label="Experience From" name="expFrom" value={form.expFrom} onChange={handleNumericChange} required size="small" />
-            </Box>
-
-            <Box gridColumn="span 1">
-              <TextField label="To" name="expTo" value={form.expTo} onChange={handleNumericChange} required size="small" />
-            </Box>
-
-            <Box gridColumn="span 2">
-              <TextField label="No of Resources" type="number" name="noOfResources" value={form.noOfResources}
-                onChange={handleChange} required size="small" />
-            </Box>
-
-            {/* Profile req date Date */}
-            <Box gridColumn="span 2">
-              <TextField type="date" label="Profile Request Last Date"
-                name="profReqLastDate"
-                value={form.profReqLastDate}
-                onChange={handleChange} InputLabelProps={{ shrink: true }}
-                size="small"
-                required
-              />
-            </Box>
-
-            <Box gridColumn="span 2">
-              <TextField type="date" label="Tentative Start Date"
-                name="tentStartDate"
-                value={form.tentStartDate || ""}
-                onChange={(e) => {
-                  const value = e.target.value; // always yyyy-mm-dd from <input type="date">
-                  setForm((p) => ({ ...p, tentStartDate: value }));
-                }} InputLabelProps={{ shrink: true }}
-                size="small"
-                required />
-            </Box>
-
-            <Box gridColumn="span 3">
-              <SelectControl
-                name="tm"
-                label="Enquiry Billing Type"
-                value={form.tm || ""}
-                onChange={handleChange}
-                options={[
-                  { value: "Fixed-Cost", label: "Fixed-Cost" },
-                  { value: "Time and Material", label: "Time and Material" },
-                  { value: "Fixed_Monthly Billing", label: "Fixed_Monthly Billing" },
-                ]}
-                required
-                height={40}
-              />
-            </Box>
-
-            <Box gridColumn="span 5" display="flex" gap={2} alignItems="flex-end">
-              <Box flex={1}>
-                <Typography>Onsite Duration</Typography>
-                <RadioGroup row sx={{ justifyContent: "space-evenly", border: "1px solid #ccc", borderRadius: "8px", padding: "6px", }} name="onsiteDurationType" value={form.onsiteDurationType} onChange={handleChange}>
-                  <FormControlLabel value="1" control={<Radio />} label="Days" />
-                  <FormControlLabel value="2" control={<Radio />} label="Months" />
-                </RadioGroup>
-              </Box>
-              <Box width={110}>
-                <TextField type="number" size="small" onChange={handleTwoDigitNumber} name="onsiteDuration"
-                  label={form.onsiteDurationType === "1" ? "In Days" : "In Months"}
-                  value={form.onsiteDuration}
-                  required />
-              </Box>
-            </Box>
-
-            <Box gridColumn="span 5" display="flex" gap={2} alignItems="flex-end">
-              <Box flex={1}>
-                <Typography>Currency</Typography>
-                <RadioGroup row sx={{ justifyContent: "space-evenly", border: "1px solid #ccc", borderRadius: "8px", padding: "6px", }} name="hourlyRateType" value={form.hourlyRateType} onChange={handleChange}>
-                  <FormControlLabel value="1" control={<Radio />} label="INR" />
-                  <FormControlLabel value="2" control={<Radio />} label="USD" />
-                  <FormControlLabel value="3" control={<Radio />} label="EURO" />
-                </RadioGroup>
-              </Box>
-              <Box width={110}>
-                {/* value={form.hourlyReate}  */}
-                <TextField size="small" label="Hourly Rate" name="hourlyReate" onChange={handleHourlyRateChange} value={form.hourlyReate} InputLabelProps={{ shrink: true }} required />
-              </Box>
-            </Box>
-
-            <Box gridColumn="span 3">
-              <SelectControl name="salesresponsibilityid" label="Sales Responsibility"
-                value={form.salesresponsibilityid}
-                options={lookups.SalesManagers.map((e: any) => ({ value: e.id, label: e.name }))}
-                onChange={handleChange} required height={40} />
-            </Box>
-
-            <Box gridColumn="span 3">
-              <SelectControl name="completeresponsibilityid" label="Complete Responsibility"
-                value={form.completeresponsibilityid}
-                // options={allCompleteResp}
-                options={lookups.HOPCManagers.map((e: any) => ({ value: e.hopc1id, label: e.hopc1name }))}
-                onChange={handleChange} required height={40} />
-            </Box>
-
-            <Box gridColumn="span 3">
-              <SelectControl name="referenceBy" label="Reference By"
-                value={form.referenceBy}
-                options={lookups.AllActiveEmployees.map((e: any) => ({
-                  value: e.name,
-                  label: e.name,
-                }))}
-                onChange={handleChange} height={40} />
-            </Box>
-
-            {/* Remarks */}
-            <Box gridColumn="span 4">
-              <TextField label="Remarks" fullWidth size="small" name="remarks" value={form.remarks} onChange={handleChange} />
-            </Box>
-
-            {/* File Upload */}
-            <Box gridColumn="span 6" textAlign="center">
-              <Box onClick={() => document.getElementById("fileInput")?.click()}
-                sx={{ border: "2px dashed #90caf9", p: 2, cursor: "pointer" }}>
-                <CloudUploadIcon sx={{ fontSize: 40, color: "#2196f3" }} />
-                <Typography>{file
-                  ? file.name
-                  : isEditMode && form.uploadedfilename
-                    ? form.uploadedfilename
-                    : "Click or Drag a file to upload"}</Typography>
-                <input hidden id="fileInput" type="file" onChange={handleFileChange} />
-              </Box>
-            </Box>
-
-            {/* Submit */}
-            <Box gridColumn="span 2" textAlign="center" mt={3}>
-              <Button variant="contained" onClick={handleSubmit}>
-                {isEditMode ? "UPDATE" : "ADD"}
-              </Button>
+            <Box sx={{ gridColumn: "1 / -1" }}>
+              <Card sx={{ borderRadius: 2, border: "1px solid #d5e1f8", boxShadow: "0 6px 14px rgba(33, 75, 149, 0.08)", background: "#ffffff" }}>
+                <CardContent sx={{ p: { xs: 1.5, md: 1.8 } }}>
+                  <Typography sx={{ fontSize: 13, fontWeight: 700, color: "#214b95", mb: 1.1 }}>ASSIGNMENT & UPLOAD</Typography>
+                  <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" }, columnGap: 1.5, rowGap: 1.8, alignItems: "start" }}>
+                    <Box>
+                      <SelectControl name="salesresponsibilityid" label="Sales Responsibility"
+                        value={form.salesresponsibilityid}
+                        options={lookups.SalesManagers.map((e: any) => ({ value: e.id, label: e.name }))}
+                        onChange={handleChange}  />
+                    </Box>
+                    <Box>
+                      <SelectControl name="completeresponsibilityid" label="Complete Responsibility"
+                        value={form.completeresponsibilityid}
+                        options={lookups.HOPCManagers.map((e: any) => ({ value: e.hopc1id, label: e.hopc1name }))}
+                        onChange={handleChange}  />
+                    </Box>
+                    <Box>
+                      <SelectControl name="referenceBy" label="Reference By"
+                        value={form.referenceBy}
+                        options={lookups.AllActiveEmployees.map((e: any) => ({
+                          value: e.name,
+                          label: e.name,
+                        }))}
+                        onChange={handleChange}  />
+                    </Box>
+                    <Box>
+                      <TextField label="Remarks" fullWidth size="small" name="remarks" value={form.remarks} onChange={handleChange} />
+                    </Box>
+                    <Box>
+                      <Box onClick={() => document.getElementById("fileInput")?.click()}
+                        sx={{
+                          border: "2px dashed #9ebcf0",
+                          borderRadius: 2,
+                          p: 1.8,
+                          textAlign: "center",
+                          bgcolor: "#f5f9ff",
+                          cursor: "pointer",
+                          minHeight: 96,
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "center",
+                        }}>
+                        <CloudUploadIcon sx={{ fontSize: 28, color: "#2196f3", alignSelf: "center" }} />
+                        <Typography variant="caption" sx={{ mt: 0.6 }}>{file
+                          ? file.name
+                          : isEditMode && form.uploadedfilename
+                            ? form.uploadedfilename
+                            : "Click or Drag a file to upload"}</Typography>
+                        <input hidden id="fileInput" type="file" onChange={handleFileChange} />
+                      </Box>
+                    </Box>
+                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-start" }}>
+                      <Button variant="contained" onClick={handleSubmit} sx={{ px: 5, height: 38, borderRadius: 1.5, fontSize: "0.82rem" }}>
+                        {isEditMode ? "UPDATE" : "ADD"}
+                      </Button>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
             </Box>
           </Box>
         </CardContent>
