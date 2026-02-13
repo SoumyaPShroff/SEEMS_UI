@@ -9,26 +9,30 @@ export interface Manager {
 
 export const useManagerCostCenterSelect = (
   loginId: string,
-  module: string
+  module: string,
+  autoSelectDefault = true
 ) => {
   const { managers } = useManagers(loginId, module);
 
   const [selectedManager, setSelectedManager] =
     useState<Manager | null>(null);
 
-  // ✅ Auto-select default manager
-  // useEffect(() => {
-  //   if (managers.length > 0) {
-  //     if (managers.length === 1) {
-  //       setSelectedManager(managers[0]);
-  //     } else {
-  //       const allOption = managers.find((m) => m.hopc1id === "All");
-  //       setSelectedManager(allOption || managers[0]);
-  //     }
-  //   }
-  // }, [managers]);
+  // Auto-select default manager so SelectControl has an initial selected value.
+  useEffect(() => {
+    if (!autoSelectDefault) return;
+    if (managers.length === 0) return;
+    if (selectedManager) return;
 
-  // ✅ Convert managers → SelectControl options
+    if (managers.length === 1) {
+      setSelectedManager(managers[0]);
+      return;
+    }
+
+    const allOption = managers.find((m) => m.hopc1id === "All");
+    setSelectedManager(allOption || managers[0]);
+  }, [managers, selectedManager, autoSelectDefault]);
+
+  // Convert managers to SelectControl options.
   const managerOptions = useMemo(() => {
     return managers.map((m: Manager) => ({
       value:
@@ -42,8 +46,13 @@ export const useManagerCostCenterSelect = (
     }));
   }, [managers]);
 
-  // ✅ SelectControl onChange handler
+  // SelectControl onChange handler.
   const handleManagerChange = (value: string) => {
+    if (!value) {
+      setSelectedManager(null);
+      return;
+    }
+
     if (value === "All") {
       setSelectedManager({
         hopc1id: "All",
@@ -65,11 +74,12 @@ export const useManagerCostCenterSelect = (
     }
   };
 
-  // value for SelectControl
-  const selectedValue =
-    selectedManager?.hopc1id === "All"
+  // Value for SelectControl.
+  const selectedValue = selectedManager
+    ? selectedManager.hopc1id === "All"
       ? "All"
-      : `${selectedManager?.hopc1id}_${selectedManager?.costcenter}`;
+      : `${selectedManager.hopc1id}_${selectedManager.costcenter}`
+    : "";
 
   return {
     selectedManager,

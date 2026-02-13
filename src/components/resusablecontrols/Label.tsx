@@ -17,7 +17,7 @@ const Label: React.FC<LabelProps> = ({
   return (
     <label
       className={`app-label app-label--${variant} ${className}`}
-      style={style}
+      style={{ fontFamily: "Arial", ...style }} // default to Arial, can be overridden by style prop
     >
       {text}
     </label>

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import  { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { FaSave } from "react-icons/fa";
 import { toast } from "react-toastify";
@@ -28,7 +28,7 @@ type PlannedHoursRow = {
   billedHrs: number;
   balanceHrs: number;
  // plannedHours: number | "";
-  monthlyHrs?: number; 
+  monthlyHrs?: number | ""; 
   remarks: string;
 };
 
@@ -182,7 +182,12 @@ export default function PlannedHours() {
     selectedValue,
     managerOptions,
     handleManagerChange,
-  } = useManagerCostCenterSelect(loginId, "plannedhours");
+  } = useManagerCostCenterSelect(loginId, "plannedhours", false);
+
+  const managerOptionsWithSelect = useMemo(
+    () => [{ value: "", label: "Select" }, ...managerOptions],
+    [managerOptions]
+  );
 
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [rows, setRows] = useState<PlannedHoursRow[]>([]);
@@ -320,8 +325,8 @@ const handleValidateCellEdit = useCallback(
             <SelectControl
               name="costcenter"
               label="Select Manager"
-              value={selectedValue}
-              options={managerOptions}
+              value={selectedValue || ""}
+              options={managerOptionsWithSelect}
               onChange={(e: any) => handleManagerChange(e.target.value)}
             />
           </Box>

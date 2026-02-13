@@ -20,6 +20,8 @@ interface SelectControlProps {
   helperText?: string;
   sx?: object;
   disabled?: boolean;
+  fontSize?: string | number;
+  shrinkLabel?: boolean;
   //size?: "small" | "medium";
 }
 
@@ -31,14 +33,17 @@ const SelectControl: React.FC<SelectControlProps> = ({
   options,
   required = false,
   fullWidth = true,
-  height = 34,
+  height = 32,
   width = "100%",
   error = false,
   helperText,
+  fontSize = "0.9rem",
+  shrinkLabel = true,
   sx = {},
 }) => {
-  const controlFontFamily =
-    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu";
+  // const controlFontFamily =
+  //   "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu";
+  const controlFontFamily ="Arial";
 
   // Find currently selected option (for Autocomplete to display correct label)
  // const selectedOption = options.find((opt) => opt.value === value) || null;
@@ -59,11 +64,11 @@ const selectedOption =
         "& .MuiInputBase-input": {
           padding: "8px 10px",
           fontFamily: controlFontFamily,
-          fontSize: "1rem",
-            fontWeight: 400,
+          fontSize, 
         },
         "& .MuiInputLabel-root": {
           fontFamily: controlFontFamily,
+          fontSize,
         },
         ...sx,
       }}
@@ -91,10 +96,16 @@ const selectedOption =
               </>
             }
             size="small"
+            InputLabelProps={{ shrink: shrinkLabel }}
+            sx={{
+              "& .MuiInputLabel-root": {
+                fontSize,
+              },
+            }}
           />
         )}
         ListboxProps={{
-          style: { maxHeight: 250, fontFamily: controlFontFamily },
+          style: { maxHeight: 250, fontFamily: controlFontFamily, fontSize: `${fontSize}` },
         }}
         sx={{
           fontFamily: controlFontFamily,
@@ -103,10 +114,11 @@ const selectedOption =
           },
           "& .MuiInputBase-input": {
             fontFamily: controlFontFamily,
-            fontSize: "0.875rem",
+           fontSize
           },
           "& .MuiInputLabel-root": {
             fontFamily: controlFontFamily,
+            fontSize: "1.1rem"
           },
         }}
       />

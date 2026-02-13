@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Box, FormControl, InputLabel, MenuItem, Select, Typography, CircularProgress, Button } from "@mui/material";
+import { Box, Typography, CircularProgress, Button } from "@mui/material";
 import type { GridColDef } from '@mui/x-data-grid';
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +8,7 @@ import { baseUrl } from "../../const/BaseUrl";
 import { exporttoexcel } from "../../components/utils/exporttoexcel";
 import ExportButton from "../../components/resusablecontrols/ExportButton";
 import CustomDataGrid from "../../components/resusablecontrols/CustomDataGrid";
+import SelectControl from "../../components/resusablecontrols/SelectControl";
 
 const ViewAllEnquiries = () => {
   const navigate = useNavigate();
@@ -254,21 +255,30 @@ const ViewAllEnquiries = () => {
 
   return (
     <Box sx={{ height: "100%", width: "100%", padding: "40px", mt: "20px", ml: "-5px" }}>
-      <InputLabel style={{ textAlign: "left" }}>Status</InputLabel>
-      <FormControl sx={{ mb: 2, display: "flex", flexDirection: "row", gap: 2 }} >
-        <Select value={status} onChange={(e) => setStatus(e.target.value)} style={{ height: "35px", width: "230px" }}>
-          <MenuItem value="Open">Open</MenuItem>
-          <MenuItem value="Confirmed">Confirmed</MenuItem>
-          <MenuItem value="Tentative">Tentative</MenuItem>
-          <MenuItem value="Realised">Realised</MenuItem>
-          <MenuItem value="Cancelled">Cancelled</MenuItem>
-          <MenuItem value="Rejected By Customer">Rejected By Customer</MenuItem>
-          <MenuItem value="Rejected By Sienna">Rejected By Sienna</MenuItem>
-          <MenuItem value="All">All</MenuItem>
-        </Select>
-         <ExportButton label="Export to Excel" onClick={handleViewEnqExport} />
-        <Button variant="contained"   onClick={() => navigate("/Home/AddEnquiry")}>Add Enquiry</Button>  
-      </FormControl>
+      <Box sx={{ mb: 2, display: "flex", flexDirection: "row", gap: 2, alignItems: "flex-end" }}>
+        <Box sx={{ width: 230 }}>
+          <SelectControl
+            name="status"
+            label="Status"
+            value={status}
+            width="230px"
+            height={35}
+            options={[
+              { value: "Open", label: "Open" },
+              { value: "Confirmed", label: "Confirmed" },
+              { value: "Tentative", label: "Tentative" },
+              { value: "Realised", label: "Realised" },
+              { value: "Cancelled", label: "Cancelled" },
+              { value: "Rejected By Customer", label: "Rejected By Customer" },
+              { value: "Rejected By Sienna", label: "Rejected By Sienna" },
+              { value: "All", label: "All" },
+            ]}
+            onChange={(e: any) => setStatus(e.target.value)}
+          />
+        </Box>
+        <ExportButton label="Export to Excel" onClick={handleViewEnqExport} />
+        <Button variant="contained" onClick={() => navigate("/Home/AddEnquiry")}>Add Enquiry</Button>
+      </Box>
 
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>

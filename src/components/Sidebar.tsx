@@ -7,7 +7,7 @@ import SubMenu from "./SubMenu";
 import { IconContext } from "react-icons/lib";
 import axios from "axios";
 import { baseUrl } from "../const/BaseUrl";
-import logo from "../const/Images/Sienna-Ecad-logo.jpg";
+//import logo from "../const/Images/Sienna-Ecad-logo.jpg";
 import { motion } from "framer-motion";
 import { FaBars, FaTimes, FaStar, FaRegStar, FaUserCircle, FaBell } from "react-icons/fa";
 import { RiHome2Line } from "react-icons/ri";
@@ -83,11 +83,11 @@ const NavIcon = styled.div`
   }
 `;
 
-const Logo = styled.img`
-  height: 60px;
-  width: 80px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
-`;
+// const Logo = styled.img`
+//   height: 60px;
+//   width: 80px;
+//   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+// `;
 
 const RightCorner = styled.div`
   margin-left: auto;

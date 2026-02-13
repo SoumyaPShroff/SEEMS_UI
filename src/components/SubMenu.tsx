@@ -127,10 +127,14 @@ const MenuIcon = ({
 }) => {
   if (!icon) return null;
 
-  const renderedIcon = React.isValidElement(icon)
-    ? React.cloneElement(icon, { color: "currentColor" })
-    : icon;
-
+  // const renderedIcon = React.isValidElement(icon)
+  //   ? React.cloneElement(icon, { color: "currentColor" })
+  //   : icon;
+const renderedIcon = React.isValidElement(icon)
+  ? React.cloneElement(icon as React.ReactElement<any>, {
+      color: "currentColor",
+    })
+  : icon
   return (
     <IconBadge className="menu-icon-badge" $size={size}>
       {renderedIcon}

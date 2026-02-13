@@ -1,6 +1,6 @@
-import React, { useMemo } from "react";
+import  { useMemo } from "react";
 import { Paper } from "@mui/material";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
 import {
   DataGrid,
   type GridColDef,
@@ -104,10 +104,19 @@ export default function EditableGrid<TRow extends GridValidRowModel = GridValidR
       columns.map((column) => {
         if (!column.editable || column.renderCell) return column;
         const editableCellClass = "editable-grid-cell";
-        const mergedCellClassName =
-          typeof column.cellClassName === "function"
-            ? (params: any) => `${column.cellClassName?.(params) ?? ""} ${editableCellClass}`.trim()
-            : `${column.cellClassName ?? ""} ${editableCellClass}`.trim();
+ 
+  //       const mergedCellClassName =
+  // typeof column.cellClassName === "function"
+  //   ? (params: any) =>
+  //       `${column.cellClassName(params) ?? ""} ${editableCellClass}`.trim()
+  //   : `${column.cellClassName ?? ""} ${editableCellClass}`.trim();
+  const originalCellClassName = column.cellClassName;
+
+const mergedCellClassName =
+  typeof originalCellClassName === "function"
+    ? (params: any) =>
+        `${originalCellClassName(params) ?? ""} ${editableCellClass}`.trim()
+    : `${originalCellClassName ?? ""} ${editableCellClass}`.trim();
 
         const editorType =
           column.editorType ??

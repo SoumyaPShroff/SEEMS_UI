@@ -566,7 +566,7 @@ fd.append(
   /* ---------------- UI ---------------- */
 
   return (
-    <Box sx={{ maxWidth: 1100, margin: "0 auto", mt: 9 }}>
+    <Box sx={{ maxWidth: 1100, margin: "0 auto", mt: 0.5, px: { xs: 2, md: 0 } }}>
       <Card sx={{ width: "100%", m: "auto", mt: 3, p: 4, borderRadius: 3, boxShadow: "0px 4px 20px #6594b3ff" }}>
         <CardContent>
           <Typography variant="h5" textAlign="center" mb={3} color="#1565c0" fontWeight="700">

@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import styled, { keyframes } from "styled-components";
-import { FaUsers, FaLaptop, FaClipboardList, FaClock, FaTrash, FaStar, FaRobot } from "react-icons/fa";
+import { FaTrash, FaStar, FaRobot } from "react-icons/fa";
 import { baseUrl } from "../const/BaseUrl"
 import { useFavourites } from "./FavouritesContext";
 import { actionCards } from "../const/DashboardActionCards";
