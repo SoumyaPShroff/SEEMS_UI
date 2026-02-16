@@ -6,6 +6,8 @@ interface LabelProps {
   className?: string;
   style?: React.CSSProperties;
   variant?: "default" | "menu" | "submenu";
+  fontSize?: string | number;
+  bold?: boolean;
 }
 
 const Label: React.FC<LabelProps> = ({
@@ -13,11 +15,13 @@ const Label: React.FC<LabelProps> = ({
   className = "",
   style,
   variant = "default",
+  fontSize = "12px",
+  bold = false,
 }) => {
   return (
     <label
       className={`app-label app-label--${variant} ${className}`}
-      style={{ fontFamily: "Arial", ...style }} // default to Arial, can be overridden by style prop
+      style={{ fontFamily: "Arial", fontSize, fontWeight: bold ? 700 : 400, ...style }}
     >
       {text}
     </label>

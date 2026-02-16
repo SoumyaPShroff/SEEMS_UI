@@ -459,13 +459,13 @@ const OnsiteEnquiry: React.FC = () => {
     fd.append("hourlyRateType", String(Number(form.hourlyRateType)));
     fd.append("hourlyReate", String(Number(form.hourlyReate)));
     fd.append("onsiteDuration", String(Number(form.onsiteDuration)));
-   // fd.append("profReqLastDate", form.profReqLastDate);
-   fd.append("profReqLastDate", new Date(form.profReqLastDate).toISOString());
-   // fd.append("quotation_request_lastdate", form.profReqLastDate);
-fd.append(
-  "quotation_request_lastdate",
-  new Date(form.profReqLastDate).toISOString()
-);
+    // fd.append("profReqLastDate", form.profReqLastDate);
+    fd.append("profReqLastDate", new Date(form.profReqLastDate).toISOString());
+    // fd.append("quotation_request_lastdate", form.profReqLastDate);
+    fd.append(
+      "quotation_request_lastdate",
+      new Date(form.profReqLastDate).toISOString()
+    );
     fd.append("salesresponsibilityid", form.salesresponsibilityid);
     fd.append("completeresponsibilityid", form.completeresponsibilityid);
     fd.append("type", form.type);
@@ -482,7 +482,7 @@ fd.append(
     fd.append("referenceBy", form.referenceBy);
 
     // email trigger lists
-   // const toList = buildEmailRecipientList();
+    // const toList = buildEmailRecipientList();
     //fd.append("ToMailList", JSON.stringify(toList));  // send array as JSON
     const toList = buildEmailRecipientList();
     fd.append("ToMailList", JSON.stringify(toList.length ? toList : ["noreply@system"]));
@@ -596,9 +596,9 @@ fd.append(
           m: "auto",
           mt: 1.25,
           borderRadius: 3,
-          border: "1px solid #d8e5ff",
-          boxShadow: "0 10px 24px rgba(45, 82, 150, 0.12)",
-          background: "linear-gradient(180deg, #f9fbff 0%, #f3f7ff 100%)",
+          border: "1px solid #557ec6",
+          boxShadow: "0 14px 30px rgba(24, 71, 153, 0.16)",
+          background: "linear-gradient(145deg, #f7fbff 0%, #e8f2ff 52%, #dbeaff 100%)",
           "& .MuiTypography-root, & .MuiInputBase-input, & .MuiFormControlLabel-label, & .MuiInputLabel-root": {
             fontFamily: "Arial",
           },
@@ -614,7 +614,7 @@ fd.append(
 
           <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", md: "repeat(12, 1fr)" }, gap: 1.5, alignItems: "start" }}>
             <Box sx={{ gridColumn: "1 / -1" }}>
-              <Card sx={{ borderRadius: 2, border: "1px solid #d5e1f8", boxShadow: "0 6px 14px rgba(33, 75, 149, 0.08)", background: "#ffffff" }}>
+              <Card sx={{ borderRadius: 2, border: "1px solid #cfe0fa", boxShadow: "0 8px 16px rgba(33, 75, 149, 0.1)", background: "linear-gradient(160deg, #ffffff 0%, #f3f8ff 100%)" }}>
                 <CardContent sx={{ p: { xs: 1.5, md: 1.8 } }}>
                   <Typography sx={{ fontSize: 13, fontWeight: 700, color: "#214b95", mb: 1.1 }}>CUSTOMER DETAILS</Typography>
                   <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" }, columnGap: 1.5, rowGap: 2, alignItems: "start" }}>
@@ -637,7 +637,7 @@ fd.append(
                         options={lookups.Locations.map((l: any) => ({ value: l.location_id.toString(), label: l.location }))}
                         onChange={handleChange}
                         required
-                       // height={34}
+                      // height={34}
                       />
                     </Box>
                     <Box>
@@ -648,7 +648,7 @@ fd.append(
                         options={lookups.States.map((s: any) => ({ value: s.state, label: s.state }))}
                         onChange={handleChange}
                         required
-                     //   height={34}
+                      //   height={34}
                       />
                     </Box>
                     <Box>
@@ -672,12 +672,12 @@ fd.append(
             </Box>
 
             <Box sx={{ gridColumn: "1 / -1" }}>
-              <Card sx={{ borderRadius: 2, border: "1px solid #d5e1f8", boxShadow: "0 6px 14px rgba(33, 75, 149, 0.08)", background: "#ffffff" }}>
+              <Card sx={{ borderRadius: 2, border: "1px solid #cfe0fa", boxShadow: "0 8px 16px rgba(33, 75, 149, 0.1)", background: "linear-gradient(160deg, #ffffff 0%, #edf5ff 100%)" }}>
                 <CardContent sx={{ p: { xs: 1.5, md: 1.8 } }}>
                   <Typography sx={{ fontSize: 13, fontWeight: 700, color: "#214b95", mb: 1.1 }}>ENQUIRY DETAILS</Typography>
                   <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" }, columnGap: 1.5, rowGap: 1.5, alignItems: "start" }}>
                     <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" }, columnGap: 1.5, rowGap: 1.8 }}>
-                      <Box>
+                      <Box >
                         <Label text="Board Ref" />
                         <TextControl
                           name="jobnames"
@@ -686,7 +686,7 @@ fd.append(
                           style={standardInputStyle}
                         />
                       </Box>
-                      <Box>
+                      <Box sx={{ mt: 2.7, width: { xs: "100%", sm: 220 } }}>
                         <SelectControl
                           name="toolId"
                           label="Tool Name"
@@ -706,10 +706,10 @@ fd.append(
                             label: t.tools,
                           }))}
                           required
-                    //      height={34}
+                        //      height={34}
                         />
                       </Box>
-                      <Box>
+                      <Box >
                         <SelectControl
                           name="taskId"
                           label="Task"
@@ -723,7 +723,7 @@ fd.append(
                         //  height={34}
                         />
                       </Box>
-                      <Box>
+                      <Box sx={{ width: { xs: "100%", sm: 220 } }}>
                         <SelectControl
                           name="tm"
                           label="Enquiry Billing Type"
@@ -735,29 +735,30 @@ fd.append(
                             { value: "Fixed_Monthly Billing", label: "Fixed_Monthly Billing" },
                           ]}
                           required
-                       //   height={34}
+                        //   height={34}
                         />
                       </Box>
-                      <Box>
-                        <TextField label="Experience From" name="expFrom" value={form.expFrom} onChange={handleNumericChange} required size="small" />
+                      <Box sx={{ width: { xs: "100%", sm: 180 } }}>
+                        <TextField label="Experience From" name="expFrom" value={form.expFrom} onChange={handleNumericChange} required size="small" fullWidth />
                       </Box>
-                      <Box>
-                        <TextField label="To" name="expTo" value={form.expTo} onChange={handleNumericChange} required size="small" />
+                      <Box sx={{ width: { xs: "100%", sm: 180 } }}>
+                        <TextField label="To" name="expTo" value={form.expTo} onChange={handleNumericChange} required size="small" fullWidth />
                       </Box>
-                      <Box>
+                      <Box sx={{ width: { xs: "100%", sm: 180 } }}>
                         <TextField label="No of Resources" type="number" name="noOfResources" value={form.noOfResources}
-                          onChange={handleChange} required size="small" />
+                          onChange={handleChange} required size="small" fullWidth />
                       </Box>
-                      <Box>
+                      <Box sx={{ width: { xs: "100%", sm: 180 } }}>
                         <TextField type="date" label="Profile Request Last Date"
                           name="profReqLastDate"
                           value={form.profReqLastDate}
                           onChange={handleChange} InputLabelProps={{ shrink: true }}
                           size="small"
+                          fullWidth
                           required
                         />
                       </Box>
-                      <Box>
+                      <Box sx={{ width: { xs: "100%", sm: 180 } }}>
                         <TextField type="date" label="Tentative Start Date"
                           name="tentStartDate"
                           value={form.tentStartDate || ""}
@@ -766,9 +767,10 @@ fd.append(
                             setForm((p) => ({ ...p, tentStartDate: value }));
                           }} InputLabelProps={{ shrink: true }}
                           size="small"
+                          fullWidth
                           required />
                       </Box>
-                      <Box>
+                      <Box sx={{ width: { xs: "100%", sm: 180 } }}>
                         <SelectControl
                           name="inputreceivedthru"
                           label="Input Received Thru"
@@ -780,70 +782,78 @@ fd.append(
                             { value: "Other", label: "Other" },
                           ]}
                           required
-                        //  height={34}
+                          height={37}
                         />
                       </Box>
                     </Box>
 
-                    <Box sx={{ display: "grid", gridTemplateColumns: "1fr", rowGap: 1.2 }}>
-                      <Box>
+                    <Box sx={{ display: "grid", gridTemplateColumns: "1fr", rowGap: 1.2, justifyItems: "start" }}>
+                      <Box sx={{ width: "100%" }}>
                         <Label text="Tool License" />
                         <CompactRadioGroup
                           name="toolLicense"
                           value={form.toolLicense}
                           onChange={handleChange}
                           options={[{ value: "1", label: "With" }, { value: "2", label: "Without" }]}
-                       //   height={34}
+                          sx={{ "& .MuiRadioGroup-root": { justifyContent: "flex-start", gap: 5 } }}
+                        //   height={34}
                         />
                       </Box>
-                      <Box>
+                      <Box sx={{ width: "100%" }}>
                         <Label text="Logistics" />
                         <CompactRadioGroup
                           name="logistics"
                           value={form.logistics}
                           onChange={handleChange}
                           options={[{ value: "1", label: "Customer" }, { value: "2", label: "Sienna ECAD" }]}
-                       //   height={34}
+                          sx={{ "& .MuiRadioGroup-root": { justifyContent: "flex-start", gap: 1.5 } }}
+                        //   height={34}
                         />
                       </Box>
-                      <Box>
+                      <Box sx={{ width: "100%" }}>
                         <Label text="Type" />
                         <CompactRadioGroup
                           name="type"
                           value={form.type}
                           onChange={handleChange}
                           options={[{ value: "Export", label: "Export" }, { value: "Domestic", label: "Domestic" }]}
-                         // height={34}
+                          sx={{ "& .MuiRadioGroup-root": { justifyContent: "flex-start", gap: 3.6} }}
+                        // height={34}
                         />
                       </Box>
-                      <Box sx={{ display: "grid", gridTemplateColumns: "1fr 110px", gap: 1, alignItems: "start" }}>
-                        <Box>
+                       {/* fr means fractional unit of the available space, so 1fr takes up all available space, and 2fr would take up twice as much as 1fr. 
+                       This allows the first column to be wider than the second, giving more room for the radio buttons and labels,
+                        while still allowing the second column to adjust based on the content
+                         (like the TextField for onsite duration).*/}
+                      <Box sx={{ display: "grid", gridTemplateColumns: "200px 1fr"  , columnGap: 1, alignItems: "start", justifyContent: "start" }}> 
+                        <Box >
                           <Label text="Onsite Duration" />
                           <CompactRadioGroup
                             name="onsiteDurationType"
                             value={form.onsiteDurationType}
                             onChange={handleChange}
                             options={[{ value: "1", label: "Days" }, { value: "2", label: "Months" }]}
+                            sx={{ "& .MuiRadioGroup-root": { justifyContent: "flex-start", gap: 4.5 } }}
                           //  height={34}
                           />
                         </Box>
-                        <TextField type="number" size="small" sx={{ width: 92 }} onChange={handleTwoDigitNumber} name="onsiteDuration"
+                        <TextField type="number" size="small" sx={{ mt: 3, width: 100, "& .MuiOutlinedInput-root": { height: 30, borderRadius: "8px" } }} onChange={handleTwoDigitNumber} name="onsiteDuration"
                           label={form.onsiteDurationType === "1" ? "In Days" : "In Months"}
                           value={form.onsiteDuration}
                           required />
                       </Box>
-                      <Box sx={{ display: "grid", gridTemplateColumns: "1fr 110px", gap: 1, alignItems: "start" }}>
-                        <Box>
+                      <Box sx={{ display: "grid", gridTemplateColumns:  "200px 1fr" , columnGap: 1, alignItems: "start", justifyContent: "start" }}>
+                        <Box sx={{ minWidth: 0 }}>
                           <Label text="Currency" />
                           <CompactRadioGroup
                             name="hourlyRateType"
                             value={form.hourlyRateType}
                             onChange={handleChange}
                             options={[{ value: "1", label: "INR" }, { value: "2", label: "USD" }, { value: "3", label: "EURO" }]}
-                         //   height={34}
+                          //   height={34}
                           />
                         </Box>
-                        <TextField size="small" sx={{ width:98 }} label="Hourly Rate" name="hourlyReate" onChange={handleHourlyRateChange} value={form.hourlyReate} InputLabelProps={{ shrink: true }} required />
+                        <TextField size="small" sx={{ mt: 3, width: 100, "& .MuiOutlinedInput-root": { height: 30, borderRadius: "8px" } }} label="Hourly Rate" name="hourlyReate" onChange={handleHourlyRateChange} value={form.hourlyReate} InputLabelProps={{ shrink: true }} required />
                       </Box>
                     </Box>
                   </Box>
@@ -852,7 +862,7 @@ fd.append(
             </Box>
 
             <Box sx={{ gridColumn: "1 / -1" }}>
-              <Card sx={{ borderRadius: 2, border: "1px solid #d5e1f8", boxShadow: "0 6px 14px rgba(33, 75, 149, 0.08)", background: "#ffffff" }}>
+              <Card sx={{ borderRadius: 2, border: "1px solid #cfe0fa", boxShadow: "0 8px 16px rgba(33, 75, 149, 0.1)", background: "linear-gradient(160deg, #ffffff 0%, #f1f8ff 100%)" }}>
                 <CardContent sx={{ p: { xs: 1.5, md: 1.8 } }}>
                   <Typography sx={{ fontSize: 13, fontWeight: 700, color: "#214b95", mb: 1.1 }}>ASSIGNMENT & UPLOAD</Typography>
                   <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" }, columnGap: 1.5, rowGap: 1.8, alignItems: "start" }}>
@@ -860,13 +870,13 @@ fd.append(
                       <SelectControl name="salesresponsibilityid" label="Sales Responsibility"
                         value={form.salesresponsibilityid}
                         options={lookups.SalesManagers.map((e: any) => ({ value: e.id, label: e.name }))}
-                        onChange={handleChange}  />
+                        onChange={handleChange} />
                     </Box>
                     <Box>
                       <SelectControl name="completeresponsibilityid" label="Complete Responsibility"
                         value={form.completeresponsibilityid}
                         options={lookups.HOPCManagers.map((e: any) => ({ value: e.hopc1id, label: e.hopc1name }))}
-                        onChange={handleChange}  />
+                        onChange={handleChange} />
                     </Box>
                     <Box>
                       <SelectControl name="referenceBy" label="Reference By"
@@ -875,10 +885,21 @@ fd.append(
                           value: e.name,
                           label: e.name,
                         }))}
-                        onChange={handleChange}  />
+                        onChange={handleChange} />
                     </Box>
                     <Box>
-                      <TextField label="Remarks" fullWidth size="small" name="remarks" value={form.remarks} onChange={handleChange} />
+                      <Label text="Remarks" />
+                      <TextControl
+                        name="remarks"
+                        value={form.remarks}
+                        onChange={handleChange}
+                        fullWidth
+                        multiline
+                        rows={2}
+                        style={{ ...standardInputStyle, padding: "8px", height: "60px" }}
+
+                      />
+
                     </Box>
                     <Box>
                       <Box onClick={() => document.getElementById("fileInput")?.click()}

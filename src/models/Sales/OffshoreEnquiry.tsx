@@ -949,7 +949,7 @@ const OffshoreEnquiry: React.FC = () => {
    };
    return (
       <Box
-         sx={{ maxWidth: 850, width: "100%", mx: "auto", mt: isEditMode ? 18 : 0.9, px: { xs: 2, md: 0 },
+         sx={{ maxWidth: 850, width: "100%", mx: "auto", mt: isEditMode ? 18 : 0.9, px: { xs: 2, md: 0 },  
           //  fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
             fontFamily: "Arial",
          }}
@@ -960,14 +960,14 @@ const OffshoreEnquiry: React.FC = () => {
                m: "auto",
                mt: 1.25,
                borderRadius: 3,
-               border: "1px solid #d8e5ff",
-               boxShadow: "0 10px 24px rgba(45, 82, 150, 0.12)",
+               border: "1px solid  #557ec6",
+               boxShadow: "0 14px 30px  rgba(24, 71, 153, 0.16)",
                background:
                   "linear-gradient(180deg, #f9fbff 0%, #f3f7ff 100%)",
-               "& .MuiTypography-root, & .MuiInputBase-input, & .MuiFormControlLabel-label, & .MuiInputLabel-root": {
-               //   fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-             fontFamily: "Arial",
-            },
+           background: "linear-gradient(145deg, #f7fbff 0%, #e8f2ff 52%, #dbeaff 100%)",
+          "& .MuiTypography-root, & .MuiInputBase-input, & .MuiFormControlLabel-label, & .MuiInputLabel-root": {
+            fontFamily: "Arial",
+               },
             }}
          >
             <CardContent sx={{ p: { xs: 1.75, md: 2.5 } }}>
@@ -1089,7 +1089,7 @@ const OffshoreEnquiry: React.FC = () => {
                                     style={standardInputStyle}
                                  />
                               </Box>
-                              <Box  >
+                              <Box sx={{ mt: 2.7 }}>
                                  <SelectControl
                                     name="tool"
                                     label="PCB Tool"
