@@ -16,7 +16,7 @@ export const actionCards: DashboardActionCard[] = [
     title: "My Team",
     desc: "View your team roster",
     icon: <FaUsers />,
-    route: "/Home/ComingSoon",
+    route: "/Home/MeetMyTeam",
     gradient: "linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)",
   },
   {

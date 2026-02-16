@@ -5,6 +5,19 @@ import { FaTrash, FaStar, FaRobot } from "react-icons/fa";
 import { baseUrl } from "../const/BaseUrl"
 import { useFavourites } from "./FavouritesContext";
 import { actionCards } from "../const/DashboardActionCards";
+import MeetMyTeam from "../components/MeetMyTeam";
+import type { TeamMember } from "../components/MeetMyTeam";
+
+interface TeamMemberApi {
+  teamMemID: string;
+  teamMemName: string;
+  teamMemEmailId: string;
+  teamMenJobTiTle: string;
+  teamMemCostcenter: string;
+  teamMemGender?: string;
+  teamMemgender?: string;
+  gender?: string;
+}
 
 interface EmployeeProfile {
   iDno: string;
@@ -12,22 +25,23 @@ interface EmployeeProfile {
   reporttoperson: string;
   teamdescription: string;
   reporteeCount: number;
+  teamMembers?: TeamMemberApi[];
 }
 
 /* ================= STYLES ================= */
 
 const ActionCard = styled.div<{ $isFavourite?: boolean; $gradient?: string }>`
-  width: 220px;
-  height: 80px;
+  width: 190px;
+  height: 68px;
   border-radius: 14px;
-  padding: 10px 12px;
+  padding: 8px 10px;
   cursor: pointer;
   border: 1px solid #e5e7eb;
   position: relative;
 
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 
   background: ${({ $gradient }) => $gradient};
   box-shadow: 0 4px 10px rgba(0,0,0,0.08);
@@ -42,25 +56,25 @@ const ActionCard = styled.div<{ $isFavourite?: boolean; $gradient?: string }>`
 
 const Badge = styled.span`
   position: absolute;
-  top: 18px;
-  right: 18px;
+  top: 12px;
+  right: 12px;
   background: #ecfeff;
   color: #0369a1;
-  font-size: 12px;
-  padding: 4px 10px;
+  font-size: 11px;
+  padding: 3px 8px;
   border-radius: 999px;
   font-weight: 500;
 `;
 
 const CardIcon = styled.div`
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  font-size: 15px;
+  font-size: 13px;
   color: white;
 
   background: linear-gradient(135deg, #1e3a8a, #0ea5e9);
@@ -70,14 +84,14 @@ const CardIcon = styled.div`
 `;
 
 const CardTitle = styled.h4<{ $isFavourite?: boolean }>`
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   margin: 0;
   color: ${({ $isFavourite }) => ($isFavourite ? "#422006" : "#1f2937")};
 `;
 
 const CardDesc = styled.p<{ $isFavourite?: boolean }>`
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.25;
   margin: 2px 0 0;
   color: ${({ $isFavourite }) => ($isFavourite ? "#78350f" : "#6b7280")};
@@ -204,19 +218,46 @@ const HelpBotInput = styled.input`
 
 const HomeDashboard = () => {
   const [profile, setProfile] = useState<EmployeeProfile | null>(null);
-  //addFavourite
   const { favouriteLinks, removeFavourite } = useFavourites();
-  // const menu = useSideBarData();
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
   const [helpText, setHelpText] = useState("");
   const navigate = useNavigate();
+  const [showTeam, setShowTeam] = useState(false);
+
+  const normalizeProfile = (raw: any): EmployeeProfile | null => {
+    if (!raw) return null;
+    const source = Array.isArray(raw) ? raw[0] : raw;
+    if (!source) return null;
+
+    const members: TeamMemberApi[] = source.teamMembers ?? source.teamMember ?? [];
+    const count = Number(source.reporteeCount ?? members.length ?? 0);
+
+    return {
+      iDno: source.iDno ?? "",
+      costcenter: source.costcenter ?? "",
+      reporttoperson: source.reporttoperson ?? "",
+      teamdescription: source.teamdescription ?? "",
+      reporteeCount: Number.isNaN(count) ? 0 : count,
+      teamMembers: members,
+    };
+  };
+  
+  const mappedMembers: TeamMember[] =
+    profile?.teamMembers?.map((member) => ({
+     id: member.teamMemID,
+      name: member.teamMemName,
+      title: member.teamMenJobTiTle,
+      email: member.teamMemEmailId,
+      costcenter: member.teamMemCostcenter,
+      gender: member.teamMemGender || member.teamMemgender || member.gender || "",
+    })) ?? [];
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const res = await fetch(`${baseUrl}/EmployeeDetails/${loginId}`);
-        const data: EmployeeProfile[] = await res.json();
-        setProfile(data[0] ?? null);
+        const data = await res.json();
+        setProfile(normalizeProfile(data));
       } catch (error) {
         console.error("Failed to fetch team memebers", error);
       } finally {
@@ -243,13 +284,20 @@ const HomeDashboard = () => {
           {actionCards.map(card => {
             const badge =
               card.key === "team"
-                ? `${profile?.reporteeCount ?? 0} Members`
+                ? `${profile?.reporteeCount ?? mappedMembers.length ?? 0} Members`
                 : undefined;
-
+    const handleClick = () => {
+      if (card.key === "team") {
+        setShowTeam(prev => !prev); // Toggle team section
+      } else {
+        navigate(card.route);
+      }
+    };
             return (
               <ActionCard
                 key={card.key}
-                onClick={() => navigate(card.route)}
+               // onClick={() => navigate(card.route)}
+                onClick={handleClick}
                 $gradient={card.gradient}
               >
                 {badge && <Badge>{badge}</Badge>}
@@ -262,6 +310,8 @@ const HomeDashboard = () => {
             );
           })}
         </DefaultCardsGrid>
+        {/* {mappedMembers.length > 0 && <MeetMyTeam members={mappedMembers} />} */}
+        {showTeam && (<MeetMyTeam members={mappedMembers} />)}
         {/* FAVOURITES */}
         <FavouritesSection>
           <FavouritesTitle>My Favourites</FavouritesTitle>
