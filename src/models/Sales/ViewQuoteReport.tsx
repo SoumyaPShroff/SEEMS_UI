@@ -35,12 +35,6 @@ interface QuoteReportResponse {
   name: string;
 }
 
-// type Props = {
-//   quoteNo: string;
-//   versionNo: number;
-//   enquiryNo: string;
-// };
-
 const ViewQuoteReport: React.FC = () => {
   const { quoteNo, versionNo, enquiryNo } = useParams<{ quoteNo: string; versionNo: string; enquiryNo: string; }>();
   const [data, setData] = useState<QuoteReportResponse | null>(null);
