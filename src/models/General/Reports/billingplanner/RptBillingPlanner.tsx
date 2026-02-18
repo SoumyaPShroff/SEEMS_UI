@@ -344,11 +344,11 @@ const FiltersSection: React.FC<{
       <LegendSwatch $color="blue" />
       <span>Flag raised for current month</span>
       <LegendSwatch $color="#d517f2c2" />
-      <span>PO not received</span>
+      <span>Job without PO</span>
       <LegendSwatch $color="green" />
       <span>Invoiced</span>
       <LegendSwatch $color="red" />
-      <span>Job without PO</span>
+      <span>PO Overdue</span>
     </LegendGroup>
   </FilterBar>
 );

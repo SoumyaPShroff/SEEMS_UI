@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import type { GridColDef } from '@mui/x-data-grid';
 import { Box, Button, TextField } from "@mui/material";
-import CustomDataGrid from "../../components/resusablecontrols/CustomDataGrid";
+import CustomDataGrid2 from "../../components/resusablecontrols/CustomDataGrid2";
 import { baseUrl } from "../../const/BaseUrl";
 import { exporttoexcel } from "../../components/utils/exporttoexcel";
 import { toast } from "react-toastify";
@@ -17,17 +17,17 @@ export default function ViewEnquiryReport() {
     //const loginId = sessionStorage.getItem("SessionUserID") || "guest";
 
     const columns: GridColDef[] = [
-        { field: "enquiryno", headerName: "enquiryno", width: 100 },
-        { field: "customer", headerName: "customer", width: 300 },
-        { field: "enquiry_createdon", headerName: "enquiry_createdon", width: 150 },
-        { field: "quote_generatedon", headerName: "quote_generatedon", width: 150 },
+        { field: "enquiryno", headerName: "Enquiry No", width: 100 },
+        { field: "customer", headerName: "Customer", width: 300 },
+        { field: "enquiry_createdon", headerName: "Enquiry_Createdon", width: 150 },
+        { field: "quote_generatedon", headerName: "Quote_Generatedon", width: 160 },
         { field: "job_Createdon", headerName: "Job_Createdon", width: 150 },
-        { field: "salesperson", headerName: "salesperson", width: 150 },
-        { field: "completeresponsibility", headerName: "completeresponsibility", width: 200 },
-        { field: "quoteCreatedby", headerName: "quoteCreatedby", width: 200 },
-        { field: "status", headerName: "status", width: 120 },
-        { field: "remarks", headerName: "remarks", width: 200 },
-        { field: "cancelledremarks", headerName: "cancelledremarks", width: 200 },
+        { field: "salesperson", headerName: "Sales Person", width: 150 },
+        { field: "completeresponsibility", headerName: "Complete Responsibility", width: 200 },
+        { field: "quoteCreatedby", headerName: "QuoteCreatedby", width: 200 },
+        { field: "status", headerName: "Status", width: 120 },
+        { field: "remarks", headerName: "Remarks", width: 200 },
+        { field: "cancelledremarks", headerName: "Cancelled Remarks", width: 200 },
     ];
 
     const fetchData = async () => {
@@ -77,7 +77,7 @@ export default function ViewEnquiryReport() {
     };
 
     return (
-        <Box sx={{ padding: "100px", mt: "30px", ml: "20px" }}>
+        <Box sx={{ padding: "50px", mt: "30px", ml: "20px" }}>
             <Box sx={{ display: "flex", alignItems: "left", gap: 2 }}>
                 <TextField
                     label="Start Date"
@@ -87,7 +87,7 @@ export default function ViewEnquiryReport() {
                     InputLabelProps={{ shrink: true }}
                     sx={{
                         "& .MuiInputBase-root": {
-                            height: 35,   // ← adjust height here
+                            height: 30,   // ← adjust height here
                         },
                         "& input": {
                             padding: "6px 14px", // optional to adjust inner text padding
@@ -102,7 +102,7 @@ export default function ViewEnquiryReport() {
                     InputLabelProps={{ shrink: true }}
                     sx={{
                         "& .MuiInputBase-root": {
-                            height: 35,   // ← adjust height here
+                            height: 30,   // ← adjust height here
                         },
                         "& input": {
                             padding: "6px 14px", // optional to adjust inner text padding
@@ -113,15 +113,17 @@ export default function ViewEnquiryReport() {
                 {/* <Button variant="contained"   onClick={handleViewEnqExport} style={{ height: 35 }}>Export to Excel</Button> */}
                 <ExportButton label="Export to Excel" onClick={handleViewEnqExport} />
             </Box>
+            <Box sx={{ mt: 3 }}>
             {rows.length > 0 && (
-                <CustomDataGrid
+                <CustomDataGrid2
                     rows={rows}
                     columns={columns}
                     title="View Enquiry Report"
                     loading={loading}
-                    gridheight={400}
+                    gridHeight={400}
                 />
             )}
+            </Box>
         </Box>
     );
 }

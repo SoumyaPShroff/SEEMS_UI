@@ -5,7 +5,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import { DataGrid } from "@mui/x-data-grid";
 import type { GridColDef,  GridColumnVisibilityModel,  GridRowIdGetter,  GridValidRowModel,} from "@mui/x-data-grid";
 
-interface CustomerDataGrid2Props<TRow extends GridValidRowModel = GridValidRowModel> {
+interface CustomDataGrid2Props<TRow extends GridValidRowModel = GridValidRowModel> {
   rows: TRow[];
   columns: GridColDef<TRow>[];
   title?: string;
@@ -19,7 +19,7 @@ interface CustomerDataGrid2Props<TRow extends GridValidRowModel = GridValidRowMo
   onColumnVisibilityModelChange?: (model: GridColumnVisibilityModel) => void;
 }
 
-const CustomerDataGrid2 = <TRow extends GridValidRowModel = GridValidRowModel>({
+const CustomDataGrid2 = <TRow extends GridValidRowModel = GridValidRowModel>({
   rows,
   columns,
   title,
@@ -31,7 +31,7 @@ const CustomerDataGrid2 = <TRow extends GridValidRowModel = GridValidRowModel>({
   getRowId,
   columnVisibilityModel,
   onColumnVisibilityModelChange,
-}: TrendyDataGridProps<TRow>) => {
+}: CustomDataGrid2Props<TRow>) => {
   const [searchInput, setSearchInput] = useState("");
   const searchTerm = searchInput.trim().toLowerCase();
 
@@ -175,4 +175,4 @@ const CustomerDataGrid2 = <TRow extends GridValidRowModel = GridValidRowModel>({
   );
 };
 
-export default CustomerDataGrid2;
+export default CustomDataGrid2;

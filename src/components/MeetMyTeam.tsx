@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { FaEnvelope } from "react-icons/fa";
 import type { GridColDef } from "@mui/x-data-grid";
 import { baseUrl } from "../const/BaseUrl";
-import CustomerDataGrid2 from "./resusablecontrols/CustomerDataGrid2";
+import CustomDataGrid2 from "./resusablecontrols/CustomDataGrid2";
 
 export interface TeamMember {
   id: string | number;
@@ -106,7 +106,7 @@ const MeetMyTeam: React.FC<MeetMyTeamProps> = ({ members = [] }) => {
 
   return (
   <div style={{ width: "100%", height: "100%", padding: "36px 24px", border: "1px solid #d7e6ff", boxShadow: "0 20px 40px rgba(13, 60, 132, 0.12)" }}>
-      <CustomerDataGrid2
+      <CustomDataGrid2
         title="Meet My Team"
         rows={effectiveMembers}
         columns={columns}
