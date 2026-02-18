@@ -21,6 +21,7 @@ import ViewQuoteDetails from './models/Sales/ViewQuoteDetails';
 import Feasibility from './models/Sales/Feasibility';
 import ViewQuoteReport from "./models/Sales/ViewQuoteReport";
 import HomeDashboard from './components/HomeDashboard';
+import MeetMyTeam from './components/MeetMyTeam';
 import ComingSoon from './components/ComingSoon';
 import ReleaseNotesText from './components/ReleaseNotesText';
 import ReleaseNotes from './components/ReleaseNotes';
@@ -72,6 +73,7 @@ const App: React.FC = () => {
           <Route path="ViewQuoteReport/:quoteNo/:versionNo/:enquiryNo" element={<ViewQuoteReport />} />
           <Route path="Feasibility/:enquiryno" element={<Feasibility />} />
           <Route path="PlannedHours" element={<PlannedHours />} />
+          <Route path="MeetMyTeam" element={<MeetMyTeam />} />
         </Route>
         {/* Password + Blank */}
         <Route path="/ResetPassword" element={<ResetPassword />} />
@@ -86,6 +88,4 @@ const App: React.FC = () => {
   );
 };
 export default App;
-
-
 

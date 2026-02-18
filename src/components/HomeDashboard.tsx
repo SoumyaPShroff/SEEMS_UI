@@ -1,22 +1,23 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import styled, { keyframes } from "styled-components";
-import { FaTrash, FaStar, FaRobot } from "react-icons/fa";
+import styled from "styled-components"; //, { keyframes } 
+import { FaTrash, FaStar } from "react-icons/fa"; //, FaRobot 
 import { baseUrl } from "../const/BaseUrl"
 import { useFavourites } from "./FavouritesContext";
 import { actionCards } from "../const/DashboardActionCards";
-import MeetMyTeam from "../components/MeetMyTeam";
-import type { TeamMember } from "../components/MeetMyTeam";
 
 interface TeamMemberApi {
   teamMemID: string;
   teamMemName: string;
   teamMemEmailId: string;
-  teamMenJobTiTle: string;
+  teamMemJobTiTle: string;
   teamMemCostcenter: string;
-  teamMemGender?: string;
-  teamMemgender?: string;
-  gender?: string;
+  //teamMemGender?: string;
+  // teamMemgender?: string;
+  // gender?: string;
+  teamDescription?: string;
+  age?: string;
+  cellnumber?: string;
 }
 
 interface EmployeeProfile {
@@ -156,63 +157,62 @@ const FavouriteRemove = styled.button`
 
 /* ================= HELP BOT INPUT ================= */
 
-const floatAnim = keyframes`
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
-  100% { transform: translateY(0px); }
-`;
+// const floatAnim = keyframes`
+//   0% { transform: translateY(0px); }
+//   50% { transform: translateY(-5px); }
+//   100% { transform: translateY(0px); }
+// `;
 
-const HelpBotWrapper = styled.div`
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  z-index: 999;
-`;
+// const HelpBotWrapper = styled.div`
+//   position: fixed;
+//   right: 24px;
+//   bottom: 24px;
+//   z-index: 999;
+// `;
 
-const HelpBotBox = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
+// const HelpBotBox = styled.div`
+//   display: flex;
+//   align-items: center;
+//   gap: 10px;
 
-  background: rgba(17,24,39,0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 999px;
-  padding: 8px 10px 8px 8px;
+//   background: rgba(17,24,39,0.95);
+//   backdrop-filter: blur(10px);
+//   border-radius: 999px;
+//   padding: 8px 10px 8px 8px;
 
-  box-shadow: 0 6px 18px rgba(0,0,0,0.18);
-`;
+//   box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+// `;
 
-const HelpBotIcon = styled.div`
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
+// const HelpBotIcon = styled.div`
+//   width: 46px;
+//   height: 46px;
+//   border-radius: 50%;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
 
-  color: white;
-  font-size: 20px;
-  cursor: default;
+//   color: white;
+//   font-size: 20px;
+//   cursor: default;
 
-  background: linear-gradient(135deg,#1e3a8a,#0ea5e9);
-  animation: ${floatAnim} 3s ease-in-out infinite;
-`;
+//   background: linear-gradient(135deg,#1e3a8a,#0ea5e9);
+//   animation: ${floatAnim} 3s ease-in-out infinite;
+// `;
 
-const HelpBotInput = styled.input`
-  border: none;
-  outline: none;
-  background: transparent;
-  color: white;
+// const HelpBotInput = styled.input`
+//   border: none;
+//   outline: none;
+//   background: transparent;
+//   color: white;
 
-  width: 220px;
-  font-size: 13px;
+//   width: 220px;
+//   font-size: 13px;
 
-  &::placeholder {
-    color: #9ca3af;
-  }
-`;
-
+//   &::placeholder {
+//     color: #9ca3af;
+//   }
+// `;
 
 /* ================= COMPONENT ================= */
 
@@ -220,9 +220,8 @@ const HomeDashboard = () => {
   const [profile, setProfile] = useState<EmployeeProfile | null>(null);
   const { favouriteLinks, removeFavourite } = useFavourites();
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
-  const [helpText, setHelpText] = useState("");
+  //const [helpText, setHelpText] = useState("");
   const navigate = useNavigate();
-  const [showTeam, setShowTeam] = useState(false);
 
   const normalizeProfile = (raw: any): EmployeeProfile | null => {
     if (!raw) return null;
@@ -241,16 +240,6 @@ const HomeDashboard = () => {
       teamMembers: members,
     };
   };
-  
-  const mappedMembers: TeamMember[] =
-    profile?.teamMembers?.map((member) => ({
-     id: member.teamMemID,
-      name: member.teamMemName,
-      title: member.teamMenJobTiTle,
-      email: member.teamMemEmailId,
-      costcenter: member.teamMemCostcenter,
-      gender: member.teamMemGender || member.teamMemgender || member.gender || "",
-    })) ?? [];
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -284,20 +273,12 @@ const HomeDashboard = () => {
           {actionCards.map(card => {
             const badge =
               card.key === "team"
-                ? `${profile?.reporteeCount ?? mappedMembers.length ?? 0} Members`
+                ? `${profile?.reporteeCount ?? 0} Members`
                 : undefined;
-    const handleClick = () => {
-      if (card.key === "team") {
-        setShowTeam(prev => !prev); // Toggle team section
-      } else {
-        navigate(card.route);
-      }
-    };
             return (
               <ActionCard
                 key={card.key}
-               // onClick={() => navigate(card.route)}
-                onClick={handleClick}
+                onClick={() => navigate(card.route)}
                 $gradient={card.gradient}
               >
                 {badge && <Badge>{badge}</Badge>}
@@ -310,8 +291,6 @@ const HomeDashboard = () => {
             );
           })}
         </DefaultCardsGrid>
-        {/* {mappedMembers.length > 0 && <MeetMyTeam members={mappedMembers} />} */}
-        {showTeam && (<MeetMyTeam members={mappedMembers} />)}
         {/* FAVOURITES */}
         <FavouritesSection>
           <FavouritesTitle>My Favourites</FavouritesTitle>
@@ -339,7 +318,7 @@ const HomeDashboard = () => {
           </FavouritesCardsGrid>
         </FavouritesSection>
       </DashboardLayout>
-      <HelpBotWrapper>
+      {/* <HelpBotWrapper>
         <HelpBotBox>
           <HelpBotIcon>
             <FaRobot />
@@ -351,7 +330,7 @@ const HomeDashboard = () => {
             placeholder="Ask me anything..."
           />
         </HelpBotBox>
-      </HelpBotWrapper>
+      </HelpBotWrapper> */}
     </>
   );
 };
