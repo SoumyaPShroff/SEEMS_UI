@@ -8,6 +8,7 @@ interface EmployeeProfile {
   costcenter: string;
   reporttoperson: string;
   teamdescription: string;
+  teamMembers?: string;
 }
 
 const FlashWrapper = styled(motion.div)`
@@ -58,8 +59,10 @@ const MyProfileBanner = () => {
     const fetchProfile = async () => {
       try {
         const res = await fetch(`${baseUrl}/EmployeeDetails/${loginId}`);
-        const data: EmployeeProfile[] = await res.json();
-        setProfile(data[0] ?? null);
+      //  const data: EmployeeProfile[] = await res.json();
+       // setProfile(data[0] ?? null);
+       const data: EmployeeProfile = await res.json();
+       setProfile(data);
       } catch (error) {
         console.error("Failed to fetch profile", error);
       } finally {

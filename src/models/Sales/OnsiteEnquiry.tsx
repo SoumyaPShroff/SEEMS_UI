@@ -43,6 +43,10 @@ interface EnquiryForm {
   toolId: string;
   tool: string;
   quotation_request_lastdate?: string;
+
+  //added
+  jobnames: string;               // ✅ ADD THIS
+  inputreceivedthru: string;  
 }
 
 interface HOPCManager {
@@ -114,6 +118,10 @@ const OnsiteEnquiry: React.FC = () => {
     createdBy: loginUser,
     toolId: "",
     tool: "",
+
+    //added
+    jobnames: "",
+    inputreceivedthru: "",
   });
 
 

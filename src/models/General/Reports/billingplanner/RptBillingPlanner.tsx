@@ -343,11 +343,11 @@ const FiltersSection: React.FC<{
     <LegendGroup>
       <LegendSwatch $color="blue" />
       <span>Flag raised for current month</span>
-      <LegendSwatch $color="red" />
+      <LegendSwatch $color="#d517f2c2" />
       <span>PO not received</span>
       <LegendSwatch $color="green" />
       <span>Invoiced</span>
-      <LegendSwatch $color="#d517f2c2" />
+      <LegendSwatch $color="red" />
       <span>Job without PO</span>
     </LegendGroup>
   </FilterBar>
@@ -732,26 +732,27 @@ const RptBillingPlanner: React.FC = () => {
     const jobNo: string = params.row.jobNumber || "";
     const poRcvd: string = params.row.poRcvd || "";
     const dtStr: string = params.row.flagRaisedOn || "";
-    const poDateStr: string = params.row.poDate;
     const requestDateStr: string = params.row.realisedDate;
     const flagDate = new Date(dtStr);
     const key = `${jobNo}_${flagDate.getMonth() + 1}_${flagDate.getFullYear()}`;
 
     // 🟥 Case 1 — PO not received
-    if (poRcvd === "NO") {
+    if (poRcvd === "NO" || poRcvd === "") {
       //new logic
-      if (poDateStr && requestDateStr) {
-        const poDate = new Date(poDateStr);
+      if (requestDateStr) {
+        const currentDate = new Date();
         const requestDate = new Date(requestDateStr);
-        const diffDays = Math.floor((poDate.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
+        const diffDays = Math.floor((currentDate.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
         // 🟠 PO delay > 7 days
         if (diffDays > 7) {
-          return "row-purple";
+       //   return "row-purple";
+          return "row-red";
         }
       }
 
       // 🟥 Default PO not received
-      return "row-red";
+    //  return "row-red";
+        return "row-purple";
     }
 
     // 🟦 Case 2 — Flag date present

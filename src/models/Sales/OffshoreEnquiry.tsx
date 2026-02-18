@@ -13,8 +13,6 @@ import { baseUrl } from "../../const/BaseUrl";
 import { ToastContainer, toast } from "react-toastify";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { RiBox3Line } from "react-icons/ri";
-import { FaBoxOpen } from "react-icons/fa";
 
 interface Customer { itemno: string; customer: string; }
 
@@ -61,8 +59,10 @@ interface EnquiryForm {
    govt_tender: string;
    completeresponsibilityid: string;
    salesresponsibilityid: string;
-   referenceBy: string | null;
-   remarks: string | null;
+   // referenceBy: string | null;
+   // remarks: string |null;
+    referenceBy?: string;
+    remarks?: string;
    layout: string[];
    analysis: string[];
    va: string[];
@@ -962,8 +962,8 @@ const OffshoreEnquiry: React.FC = () => {
                borderRadius: 3,
                border: "1px solid  #557ec6",
                boxShadow: "0 14px 30px  rgba(24, 71, 153, 0.16)",
-               background:
-                  "linear-gradient(180deg, #f9fbff 0%, #f3f7ff 100%)",
+         //       background:
+         //          "linear-gradient(180deg, #f9fbff 0%, #f3f7ff 100%)",
            background: "linear-gradient(145deg, #f7fbff 0%, #e8f2ff 52%, #dbeaff 100%)",
           "& .MuiTypography-root, & .MuiInputBase-input, & .MuiFormControlLabel-label, & .MuiInputLabel-root": {
             fontFamily: "Arial",
@@ -1050,7 +1050,8 @@ const OffshoreEnquiry: React.FC = () => {
                                  <Label text="Address" />
                                  <TextControl
                                     name="address"
-                                    value={form.address}
+                                   // value={form.address}
+                                   value={form.address || ""}
                                     multiline
                                     rows={2}
                                     fullWidth
@@ -1319,8 +1320,9 @@ const OffshoreEnquiry: React.FC = () => {
                                  <SelectControl
                                     name="referenceBy"
                                     label="Reference By"
-                                    value={form.referenceBy}
-                                    onChange={handleChange}
+                                   // value={form.referenceBy}
+                                   value={form.referenceBy || ""} 
+                                   onChange={handleChange}
                                     options={lookups.AllActiveEmployees.map((e) => ({
                                        value: e.name,
                                        label: e.name,
@@ -1336,7 +1338,8 @@ const OffshoreEnquiry: React.FC = () => {
                                     multiline
                                     rows={2}
                                     name="remarks"
-                                    value={form.remarks}
+                                   // value={form.remarks}
+                                   value={form.remarks || ""}
                                     onChange={handleChange}
                                     style={{ ...standardInputStyle, padding: "8px", height: "60px"  }}
                                  />

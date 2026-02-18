@@ -2,8 +2,9 @@ import React from 'react';
 
 interface TextControlProps {
   name?: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  //value: string;
+  value?: string | null;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   placeholder?: string;
   style?: React.CSSProperties;
   fontSize?: string | number;
@@ -43,7 +44,8 @@ const TextControl: React.FC<TextControlProps> = ({
     return (
       <textarea
         name={name}
-        value={value}
+       // value={value}
+        value={value ?? ""}
         onChange={onChange}
         placeholder={placeholder}
         style={baseStyle}
@@ -58,7 +60,8 @@ const TextControl: React.FC<TextControlProps> = ({
     <input
       name={name}
       type={type}
-      value={value}
+      //value={value}
+      value={value ?? ""}
       onChange={onChange}
       placeholder={placeholder}
       style={baseStyle}
