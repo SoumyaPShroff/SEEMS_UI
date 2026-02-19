@@ -1,4 +1,4 @@
-import  { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { FaSave } from "react-icons/fa";
 import { toast } from "react-toastify";
@@ -27,8 +27,8 @@ type PlannedHoursRow = {
   efforts: number;
   billedHrs: number;
   balanceHrs: number;
- // plannedHours: number | "";
-  monthlyHrs?: number | ""; 
+  // plannedHours: number | "";
+  monthlyHrs?: number | "";
   remarks: string;
 };
 
@@ -104,10 +104,10 @@ const GRID_COLUMNS: EditableGridColumn<PlannedHoursRow>[] = [
     editable: true,
     editorType: "textcontrol",
     inputType: "number",
-     cellClassName: (params) =>
-    Number(params.value) > Number(params.row.balanceHrs)
-      ? "invalid-cell editable-grid-cell"
-      : "editable-grid-cell",
+    cellClassName: (params) =>
+      Number(params.value) > Number(params.row.balanceHrs)
+        ? "invalid-cell editable-grid-cell"
+        : "editable-grid-cell",
   },
   {
     field: "remarks",
@@ -121,7 +121,7 @@ const GRID_COLUMNS: EditableGridColumn<PlannedHoursRow>[] = [
 
 const initialFilters = (): Filters => ({
   month: new Date().getMonth() + 1,
- //month: `${filters.year}-${String(filters.month).padStart(2, "0")}-01`,
+  //month: `${filters.year}-${String(filters.month).padStart(2, "0")}-01`,
   year: new Date().getFullYear(),
   managerCostCenter: "",
 });
@@ -137,7 +137,7 @@ const normalizeRows = (data: PlannedHoursRow[]) =>
   data.map((item) => ({
     ...item,
     id: item.id || item.jobNumber,
-   monthlyHrs: item.monthlyHrs ??   ""
+    monthlyHrs: item.monthlyHrs ?? ""
   }));
 
 const toNumber = (value: unknown): number => {
@@ -153,14 +153,7 @@ const toNumber = (value: unknown): number => {
 async function savePlannedHours(rows: PlannedHoursRow[], filters: Filters) {
 
   const monthStr = `${filters.year}-${String(filters.month).padStart(2, "0")}-01`;
-
-  // const payload: SavePayload[] = rows.map((row) => ({
-  //   jobNumber: row.jobNumber,
-  //   month: monthStr,
-  //   monthlyHrs: toNumber(row.monthlyHrs),
-  //   remarks: row.remarks ?? "",
-  // }));
-    const payload: SavePayload[] = rows
+  const payload: SavePayload[] = rows
     // 🚫 skip monthlyHrs = 0 or empty
     .filter((row) => toNumber(row.monthlyHrs) > 0)
     .map((row) => ({
@@ -263,33 +256,33 @@ export default function PlannedHours() {
     setRows(nextRows);
   }, []);
 
-const handleValidateCellEdit = useCallback(
-  ({ row, field, value }: { row: PlannedHoursRow; field: string; value: unknown }) => {
-    if (field !== "monthlyHrs") return null;
+  const handleValidateCellEdit = useCallback(
+    ({ row, field, value }: { row: PlannedHoursRow; field: string; value: unknown }) => {
+      if (field !== "monthlyHrs") return null;
 
-    const planned = toNumber(value);
-    const bal = toNumber(row.balanceHrs);
+      const planned = toNumber(value);
+      const bal = toNumber(row.balanceHrs);
 
-    if (planned > bal) {
-      const toastKey = `${row.jobNumber}-${planned}-${bal}`;
+      if (planned > bal) {
+        const toastKey = `${row.jobNumber}-${planned}-${bal}`;
 
-      if (lastInvalidToastKeyRef.current !== toastKey) {
-        toast.error(
-          `Planned hours (${planned}) cannot exceed balance hours (${bal}) for ${row.jobNumber}`
-        );
-        lastInvalidToastKeyRef.current = toastKey;
+        if (lastInvalidToastKeyRef.current !== toastKey) {
+          toast.error(
+            `Planned hours (${planned}) cannot exceed balance hours (${bal}) for ${row.jobNumber}`
+          );
+          lastInvalidToastKeyRef.current = toastKey;
+        }
+
+        setHasCellValidationError(true);
+        return "invalid";
       }
 
-      setHasCellValidationError(true);
-      return "invalid";
-    }
-
-    lastInvalidToastKeyRef.current = "";
-    setHasCellValidationError(false);
-    return null;
-  },
-  []
-);
+      lastInvalidToastKeyRef.current = "";
+      setHasCellValidationError(false);
+      return null;
+    },
+    []
+  );
 
   const handleUpdate = async () => {
     if (invalidRow) {

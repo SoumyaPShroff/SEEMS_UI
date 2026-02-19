@@ -26,6 +26,8 @@ import ComingSoon from './components/ComingSoon';
 import ReleaseNotesText from './components/ReleaseNotesText';
 import ReleaseNotes from './components/ReleaseNotes';
 import PlannedHours from './models/Projects/PlannedHours';
+import ViewCustomers from './models/Sales/ViewCustomers';
+import AddEditCustomer from './models/Sales/AddEditCustomer';
 
 const App: React.FC = () => {
   const [userId, setUserId] = useState(sessionStorage.getItem('SessionUserID'));
@@ -74,6 +76,10 @@ const App: React.FC = () => {
           <Route path="Feasibility/:enquiryno" element={<Feasibility />} />
           <Route path="PlannedHours" element={<PlannedHours />} />
           <Route path="MeetMyTeam" element={<MeetMyTeam />} />
+          <Route path="ViewCustomers" element={<ViewCustomers />} />
+          <Route path="AddEditCustomer/:itemno" element={<AddEditCustomer />} />
+          <Route path="AddEditCustLocation/:itemno" element={<ComingSoon />} />
+          <Route path="AddEditCustContact/:itemno" element={<ComingSoon />} />
         </Route>
         {/* Password + Blank */}
         <Route path="/ResetPassword" element={<ResetPassword />} />
@@ -88,4 +94,3 @@ const App: React.FC = () => {
   );
 };
 export default App;
-

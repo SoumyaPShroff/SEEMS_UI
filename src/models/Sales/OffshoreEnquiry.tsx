@@ -13,6 +13,7 @@ import { baseUrl } from "../../const/BaseUrl";
 import { ToastContainer, toast } from "react-toastify";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { standardInputStyle } from "./styles/standardInputStyle";
 
 interface Customer { itemno: string; customer: string; }
 
@@ -59,8 +60,6 @@ interface EnquiryForm {
    govt_tender: string;
    completeresponsibilityid: string;
    salesresponsibilityid: string;
-   // referenceBy: string | null;
-   // remarks: string |null;
     referenceBy?: string;
     remarks?: string;
    layout: string[];
@@ -97,6 +96,17 @@ function isEmployee(obj: any): obj is Employee {
 function isNPIManager(obj: any): obj is NPIManager {
    return obj && "iDno" in obj;
 }
+   // const standardInputStyle: React.CSSProperties = {
+   //    width: "100%",
+   //     height: 34,
+   //    border: "1px solid #cfd8e3",
+   //    borderRadius: 6,
+   //    padding: "0 10px",
+   //    fontSize: 13,
+   //    boxSizing: "border-box",
+   //    backgroundColor: "#fff",
+   //    marginTop: 2,
+   // };
 
 const OffshoreEnquiry: React.FC = () => {
    const loginUser = sessionStorage.getItem("SessionUserName") || "guest";
@@ -158,18 +168,6 @@ const OffshoreEnquiry: React.FC = () => {
 
    const [file, setFile] = useState<File | null>(null);
    const [loading, setLoading] = useState(false);
-   const standardInputStyle: React.CSSProperties = {
-      width: "100%",
-       height: 34,
-      border: "1px solid #cfd8e3",
-      borderRadius: 6,
-      padding: "0 10px",
-      fontSize: 13,
-       boxSizing: "border-box",
-      backgroundColor: "#fff",
-      marginTop: 2,
-   };
-
    // fields backend requires, but UI does not collect
    const dtoBlankDefaults = {
       layoutbyid: "", npibyid: "", analysisbyid: "", npiNewbyid: "",

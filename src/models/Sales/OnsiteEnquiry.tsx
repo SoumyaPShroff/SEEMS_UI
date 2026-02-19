@@ -9,6 +9,7 @@ import { baseUrl } from "../../const/BaseUrl";
 import { ToastContainer, toast } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import { standardInputStyle } from "./styles/standardInputStyle";
 
 interface EnquiryForm {
   enquirytype: string;
@@ -66,6 +67,17 @@ function isHOPCManager(obj: any): obj is HOPCManager {
   return obj && "hopc1id" in obj;
 }
 
+  // const standardInputStyle: React.CSSProperties = {
+  //   width: "100%",
+  //   height: 34,
+  //   border: "1px solid #cfd8e3",
+  //   borderRadius: 6,
+  //   padding: "0 10px",
+  //   fontSize: 13,
+  //   boxSizing: "border-box",
+  //   backgroundColor: "#fff",
+  //   marginTop: 2,
+  // };
 const OnsiteEnquiry: React.FC = () => {
   const navigate = useNavigate();
   const { enquiryNo } = useParams();
@@ -73,18 +85,6 @@ const OnsiteEnquiry: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
   const loginUser = sessionStorage.getItem("SessionUserName") || "guest";
-  const standardInputStyle: React.CSSProperties = {
-    width: "100%",
-    height: 34,
-    border: "1px solid #cfd8e3",
-    borderRadius: 6,
-    padding: "0 10px",
-    fontSize: 13,
-    boxSizing: "border-box",
-    backgroundColor: "#fff",
-    marginTop: 2,
-  };
-
   const [form, setForm] = useState<EnquiryForm>({
     enquirytype: "ONSITE",
     customerId: "",
