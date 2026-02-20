@@ -38,6 +38,8 @@ const ViewCustomers = () => {
   const [locationRows, setLocationRows] = useState<any[]>([]);
   const [contactRows, setContactRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedLocationCustomerId, setSelectedLocationCustomerId] = useState("");
+  const [selectedContactCustomerId, setSelectedContactCustomerId] = useState("");
 
   useEffect(() => {
     const requestedTab = (searchParams.get("tab") || "").toLowerCase();
@@ -195,30 +197,6 @@ const ViewCustomers = () => {
             navigate(`/Home/AddEditCustomer/${encodeURIComponent(id)}`);
           }),
       },
-            {
-        field: "addContact",
-        headerName: "Add Contact",
-        minWidth: 120,
-        sortable: false,
-        filterable: false,
-        renderCell: (params) =>
-          actionLink("Add Contact", () => {
-            const id = getCustomerId(params.row) || String(params.row?.id ?? "");
-            navigate(`/Home/AddEditCustContact/${encodeURIComponent(id)}`);
-          }),
-      },
-      {
-        field: "addLocation",
-        headerName: "Add Location",
-        minWidth: 130,
-        sortable: false,
-        filterable: false,
-        renderCell: (params) =>
-          actionLink("Add Location", () => {
-            const id = getCustomerId(params.row) || String(params.row?.id ?? "");
-            navigate(`/Home/AddEditCustLocation/${encodeURIComponent(id)}`);
-          }),
-      },
 
       { field: "customer_Type", headerName: "Type", minWidth: 110, flex: 1 },
       { field: "sapcustcode", headerName: "SAP CustCode", minWidth: 130, flex: 1 },
@@ -274,10 +252,12 @@ const ViewCustomers = () => {
         sortable: false,
         filterable: false,
         renderCell: (params) => {
+          const contactRouteId = String(params.row?.contact_id ?? params.row?.contactId ?? "").trim();
           const customerId = getCustomerId(params.row);
-          if (!customerId) return "-";
+          const targetId = contactRouteId || customerId;
+          if (!targetId) return "-";
           return actionLink("Edit Contact", () => {
-            navigate(`/Home/AddEditCustContact/${encodeURIComponent(customerId)}`);
+            navigate(`/Home/AddEditCustContact/${encodeURIComponent(targetId)}`);
           });
         },
       },
@@ -297,10 +277,10 @@ const ViewCustomers = () => {
 
   const searchableFields =
     activeTab === "customers"
-      ? ["customer", "customer_abb", "sales_resp", "sales_resp_id", "sapcustcode", "itemno", "gst_no"]
+      ? ["customer", "customer_abb", "sales_resp", "sales_resp_id", "sapcustcode", "itemno", "gst_no","customer_Type"]
       : activeTab === "locations"
-      ? ["customer", "customer_id", "location", "address", "phone1", "phone2"]
-      : ["customer", "customer_id", "location", "contact_title", "mobile1", "mobile2", "email"];
+      ? ["customer", "customerAbb", "location", "address", "phoneno1", "phoneno2"]
+      : ["customer", "customerAbb", "contactName", "contactTitle", "mobile1", "mobile2", "email11"];
 
   const title =
     activeTab === "customers" ? "Customers"
@@ -325,10 +305,23 @@ const ViewCustomers = () => {
   };
 
   const handlePrimaryAdd = () => {
-    navigate("/Home/AddEditCustomer/new");
+    if (activeTab === "customers") {
+      navigate("/Home/AddEditCustomer/new");
+      return;
+    }
+    if (activeTab === "locations") {
+      if (!selectedLocationCustomerId) {
+        toast.info("Select a location row first, then click New Location.");
+        return;
+      }
+      navigate(`/Home/AddEditCustLocation/${encodeURIComponent(selectedLocationCustomerId)}`);
+      return;
+    }
+    navigate("/Home/AddEditCustContact/new");
   };
 
-  const addButtonLabel = "Add New";
+  const addButtonLabel =
+    activeTab === "customers" ? "Add New" : activeTab === "locations" ? "New Location" : "New Contact";
 
   return (
     <Box
@@ -438,27 +431,25 @@ const ViewCustomers = () => {
         }}
       >
         <ExportButton label="Export to Excel" onClick={handleExport} />
-        {activeTab === "customers" && (
-          <Button
-            variant="contained"
-            onClick={handlePrimaryAdd}
-            sx={{
-              textTransform: "none",
-              fontWeight: 700,
-              borderRadius: 1.5,
-              px: 1.5,
-              py: 0.5,
-              background: "linear-gradient(135deg, #1f62b2 0%, #0f7dd6 100%)",
-              boxShadow: "0 8px 16px rgba(20, 93, 178, 0.28)",
-              "&:hover": {
-                background: "linear-gradient(135deg, #1a5598 0%, #0c6dbc 100%)",
-              },
-              height: 32,
-            }}
-          >
-            {addButtonLabel}
-          </Button>
-        )}
+        <Button
+          variant="contained"
+          onClick={handlePrimaryAdd}
+          sx={{
+            textTransform: "none",
+            fontWeight: 700,
+            borderRadius: 1.5,
+            px: 1.5,
+            py: 0.5,
+            background: "linear-gradient(135deg, #1f62b2 0%, #0f7dd6 100%)",
+            boxShadow: "0 8px 16px rgba(20, 93, 178, 0.28)",
+            "&:hover": {
+              background: "linear-gradient(135deg, #1a5598 0%, #0c6dbc 100%)",
+            },
+            height: 32,
+          }}
+        >
+          {addButtonLabel}
+        </Button>
       </Box>
 
       {loading ? (
@@ -500,6 +491,11 @@ const ViewCustomers = () => {
             getRowId={getRowId}
             searchableFields={searchableFields}
             placeholder={`Search ${title.toLowerCase()}...`}
+            onRowClick={(row: any) => {
+              const customerId = getCustomerId(row);
+              if (activeTab === "locations") setSelectedLocationCustomerId(customerId);
+              if (activeTab === "contacts") setSelectedContactCustomerId(customerId);
+            }}
           />
         </Box>
       )}

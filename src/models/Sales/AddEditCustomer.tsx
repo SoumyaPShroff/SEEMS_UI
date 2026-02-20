@@ -50,6 +50,10 @@ const AddEditCustomer = () => {
 
   const onTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    if (name === "customer_abb") {
+      setForm((prev) => ({ ...prev, [name]: value.slice(0, 4) }));
+      return;
+    }
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 

@@ -34,6 +34,7 @@ const AddEditCustLocation = () => {
   const [customerName, setCustomerName] = useState("");
   const [customerAbb, setCustomerAbb] = useState("");
   const [locationId, setLocationId] = useState<string>("");
+  const isEditMode = Boolean(locationId);
 
   const onTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -89,10 +90,10 @@ const AddEditCustLocation = () => {
     setSaving(true);
     try {
       if (mode === "add") {
-        await axios.post(`${baseUrl}/api/Sales/AddCustomerLocation`, payload);
+        await axios.post(`${baseUrl}/api/Sales/AddCustLocation`, payload);
         toast.success("Customer location added successfully.");
       } else {
-        await axios.put(`${baseUrl}/api/Sales/EditCustomerLocation/${selectedItemNo}`, payload);
+        await axios.put(`${baseUrl}/api/Sales/EditCustLocation/${selectedItemNo}`, payload);
         toast.success("Customer location updated successfully.");
       }
       navigate("/Home/ViewCustomers?tab=locations");
@@ -193,10 +194,21 @@ const AddEditCustLocation = () => {
                 </Box>
 
                 <Stack direction="row" spacing={1} sx={{ mt: 2, justifyContent: "flex-end" }}>
-                  <Button variant="contained" size="small" disabled={saving} onClick={() => handleSave("add")}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    disabled={saving || isEditMode}
+                    onClick={() => handleSave("add")}
+                  >
                     Add Location
                   </Button>
-                  <Button variant="contained" color="success" size="small" disabled={saving} onClick={() => handleSave("edit")}>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    size="small"
+                    disabled={saving || !isEditMode}
+                    onClick={() => handleSave("edit")}
+                  >
                     Edit Location
                   </Button>
                 </Stack>

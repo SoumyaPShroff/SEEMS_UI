@@ -8,13 +8,15 @@ import TextControl from "../../components/resusablecontrols/TextControl";
 import SelectControl from "../../components/resusablecontrols/SelectControl";
 import { baseUrl } from "../../const/BaseUrl";
 import { standardInputStyle } from "./styles/standardInputStyle";
-import { padding } from "@mui/system";
 
 type Option = { value: string | number; label: string };
 
 interface ContactForm {
   location_id: string;
-  contactTitle: string;
+  contact_id: string;
+  customer_id: string;
+  ContactTitle: string;
+  ContactName: string;
   mobile1: string;
   mobile2: string;
   email: string;
@@ -22,31 +24,56 @@ interface ContactForm {
 
 const emptyForm: ContactForm = {
   location_id: "",
-  contactTitle: "",
+  contact_id: "",
+  customer_id: "",
+  ContactTitle: "",
+  ContactName: "",
   mobile1: "",
   mobile2: "",
   email: "",
 };
 
 const titleOptions: Option[] = [
-  { value: "Mr", label: "Mr" },
-  { value: "Mrs", label: "Mrs" },
-  { value: "Ms", label: "Ms" },
+  { value: "Mr.", label: "Mr." },
+  { value: "Mrs.", label: "Mrs." },
+  { value: "Ms.", label: "Ms." },
 ];
+
+const pickValue = (row: any, keys: string[]): string => {
+  for (const key of keys) {
+    const value = row?.[key];
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
+      return String(value);
+    }
+  }
+  return "";
+};
+
+const normalizeTitle = (value: string): string => {
+  const t = value.trim().toLowerCase().replace(".", "");
+  if (t === "mr") return "Mr.";
+  if (t === "mrs") return "Mrs.";
+  if (t === "ms") return "Ms.";
+  return value;
+};
 
 const AddEditCustContact = () => {
   const navigate = useNavigate();
   const { itemno } = useParams();
   const selectedItemNo = decodeURIComponent(itemno ?? "").trim();
-  const loginId = sessionStorage.getItem("SessionUserID") || "guest";
+  const isAddNewMode = selectedItemNo.toLowerCase() === "new";
 
   const [loadingPage, setLoadingPage] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<ContactForm>(emptyForm);
   const [customerName, setCustomerName] = useState("");
   const [customerAbb, setCustomerAbb] = useState("");
+  const [customerOptions, setCustomerOptions] = useState<Option[]>([]);
   const [locationOptions, setLocationOptions] = useState<Option[]>([]);
   const [contactId, setContactId] = useState<string>("");
+  const [resolvedCustomerId, setResolvedCustomerId] = useState<string>("");
+
+  const currentCustomerId = (resolvedCustomerId || (isAddNewMode ? form.customer_id : selectedItemNo) || "").trim();
 
   const onTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -55,49 +82,168 @@ const AddEditCustContact = () => {
 
   const onSelectChange = (e: any) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: String(value ?? "") }));
+    const nextValue = String(value ?? "");
+    if (name === "location_id") {
+      setForm((prev) => ({
+        ...prev,
+        [name]: nextValue,
+        mobile1: "",
+        mobile2: "",
+        email: "",
+      }));
+      return;
+    }
+    if (name === "customer_id") {
+      setResolvedCustomerId(nextValue);
+      setForm((prev) => ({
+        ...prev,
+        customer_id: nextValue,
+        location_id: "",
+        mobile1: "",
+        mobile2: "",
+        email: "",
+      }));
+      setLocationOptions([]);
+      if (nextValue) {
+        void fetchCustomerLabels(nextValue);
+        void fetchLocations(nextValue);
+      } else {
+        setCustomerName("");
+        setCustomerAbb("");
+      }
+      return;
+    }
+    setForm((prev) => ({ ...prev, [name]: nextValue }));
   };
 
-  const fetchCustomerLabels = async () => {
-    if (!selectedItemNo) return;
-    const res = await axios.get(`${baseUrl}/api/Sales/CustomerById?itemno=${encodeURIComponent(selectedItemNo)}`);
+  const fetchCustomersForNew = async () => {
+    const res = await axios.get(`${baseUrl}/api/Sales/Customers`);
+    const rows = Array.isArray(res.data) ? res.data : [];
+    const mapped = rows
+      .map((x: any, idx: number) => ({
+        value: String(x.itemno ?? x.customer_id ?? x.customerId ?? `cust-${idx}`),
+        label: String(x.customer ?? x.customerName ?? ""),
+      }))
+      .filter((x: Option) => !!x.label);
+    setCustomerOptions(mapped);
+  };
+
+  const fetchCustomerLabels = async (customerId: string) => {
+    if (!customerId) return;
+    const res = await axios.get(`${baseUrl}/api/Sales/CustomerById?itemno=${encodeURIComponent(customerId)}`);
     const row = Array.isArray(res.data) ? res.data[0] : res.data;
     setCustomerName(String(row?.customer ?? ""));
     setCustomerAbb(String(row?.customerAbb ?? ""));
   };
 
-  const fetchLocations = async () => {
-    if (!selectedItemNo) return;
-    const res = await axios.get(`${baseUrl}/api/Sales/customerlocations?customerId=${encodeURIComponent(selectedItemNo)}`);
-    const rows = Array.isArray(res.data) ? res.data : [];
+  const fetchLocations = async (customerId: string) => {
+    if (!customerId) return;
+    let rows: any[] = [];
+
+    try {
+      const res = await axios.get(`${baseUrl}/api/Sales/customerlocations?customerId=${encodeURIComponent(customerId)}`);
+      rows = Array.isArray(res.data) ? res.data : [];
+    } catch {
+      // Treat "no data"/error from customerId API as empty set and use fallback API.
+      rows = [];
+    }
+
+    if (rows.length === 0) {
+      const allRes = await axios.get(`${baseUrl}/api/Sales/customerlocations`);
+      rows = Array.isArray(allRes.data) ? allRes.data : [];
+    }
+
+    const locationRows = rows.map((x: any) => ({
+      location: String(x.location ?? ""),
+      location_id: String(x.location_id ?? x.locationId ?? ""),
+    }));
+
     setLocationOptions(
-      rows.map((x: any, idx: number) => ({
-        value: x.location_id ?? x.locationId ?? `loc-${idx}`,
-        label: String(x.location ?? ""),
+      locationRows.map((x: any, idx: number) => ({
+        value: x.location_id || `loc-${idx}`,
+        label: x.location,
       }))
     );
   };
 
   const fetchExistingContact = async () => {
-    if (!selectedItemNo || !form.location_id) return;
+    if (!currentCustomerId || !form.location_id) return;
+    try {
+      const effectiveContactId = String(form.contact_id || "").trim();
+      const url = effectiveContactId
+        ? `${baseUrl}/api/Sales/customercontacts?contactid=${encodeURIComponent(effectiveContactId)}`
+        : `${baseUrl}/api/Sales/customercontacts?customer_id=${encodeURIComponent(currentCustomerId)}&location_id=${encodeURIComponent(form.location_id)}`;
+
+      const res = await axios.get(url);
+      const dataRows = Array.isArray(res.data) ? res.data : res.data ? [res.data] : [];
+      const row = effectiveContactId
+        ? dataRows.find((x: any) => String(x.contact_id ??  "") === effectiveContactId)
+        : dataRows.find(
+            (x: any) => String(x.location_id ?? x.locationId ?? "") === String(form.location_id)
+          );
+      if (!row) {
+        setContactId("");
+        setForm((prev) => ({ ...prev, ContactTitle: "", ContactName: "", mobile1: "", mobile2: "", email: "" }));
+        return;
+      }
+      const nextContactId = pickValue(row, ["contact_id", "contactId"]);
+      setContactId(nextContactId);
+      setForm((prev) => ({
+        ...prev,
+        contact_id: nextContactId,
+        ContactTitle: normalizeTitle(pickValue(row, ["ContactTitle", "contactTitle", "contact_title"])),
+        ContactName: pickValue(row, ["ContactName", "contactName", "contact_name"]),
+        mobile1: pickValue(row, ["mobile1", "mobile_1", "mobileno1"]),
+        mobile2: pickValue(row, ["mobile2", "mobile_2", "mobileno2"]),
+        email: pickValue(row, ["email11", "email", "email1"]),
+      }));
+    } catch {
+      setContactId("");
+      setForm((prev) => ({ ...prev, ContactTitle: "", ContactName: "", mobile1: "", mobile2: "", email: "" }));
+    }
+  };
+
+  const tryLoadByContactId = async (maybeContactId: string) => {
+    if (!maybeContactId) return false;
     const res = await axios.get(
-      `${baseUrl}/api/Sales/customercontacts?customer_id=${encodeURIComponent(selectedItemNo)}&location_id=${encodeURIComponent(form.location_id)}`
+      `${baseUrl}/api/Sales/customercontacts?contactid=${encodeURIComponent(maybeContactId)}`
     );
-    const row = Array.isArray(res.data) ? res.data[0] : res.data;
-    if (!row) return;
-    setContactId(String(row.contact_id  ?? ""));
+    const rows = Array.isArray(res.data) ? res.data : res.data ? [res.data] : [];
+    const matched =
+      rows.find((x: any) => String(x.contact_id ?? x.contactId ?? "").trim() === maybeContactId) ||
+      rows[0];
+
+    if (!matched) return false;
+
+    const customerId = String(matched.customer_id ?? matched.customerId ?? "").trim();
+    if (!customerId) return false;
+
+    const matchedContactId = String(matched.contact_id ?? matched.contactId ?? "").trim();
+    const matchedLocationId = String(matched.location_id ?? matched.locationId ?? "").trim();
+    setResolvedCustomerId(customerId);
+    setContactId(matchedContactId);
+
     setForm((prev) => ({
       ...prev,
-      contactTitle: String(row.contactTitle ?? ""),
-      mobile1: String(row.mobile1 ?? ""),
-      mobile2: String(row.mobile2 ?? ""),
-      email: String( row.email11 ?? ""),
+      customer_id: customerId,
+      contact_id: matchedContactId,
+      location_id: matchedLocationId,
+      ContactTitle: normalizeTitle(pickValue(matched, ["ContactTitle", "contactTitle", "contact_title"])),
+      ContactName: pickValue(matched, ["ContactName", "contactName", "contact_name"]),
+      mobile1: pickValue(matched, ["mobile1", "mobile_1", "mobileno1"]),
+      mobile2: pickValue(matched, ["mobile2", "mobile_2", "mobileno2"]),
+      email: pickValue(matched, ["email11", "email", "email1"]),
     }));
+
+    await Promise.all([fetchCustomerLabels(customerId), fetchLocations(customerId)]);
+    return true;
   };
 
   const validate = () => {
+    if (!currentCustomerId) return "Customer is required.";
     if (!form.location_id) return "Location is required.";
-    if (!form.contactTitle) return "Contact Title is required.";
+    if (!form.ContactTitle) return "Contact Title is required.";
+    if (!form.ContactName.trim()) return "Contact Name is required.";
     if (!form.mobile1.trim()) return "Mobile1 is required.";
     if (!form.email.trim()) return "Email is required.";
     return "";
@@ -110,25 +256,30 @@ const AddEditCustContact = () => {
       return;
     }
 
-    const payload = {
+    if (mode === "edit" && !contactId) {
+      toast.error("Contact ID is required for edit.");
+      return;
+    }
+
+    const basePayload = {
      // itemno: selectedItemNo,
-      customer_id: selectedItemNo,
-      contact_id: contactId || undefined,
+      customer_id: currentCustomerId,
       location_id: form.location_id,
-      contactTitle: form.contactTitle,
+      ContactTitle: form.ContactTitle,
+      ContactName: form.ContactName,
+      email11: form.email.trim(),
       mobile1: form.mobile1.trim(),
       mobile2: form.mobile2.trim(),
-      email11: form.email.trim(),
-      addedby: loginId,
     };
 
     setSaving(true);
     try {
       if (mode === "add") {
-        await axios.post(`${baseUrl}/api/Sales/AddCustomerContact`, payload);
+        await axios.post(`${baseUrl}/api/Sales/AddCustContact`, basePayload);
         toast.success("Customer contact added successfully.");
       } else {
-        await axios.put(`${baseUrl}/api/Sales/EditCustomerContact/${selectedItemNo}`, payload);
+        const payload = { ...basePayload, contact_id: contactId };
+        await axios.put(`${baseUrl}/api/Sales/EditCustContact/${encodeURIComponent(contactId || selectedItemNo)}`, payload);
         toast.success("Customer contact updated successfully.");
       }
       navigate("/Home/ViewCustomers?tab=contacts");
@@ -144,7 +295,23 @@ const AddEditCustContact = () => {
     const init = async () => {
       setLoadingPage(true);
       try {
-        await Promise.all([fetchCustomerLabels(), fetchLocations()]);
+        if (isAddNewMode) {
+          setResolvedCustomerId("");
+          setContactId("");
+          setForm(emptyForm);
+          setCustomerName("");
+          setCustomerAbb("");
+          setLocationOptions([]);
+          await fetchCustomersForNew();
+          return;
+        }
+
+        const loadedByContactId = await tryLoadByContactId(selectedItemNo);
+        if (!loadedByContactId) {
+          setResolvedCustomerId(selectedItemNo);
+          setForm((prev) => ({ ...prev, customer_id: selectedItemNo }));
+          await Promise.all([fetchCustomerLabels(selectedItemNo), fetchLocations(selectedItemNo)]);
+        }
       } catch (error) {
         console.error("Load contact page failed:", error);
         toast.error("Unable to load customer/contact details.");
@@ -154,15 +321,15 @@ const AddEditCustContact = () => {
     };
     init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedItemNo]);
+  }, [selectedItemNo, isAddNewMode]);
 
   useEffect(() => {
     fetchExistingContact();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.location_id, selectedItemNo]);
+  }, [form.location_id, currentCustomerId, contactId, form.contact_id]);
 
   return (
-    <Box sx={{ maxWidth: 600, mx: "auto", mt: 20, px: { xs: 1.5, md: 0 }, fontFamily: "Arial" }}>
+    <Box sx={{ maxWidth: 650, mx: "auto", mt: 20, px: { xs: 1.5, md: 0 }, fontFamily: "Arial" }}>
       <Card
         sx={{
           width: "100%",
@@ -205,15 +372,28 @@ const AddEditCustContact = () => {
               </Box>
             ) : (
               <>
-                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, columnGap: 1.5, rowGap: 1.2 }}>
-                  <Box  sx={{ p: 1.2 }}>
+                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1.4fr 1fr" }, columnGap: 1.5, rowGap: 1.2, alignItems: "start" }}>
+                  <Box sx={{ p: 0.6 }}>
                     <Label text="Customer Name"  />
-                    <Typography sx={{ mt: 0.7, fontSize: 14, color: "#4782d4", fontWeight: "bold"  }}>{customerName || "-"}</Typography>
+                    <Typography sx={{ mt: 0.7, fontSize: 14, color: "#4782d4", fontWeight: "bold" }}>{customerName || "-"}</Typography>
                   </Box>
-                  <Box sx={{ p: 1.2 }}>
+                  <Box sx={{ p: 0.6 }}>
                     <Label text="Customer Abbreviation"  />
                     <Typography sx={{ mt: 0.7, fontSize: 14, color: "#4782d4", fontWeight: "bold" }}>{customerAbb || "-"}</Typography>
                   </Box>
+                  {isAddNewMode && (
+                    <Box sx={{ gridColumn: { xs: "1 / -1", md: "1 / 3" }, p: 0.5 }}>
+                      <SelectControl
+                        name="customer_id"
+                        label="Customer"
+                        value={form.customer_id}
+                        options={customerOptions}
+                        onChange={onSelectChange}
+                        required
+                        height={34}
+                      />
+                    </Box>
+                  )}
                   <Box>
                     <SelectControl
                       name="location_id"
@@ -226,12 +406,21 @@ const AddEditCustContact = () => {
                   </Box>
                   <Box>
                     <SelectControl
-                      name="contact_title"
+                      name="ContactTitle"
                       label="Contact Title"
-                      value={form.contact_title}
+                      value={form.ContactTitle}
                       options={titleOptions}
                       onChange={onSelectChange}
                       height={34}
+                    />
+                  </Box>
+                  <Box>
+                    <Label text="Contact Name" bold />
+                    <TextControl
+                      name="ContactName"
+                      value={form.ContactName}
+                      onChange={onTextChange}
+                      style={standardInputStyle}
                     />
                   </Box>
                   <Box>
@@ -249,10 +438,21 @@ const AddEditCustContact = () => {
                 </Box>
 
              <Stack direction="row" spacing={1} sx={{ mt: 2, justifyContent: "flex-end" }}>
-                     <Button variant="contained" size="small" disabled={saving} onClick={() => handleSave("add")}>
+                     <Button
+                    variant="contained"
+                    size="small"
+                    disabled={saving || !isAddNewMode}
+                    onClick={() => handleSave("add")}
+                  >
                     Add Contact
                   </Button>
-                  <Button variant="contained" color="success" size="small" disabled={saving} onClick={() => handleSave("edit")}>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    size="small"
+                    disabled={saving || isAddNewMode || !contactId}
+                    onClick={() => handleSave("edit")}
+                  >
                     Edit Contact
                   </Button>
                
