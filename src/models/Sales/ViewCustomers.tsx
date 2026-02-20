@@ -11,7 +11,7 @@ import { toast } from "react-toastify";
 
 type ViewTab = "customers" | "locations" | "contacts";
 
-const ACCESS_PAGE_KEYS = ["ViewCustomers", "viewcustomers"];
+//const ACCESS_PAGE_KEYS = ["ViewCustomers"];
 
 const parseRoleFlag = (value: unknown): boolean => {
   if (typeof value === "boolean") return value;
@@ -26,7 +26,7 @@ const parseRoleFlag = (value: unknown): boolean => {
 const getCustomerId = (row: any): string =>
   String(row?.customer_id ?? row?.itemno ?? row?.customerId ?? "").trim();
 
-const AddEditCustomerData = () => {
+const ViewCustomers = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
@@ -51,14 +51,14 @@ const AddEditCustomerData = () => {
     const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
     const userRole = userRoleRes.data;
 
-    for (const key of ACCESS_PAGE_KEYS) {
+ //   for (const key of ACCESS_PAGE_KEYS) {
       try {
-        const roleCheck = await axios.get(`${baseUrl}/UserRoleInternalRights/${userRole}/${key}`);
+        const roleCheck = await axios.get(`${baseUrl}/UserRoleInternalRights/${userRole}/viewcustomers`);
         if (parseRoleFlag(roleCheck.data)) return true;
       } catch {
         // Try next key variant.
       }
-    }
+  //  }
 
     return false;
   }, [loginId]);
@@ -118,7 +118,7 @@ const AddEditCustomerData = () => {
     } catch (err) {
       console.error("Error loading locations:", err);
       setLocationRows([]);
-      toast.error("Unable to load customer locations.");
+      toast.error("Unable to load locations.");
     } finally {
       setLoading(false);
     }
@@ -141,7 +141,7 @@ const AddEditCustomerData = () => {
     } catch (err) {
       console.error("Error loading contacts:", err);
       setContactRows([]);
-      toast.error("Unable to load customer contacts.");
+      toast.error("Unable to load contacts.");
     } finally {
       setLoading(false);
     }
@@ -507,4 +507,4 @@ const AddEditCustomerData = () => {
   );
 };
 
-export default AddEditCustomerData;
+export default ViewCustomers;
