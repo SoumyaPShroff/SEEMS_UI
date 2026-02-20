@@ -8,6 +8,7 @@ interface LabelProps {
   variant?: "default" | "menu" | "submenu";
   fontSize?: string | number;
   bold?: boolean;
+  required?: boolean;
 }
 
 const Label: React.FC<LabelProps> = ({
@@ -17,6 +18,7 @@ const Label: React.FC<LabelProps> = ({
   variant = "default",
   fontSize = "12px",
   bold = false,
+  required = false,
 }) => {
   return (
     <label
@@ -24,6 +26,7 @@ const Label: React.FC<LabelProps> = ({
       style={{ fontFamily: "Arial", fontSize, fontWeight: bold ? 700 : 400, ...style }}
     >
       {text}
+      {required && <span style={{ color: "red", marginLeft: 2 }}>*</span>}
     </label>
   );
 };

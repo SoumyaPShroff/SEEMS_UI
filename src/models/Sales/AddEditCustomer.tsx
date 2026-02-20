@@ -46,7 +46,7 @@ const AddEditCustomer = () => {
   const [salesRespOptions, setSalesRespOptions] = useState<Option[]>([]);
   const [customerTypeOptions, setCustomerTypeOptions] = useState<Option[]>([]);
   const pageTitle = isEditMode ? "Edit Customer Details" : "Add New Customer";
-  const loginId = sessionStorage.getItem("SessionUserID") || "guest";
+  const loginUser = sessionStorage.getItem("SessionUserName") || "guest";
 
   const onTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -87,25 +87,8 @@ const AddEditCustomer = () => {
     }
   };
 
-  const fetchCustomerTypes = async () => {
-    try {
-      const res = await axios.get(`${baseUrl}/api/Sales/CustomerTypes`);
-      const source = Array.isArray(res.data) ? res.data : [];
-      if (source.length === 0) {
-        setCustomerTypeOptions(fallbackCustomerTypes);
-        return;
-      }
-
-      const mapped = source
-        .map((x: any, idx: number) => ({
-          value: x.value ?? x.customer_Type ?? x.id ?? `type-${idx}`,
-          label: String(x.label ?? x.customer_Type ?? x.value ?? ""),
-        }))
-        .filter((x: Option) => x.label);
-      setCustomerTypeOptions(mapped.length > 0 ? mapped : fallbackCustomerTypes);
-    } catch {
-      setCustomerTypeOptions(fallbackCustomerTypes);
-    }
+  const setDefaultCustomerTypes = () => {
+    setCustomerTypeOptions(fallbackCustomerTypes);
   };
 
   const fetchEditCustomerDetails = async () => {
@@ -149,8 +132,8 @@ const AddEditCustomer = () => {
       sales_resp: String(selectedSalesResp?.label ?? ""),
       customer_Type: form.customer_Type,
       sapcustcode: form.sapcustcode.trim(),
-      addedby: loginId,
-     // addeddate: new Date().toISOString(), // current datetime
+      addedby: loginUser,
+     // addeddate: new Date().toISOString(), // api service takes care of this
     };
 
     if (isEditMode) {
@@ -187,7 +170,8 @@ const AddEditCustomer = () => {
     const init = async () => {
       setLoadingPage(true);
       try {
-        await Promise.all([fetchSalesResponsibility(), fetchCustomerTypes()]);
+        setDefaultCustomerTypes();
+        await fetchSalesResponsibility();
         await fetchEditCustomerDetails();
       } finally {
         setLoadingPage(false);
@@ -200,7 +184,7 @@ const AddEditCustomer = () => {
   return (
     <Box
       sx={{
-        maxWidth: 850,
+        maxWidth: 600,
         mx: "auto",
         mt: 20,
         px: { xs: 1.5, md: 0 },
@@ -265,7 +249,7 @@ const AddEditCustomer = () => {
                   }}
                 >
                   <Box>
-                    <Label text="Customer" bold />
+                    <Label text="Customer" bold required />
                     <TextControl
                       name="customer"
                       value={form.customer}
@@ -276,50 +260,63 @@ const AddEditCustomer = () => {
                   </Box>
 
                   <Box>
-                    <Label text="Customer Abbreviation" bold />
-                    <TextControl
-                      name="customer_abb"
-                      value={form.customer_abb}
-                      onChange={onTextChange}
-                      placeholder="Enter abbreviation"
-                      style={standardInputStyle}
-                    />
+                    <Label text="Customer Abbreviation" bold required />
+                    <Box sx={{ maxWidth: 260 }}>
+                      <TextControl
+                        name="customer_abb"
+                        value={form.customer_abb}
+                        onChange={onTextChange}
+                        placeholder="Enter abbreviation"
+                        style={standardInputStyle}
+                      />
+                    </Box>
+                    <Typography sx={{ mt: 0.6, fontSize: 12, color: "#5f6f86" }}>
+                      Maximum Characters allowed in Customer abbrevation are 4 and Minimum 3
+                    </Typography>
                   </Box>
 
                   <Box>
-                    <Label text="GST No" bold />
-                    <TextControl
-                      name="gst_no"
-                      value={form.gst_no}
-                      onChange={onTextChange}
-                      placeholder="Enter GST number"
-                      style={standardInputStyle}
-                    />
+                    <Label text="GST No" bold required />
+                    <Box sx={{ maxWidth: 260 }}>
+                      <TextControl
+                        name="gst_no"
+                        value={form.gst_no}
+                        onChange={onTextChange}
+                        placeholder="Enter GST number"
+                        style={standardInputStyle}
+                      />
+                    </Box>
                   </Box>
 
                   <Box>
-                    <SelectControl
-                      name="sales_resp_id"
-                      label="Sales Responsibility"
-                      value={form.sales_resp_id}
-                      options={salesRespOptions}
-                      onChange={onSelectChange}
-                      height={34}
-                      sx={{ mt: 2.3 }}
-                    />
+                    <Box sx={{ maxWidth: 260 }}>
+                      <SelectControl
+                        name="sales_resp_id"
+                        label="Sales Responsibility"
+                        value={form.sales_resp_id}
+                        options={salesRespOptions}
+                        onChange={onSelectChange}
+                        required
+                        height={34}
+                        sx={{ mt: 2.3 }}
+                      />
+                    </Box>
                   </Box>
 
                   <Box>
-                    <SelectControl
-                      name="customer_Type"
-                      label="Type"
-                      value={form.customer_Type}
-                      options={customerTypeOptions}
-                      onChange={onSelectChange}
-                      height={34}
-                      fullWidth
-                      sx={{ mt: 2.3 }}
-                     />
+                    <Box sx={{ maxWidth: 260 }}>
+                      <SelectControl
+                        name="customer_Type"
+                        label="Type"
+                        value={form.customer_Type}
+                        options={customerTypeOptions}
+                        onChange={onSelectChange}
+                        required
+                        height={34}
+                        fullWidth
+                        sx={{ mt: 2.3 }}
+                      />
+                    </Box>
                   </Box>
 
                   <Box>

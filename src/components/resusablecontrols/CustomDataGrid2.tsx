@@ -3,7 +3,13 @@ import { Box, IconButton, InputAdornment, Paper, TextField, Typography,} from "@
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import { DataGrid } from "@mui/x-data-grid";
-import type { GridColDef,  GridColumnVisibilityModel,  GridRowIdGetter,  GridValidRowModel,} from "@mui/x-data-grid";
+import type {
+  GridColDef,
+  GridColumnVisibilityModel,
+  GridRowIdGetter,
+  GridValidRowModel,
+  GridRowParams,
+} from "@mui/x-data-grid";
 
 interface CustomDataGrid2Props<TRow extends GridValidRowModel = GridValidRowModel> {
   rows: TRow[];
@@ -17,6 +23,7 @@ interface CustomDataGrid2Props<TRow extends GridValidRowModel = GridValidRowMode
   getRowId?: GridRowIdGetter<TRow>;
   columnVisibilityModel?: GridColumnVisibilityModel;
   onColumnVisibilityModelChange?: (model: GridColumnVisibilityModel) => void;
+  onRowClick?: (row: TRow) => void;
 }
 
 const CustomDataGrid2 = <TRow extends GridValidRowModel = GridValidRowModel>({
@@ -31,6 +38,7 @@ const CustomDataGrid2 = <TRow extends GridValidRowModel = GridValidRowModel>({
   getRowId,
   columnVisibilityModel,
   onColumnVisibilityModelChange,
+  onRowClick,
 }: CustomDataGrid2Props<TRow>) => {
   const [searchInput, setSearchInput] = useState("");
   const searchTerm = searchInput.trim().toLowerCase();
@@ -126,6 +134,7 @@ const CustomDataGrid2 = <TRow extends GridValidRowModel = GridValidRowModel>({
           getRowId={getRowId}
           columnVisibilityModel={columnVisibilityModel}
           onColumnVisibilityModelChange={onColumnVisibilityModelChange}
+          onRowClick={(params: GridRowParams<TRow>) => onRowClick?.(params.row)}
           disableRowSelectionOnClick
           density="compact"
           showCellVerticalBorder

@@ -28,6 +28,8 @@ import ReleaseNotes from './components/ReleaseNotes';
 import PlannedHours from './models/Projects/PlannedHours';
 import ViewCustomers from './models/Sales/ViewCustomers';
 import AddEditCustomer from './models/Sales/AddEditCustomer';
+import AddEditCustLocation from './models/Sales/AddEditCustLocation';
+import AddEditCustContact from './models/Sales/AddEditCustContact';
 
 const App: React.FC = () => {
   const [userId, setUserId] = useState(sessionStorage.getItem('SessionUserID'));
@@ -78,8 +80,8 @@ const App: React.FC = () => {
           <Route path="MeetMyTeam" element={<MeetMyTeam />} />
           <Route path="ViewCustomers" element={<ViewCustomers />} />
           <Route path="AddEditCustomer/:itemno" element={<AddEditCustomer />} />
-          <Route path="AddEditCustLocation/:itemno" element={<ComingSoon />} />
-          <Route path="AddEditCustContact/:itemno" element={<ComingSoon />} />
+          <Route path="AddEditCustLocation/:itemno" element={<AddEditCustLocation />} />
+          <Route path="AddEditCustContact/:itemno" element={<AddEditCustContact />} />
         </Route>
         {/* Password + Blank */}
         <Route path="/ResetPassword" element={<ResetPassword />} />
