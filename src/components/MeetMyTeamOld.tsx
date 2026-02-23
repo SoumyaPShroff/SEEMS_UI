@@ -77,9 +77,9 @@ const mapApiMember = (m: TeamMemberApi, index: number): TeamMember => ({
   title: m.teamMemJobTiTle ?? "",
   costcenter: m.teamMemCostcenter ?? "",
   email: m.teamMemEmailId ?? "",
-  teamDescription: m.teamDescription ?? m.teamdescription ?? "",
+  teamDescription: m.teamDescription  ?? "",
   age: m.age,
-  cellnumber: m.cellnumber ?? m.cellNo ?? m.teamMemCellNumber ?? "",
+  cellnumber: m.cellnumber ?? "",
 });
 
 const MeetMyTeamOld: React.FC<MeetMyTeamProps> = ({ members = [] }) => {

@@ -330,7 +330,8 @@ const AddEditCustomer = () => {
                       value={form.sapcustcode}
                       onChange={onTextChange}
                       placeholder="Enter SAP code"
-                      style={{ ...standardInputStyle, mt: 2 }}
+                      style={{ ...standardInputStyle }}
+                    //  , mt: 2
                      />
                   </Box>
                 </Box>

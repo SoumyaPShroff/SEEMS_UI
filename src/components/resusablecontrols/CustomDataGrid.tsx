@@ -38,19 +38,28 @@ const CustomDataGrid: React.FC<CustomDataGridProps> = ({
   "& .MuiDataGrid-columnHeaders": {
     backgroundColor: "#f5f7fa",
     borderBottom: "1px solid #0b0202",
+    minHeight: "34px !important",
+    maxHeight: "34px !important",
   },
 
   // Header text
 "& .MuiDataGrid-columnHeader .MuiDataGrid-columnHeaderTitle": {
   fontWeight: 700,
-  fontSize: "16px",
-  color: "#1a6286",
+  fontSize: "14px",
+  //color: "#1a6286",
+  color: "#ffffff",
   letterSpacing: "0.3px",
 },
 
   // Header cells
   "& .MuiDataGrid-columnHeader": {
     borderRight: "1.5px solid #0b0202",
+    backgroundColor: "#2c5c9a !important",
+    color: "#ffffff",
+    minHeight: "34px !important",
+    maxHeight: "34px !important",
+    paddingTop: "0 !important",
+    paddingBottom: "0 !important",
   },
 
     // 🔥 REMOVE BLUE BORDER ON HOVER / FOCUS
@@ -136,6 +145,7 @@ const CustomDataGrid: React.FC<CustomDataGridProps> = ({
           columns={columns}
           loading={loading}
           rowHeight={rowHeight}
+          columnHeaderHeight={34}
           getRowClassName={(params) => (getRowClassName?.(params) ?? '')}
           sx={{ ...defaultSx, ...sx }}
           columnVisibilityModel={columnVisibilityModel}

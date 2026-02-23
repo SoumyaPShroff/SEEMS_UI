@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Box, Typography, CircularProgress, Button } from "@mui/material";
+import { Box, Typography, CircularProgress, Button, Paper } from "@mui/material";
 import type { GridColDef } from '@mui/x-data-grid';
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { baseUrl } from "../../const/BaseUrl";
 import { exporttoexcel } from "../../components/utils/exporttoexcel";
 import ExportButton from "../../components/resusablecontrols/ExportButton";
-import CustomDataGrid from "../../components/resusablecontrols/CustomDataGrid";
+import CustomDataGrid2 from "../../components/resusablecontrols/CustomDataGrid2";
 import SelectControl from "../../components/resusablecontrols/SelectControl";
 
 const ViewAllEnquiries = () => {
@@ -94,7 +94,7 @@ const ViewAllEnquiries = () => {
       field: "status",
       headerName: "Status",
       flex: 1,
-      minWidth: 100,
+      minWidth: 160,
       sortable: false,
       renderCell: (params) => {
         const statusValue = params.value?.toString() || "";
@@ -254,51 +254,146 @@ const ViewAllEnquiries = () => {
   };
 
   return (
-    <Box sx={{ height: "100%", width: "100%", padding: "40px", mt: "20px", ml: "-5px" }}>
-      <Box sx={{ mb: 2, display: "flex", flexDirection: "row", gap: 2, alignItems: "flex-end" }}>
-        <Box sx={{ width: 230 }}>
-          <SelectControl
-            name="status"
-            label="Status"
-            value={status}
-            width="230px"
-            height={35}
-            options={[
-              { value: "Open", label: "Open" },
-              { value: "Confirmed", label: "Confirmed" },
-              { value: "Tentative", label: "Tentative" },
-              { value: "Realised", label: "Realised" },
-              { value: "Cancelled", label: "Cancelled" },
-              { value: "Rejected By Customer", label: "Rejected By Customer" },
-              { value: "Rejected By Sienna", label: "Rejected By Sienna" },
-              { value: "All", label: "All" },
-            ]}
-            onChange={(e: any) => setStatus(e.target.value)}
-          />
-        </Box>
-        <ExportButton label="Export to Excel" onClick={handleViewEnqExport} />
-        <Button variant="contained" onClick={() => navigate("/Home/AddEnquiry")}>Add Enquiry</Button>
-      </Box>
+    <Box
+      sx={{
+        p: { xs: 1, md: 1.5 },
+        mt: 15,
+        width: "100%",
+        maxWidth: 1280,
+        mx: "auto",
+        background: "radial-gradient(circle at top right, #ecf4ff 0%, #f7fbff 42%, #eef6ff 100%)",
+        borderRadius: 2,
+      }}
+    >
+      <Typography
+        sx={{
+          mb: 0.8,
+          fontSize: { xs: "1rem", md: "1.5rem" },
+          fontWeight: 700,
+          color: "#1b4f91",
+          alignContent: "center",
+          textAlign: "center",
+          fontFamily: "Arial",
+        }}
+      >
+        View All Enquiries
+      </Typography>
 
+      <Paper
+        elevation={0}
+        sx={{
+          p: 0.7,
+          borderRadius: 1,
+          border: "1px solid #d3e3fa",
+          background: "linear-gradient(135deg, #ffffff 0%, #f1f7ff 100%)",
+          mb: 1,
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: { xs: "stretch", sm: "flex-end" },
+            justifyContent: "space-between",
+            gap: 1,
+            flexWrap: "wrap",
+            width: "100%",
+          }}
+        >
+          <Box sx={{ width: { xs: "100%", sm: 260 } }}>
+            <SelectControl
+              name="status"
+              label="Status"
+              value={status}
+              width="230px"
+              height={35}
+              options={[
+                { value: "Open", label: "Open" },
+                { value: "Confirmed", label: "Confirmed" },
+                { value: "Tentative", label: "Tentative" },
+                { value: "Realised", label: "Realised" },
+                { value: "Cancelled", label: "Cancelled" },
+                { value: "Rejected By Customer", label: "Rejected By Customer" },
+                { value: "Rejected By Sienna", label: "Rejected By Sienna" },
+                { value: "All", label: "All" },
+              ]}
+              onChange={(e: any) => setStatus(e.target.value)}
+            />
+          </Box>
+          <Box sx={{ display: "flex", gap: 1, ml: "auto", justifyContent: "flex-end" }}>
+            <ExportButton label="Export to Excel" onClick={handleViewEnqExport} />
+            <Button
+              variant="contained"
+              onClick={() => navigate("/Home/AddEnquiry")}
+              sx={{
+                textTransform: "none",
+                fontWeight: 700,
+                borderRadius: 1.5,
+                px: 1.5,
+                py: 0.5,
+                background: "linear-gradient(135deg, #1f62b2 0%, #0f7dd6 100%)",
+                boxShadow: "0 8px 16px rgba(20, 93, 178, 0.28)",
+                "&:hover": {
+                  background: "linear-gradient(135deg, #1a5598 0%, #0c6dbc 100%)",
+                },
+                height: 32,
+              }}
+            >
+              Add Enquiry
+            </Button>
+          </Box>
+        </Box>
+      </Paper>
       {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 6 }}>
           <CircularProgress />
         </Box>
       ) : rows.length === 0 ? (
-        <Typography
-          variant="subtitle1"
-          sx={{ textAlign: "center", mt: 4, color: "gray" }}
+        <Paper
+          elevation={0}
+          sx={{
+            border: "1px dashed #a8bfdc",
+            borderRadius: 2,
+            p: 2.2,
+            textAlign: "center",
+            color: "#4c6282",
+            background: "linear-gradient(180deg, #fcfeff 0%, #f3f8ff 100%)",
+          }}
         >
-          No enquiries found for selected status.
-        </Typography>
+          <Typography>No enquiries found for selected status.</Typography>
+        </Paper>
       ) : (
-        <CustomDataGrid
-          rows={rows}
-          columns={columns}
-          title="View All Enquiries"
-          loading={loading}
-          gridheight={800}
-        />
+        <Box
+          sx={{
+            p: 0.7,
+            borderRadius: 2,
+            border: "1px solid #d5e3f8",
+            background: "linear-gradient(180deg, #f8fbff 0%, #f2f8ff 100%)",
+            boxShadow: "0 14px 28px rgba(39, 95, 169, 0.08)",
+            maxWidth: 1240,
+            mx: "auto",
+          }}
+        >
+          <CustomDataGrid2
+            rows={rows}
+            columns={columns}
+            title="View All Enquiries"
+            loading={loading}
+            gridHeight={800}
+            searchableFields={[
+              "enquiryno",
+              "customer",
+              "createdon",
+              "endDate",
+              "salesResponsibility",
+              "status",
+              "completeResponsibility",
+              "enquiryType",
+              "boardRef",
+              "referenceBy",
+            ]}
+            placeholder="Search enquiries..."
+          />
+        </Box>
       )}
     </Box>
   );

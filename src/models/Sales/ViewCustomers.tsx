@@ -38,8 +38,8 @@ const ViewCustomers = () => {
   const [locationRows, setLocationRows] = useState<any[]>([]);
   const [contactRows, setContactRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedLocationCustomerId, setSelectedLocationCustomerId] = useState("");
-  const [selectedContactCustomerId, setSelectedContactCustomerId] = useState("");
+ // const [selectedLocationCustomerId, setSelectedLocationCustomerId] = useState("");
+ // const [selectedContactCustomerId, setSelectedContactCustomerId] = useState("");
 
   useEffect(() => {
     const requestedTab = (searchParams.get("tab") || "").toLowerCase();
@@ -53,14 +53,14 @@ const ViewCustomers = () => {
     const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
     const userRole = userRoleRes.data;
 
- //   for (const key of ACCESS_PAGE_KEYS) {
-      try {
-        const roleCheck = await axios.get(`${baseUrl}/UserRoleInternalRights/${userRole}/viewcustomers`);
-        if (parseRoleFlag(roleCheck.data)) return true;
-      } catch {
-        // Try next key variant.
-      }
-  //  }
+    //   for (const key of ACCESS_PAGE_KEYS) {
+    try {
+      const roleCheck = await axios.get(`${baseUrl}/UserRoleInternalRights/${userRole}/viewcustomers`);
+      if (parseRoleFlag(roleCheck.data)) return true;
+    } catch {
+      // Try next key variant.
+    }
+    //  }
 
     return false;
   }, [loginId]);
@@ -223,15 +223,18 @@ const ViewCustomers = () => {
         filterable: false,
         renderCell: (params) => {
           const customerId = getCustomerId(params.row);
+          const currentLocationId = String(params.row?.location_id ?? params.row?.locationId ?? "").trim();
           if (!customerId) return "-";
           return actionLink("Edit Location", () => {
-            navigate(`/Home/AddEditCustLocation/${encodeURIComponent(customerId)}`);
+            const target = `/Home/AddEditCustLocation/${encodeURIComponent(customerId)}${currentLocationId ? `?locationId=${encodeURIComponent(currentLocationId)}` : ""
+              }`;
+            navigate(target);
           });
         },
       },
       { field: "customer_id", headerName: "Customer Id", minWidth: 130, flex: 1 },
       { field: "location_id", headerName: "Location Id", minWidth: 130, flex: 1 }
- 
+
     ],
     [navigate]
   );
@@ -261,8 +264,8 @@ const ViewCustomers = () => {
           });
         },
       },
-       { field: "customer_id", headerName: "Customer Id", minWidth: 200, flex: 1 },
-       { field: "contact_id", headerName: "Contact Id", minWidth: 200, flex: 1 },
+      { field: "customer_id", headerName: "Customer Id", minWidth: 200, flex: 1 },
+      { field: "contact_id", headerName: "Contact Id", minWidth: 200, flex: 1 },
     ],
     [navigate]
   );
@@ -277,16 +280,16 @@ const ViewCustomers = () => {
 
   const searchableFields =
     activeTab === "customers"
-      ? ["customer", "customer_abb", "sales_resp", "sales_resp_id", "sapcustcode", "itemno", "gst_no","customer_Type"]
+      ? ["customer", "customer_abb", "sales_resp", "sales_resp_id", "sapcustcode", "itemno", "gst_no", "customer_Type"]
       : activeTab === "locations"
-      ? ["customer", "customerAbb", "location", "address", "phoneno1", "phoneno2"]
-      : ["customer", "customerAbb", "contactName", "contactTitle", "mobile1", "mobile2", "email11"];
+        ? ["customer", "customerAbb", "location", "address", "phoneno1", "phoneno2"]
+        : ["customer", "customerAbb", "contactName", "contactTitle", "mobile1", "mobile2", "email11"];
 
   const title =
     activeTab === "customers" ? "Customers"
       : activeTab === "locations"
-      ? "Customer Locations"
-      : "Customer Contacts";
+        ? "Customer Locations"
+        : "Customer Contacts";
 
   const handleExport = () => {
     if (!rows.length) {
@@ -310,11 +313,7 @@ const ViewCustomers = () => {
       return;
     }
     if (activeTab === "locations") {
-      if (!selectedLocationCustomerId) {
-        toast.info("Select a location row first, then click New Location.");
-        return;
-      }
-      navigate(`/Home/AddEditCustLocation/${encodeURIComponent(selectedLocationCustomerId)}`);
+      navigate("/Home/AddEditCustLocation/new");
       return;
     }
     navigate("/Home/AddEditCustContact/new");
@@ -333,6 +332,7 @@ const ViewCustomers = () => {
         mx: "auto",
         background: "radial-gradient(circle at top right, #ecf4ff 0%, #f7fbff 42%, #eef6ff 100%)",
         borderRadius: 2,
+        border: "1px solid #849aad",
       }}
     >
       <Typography
@@ -383,7 +383,7 @@ const ViewCustomers = () => {
               },
             }}
           />
-       
+
           <Tab
             value="contacts"
             label="Contacts"
@@ -401,7 +401,7 @@ const ViewCustomers = () => {
               },
             }}
           />
-             <Tab
+          <Tab
             value="locations"
             label="Locations"
             sx={{
@@ -491,11 +491,11 @@ const ViewCustomers = () => {
             getRowId={getRowId}
             searchableFields={searchableFields}
             placeholder={`Search ${title.toLowerCase()}...`}
-            onRowClick={(row: any) => {
-              const customerId = getCustomerId(row);
-              if (activeTab === "locations") setSelectedLocationCustomerId(customerId);
-              if (activeTab === "contacts") setSelectedContactCustomerId(customerId);
-            }}
+          //  onRowClick={(row: any) => {
+            //  const customerId = getCustomerId(row);
+              //if (activeTab === "locations") setSelectedLocationCustomerId(customerId);
+             // if (activeTab === "contacts") setSelectedContactCustomerId(customerId);
+          //  }}
           />
         </Box>
       )}

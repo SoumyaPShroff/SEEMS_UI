@@ -548,6 +548,8 @@ const RptBillingPlanner: React.FC = () => {
 
     // ❌ hidden initially
 
+   // poDate: false,
+    realisedDate: false,
     bilHrs_CurrentMonth: false,
     billPerctg_CurMonth: false,
     projectComp_Perc: false,
@@ -571,9 +573,16 @@ const RptBillingPlanner: React.FC = () => {
     jobtitle: false,
     rejectedHrs: false,
     projectmanagerid: false,
+    ndaValidity: false,
   };
 
   const [columnVisibilityModel, setColumnVisibilityModel] = useState(defaultVisibleColumns);
+  const handleColumnVisibilityModelChange = useCallback(
+    (model: GridColumnVisibilityModel) => {
+      setColumnVisibilityModel((prev) => ({ ...prev, ...model }));
+    },
+    []
+  );
 
   const filteredData = useMemo(() => {
     if (!searchText) return data;
@@ -724,8 +733,9 @@ const RptBillingPlanner: React.FC = () => {
     { field: "jobtitle", headerName: "Job Title", flex: 1, minWidth: 100 },
     { field: "rejectedHrs", headerName: "Rejected Hrs", flex: 1, minWidth: 120 },
     { field: "projectmanagerid", headerName: "projectmanagerid", flex: 1, minWidth: 80 },
-    { field: "poDate", headerName: "PO Date", flex: 1, minWidth: 100 },
+  //  { field: "poDate", headerName: "PO Date", flex: 1, minWidth: 100 },
     { field: "realisedDate", headerName: "Realised Date", flex: 1, minWidth: 130 },
+    { field: "ndaValidity", headerName: "NDA Validity", flex: 1, minWidth: 120 },
   ], []);
 
   const getRowClassName = (params: any): string => {
@@ -902,7 +912,7 @@ const RptBillingPlanner: React.FC = () => {
             rows={filteredData}
             columns={columns}
             columnVisibilityModel={columnVisibilityModel}
-            onColumnVisibilityModelChange={setColumnVisibilityModel}
+            onColumnVisibilityModelChange={handleColumnVisibilityModelChange}
             getRowClassName={getRowClassName}
             loading={loading}
           />
