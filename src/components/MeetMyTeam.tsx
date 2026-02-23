@@ -68,9 +68,9 @@ const MeetMyTeam: React.FC<MeetMyTeamProps> = ({ members = [] }) => {
 
   const columns = useMemo<GridColDef[]>(
     () => [
-      { field: "name", headerName: "Name", width: effectiveMembers.length > 5 ? 200 : 300},
-      { field: "title", headerName: "Title", width: 280 },
-      { field: "costcenter", headerName: "Cost Center", width: 120 },
+      { field: "name", headerName: "Name",  width: effectiveMembers.length > 5 ? 200 : 300},
+      { field: "title", headerName: "Title",flex : 1, minWidth: 280 },
+      { field: "costcenter", headerName: "Cost Center",flex : 1,   minWidth: 160 },
       {
         field: "email",
         headerName: "Email",
@@ -97,8 +97,8 @@ const MeetMyTeam: React.FC<MeetMyTeamProps> = ({ members = [] }) => {
       },
 
       { field: "teamDescription", headerName: "Team Description", width: effectiveMembers.length > 5 ? 300 : 400 },
-      { field: "age", headerName: "Age", width: 80, type: "number" },
-      { field: "cellnumber", headerName: "Cell Number", width: 150 },
+      { field: "age", headerName: "Age", width: 100, type: "number" },
+      { field: "cellnumber", headerName: "Cell Number", width: 160 },
     ],
     []
   );

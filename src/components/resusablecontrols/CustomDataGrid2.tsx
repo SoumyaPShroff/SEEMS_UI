@@ -157,6 +157,15 @@ const CustomDataGrid2 = <TRow extends GridValidRowModel = GridValidRowModel>({
               color: "#ffffff",
               fontSize: "0.86rem",
             },
+            "& .MuiDataGrid-menuIcon": {
+              visibility: "visible",
+              opacity: 1,
+              width: "auto",
+            },
+            "& .MuiDataGrid-iconButtonContainer": {
+              visibility: "visible",
+              width: "auto",
+            },
             "& .MuiDataGrid-cell": {
               fontSize: "0.82rem",
               borderColor: "#e5ecf8",

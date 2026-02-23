@@ -30,6 +30,7 @@ import ViewCustomers from './models/Sales/ViewCustomers';
 import AddEditCustomer from './models/Sales/AddEditCustomer';
 import AddEditCustLocation from './models/Sales/AddEditCustLocation';
 import AddEditCustContact from './models/Sales/AddEditCustContact';
+import EnquiryStatus from './models/Sales/EnquiryStatus';
 
 const App: React.FC = () => {
   const [userId, setUserId] = useState(sessionStorage.getItem('SessionUserID'));
@@ -82,6 +83,7 @@ const App: React.FC = () => {
           <Route path="AddEditCustomer/:itemno" element={<AddEditCustomer />} />
           <Route path="AddEditCustLocation/:itemno" element={<AddEditCustLocation />} />
           <Route path="AddEditCustContact/:itemno" element={<AddEditCustContact />} />
+          <Route path="EnquiryStatus" element={<EnquiryStatus />} />
         </Route>
         {/* Password + Blank */}
         <Route path="/ResetPassword" element={<ResetPassword />} />
