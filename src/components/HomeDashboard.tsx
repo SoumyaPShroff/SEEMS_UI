@@ -31,12 +31,12 @@ interface EmployeeProfile {
 
 /* ================= STYLES ================= */
 
-const ActionCard = styled.div<{ $isFavourite?: boolean; $gradient?: string }>`
+const ActionCard = styled.div<{ $isFavourite?: boolean; $gradient?: string; $disabled?: boolean }>`
   width: 190px;
   height: 68px;
   border-radius: 14px;
   padding: 8px 10px;
-  cursor: pointer;
+  cursor: ${({ $disabled }) => ($disabled ? "default" : "pointer")};
   border: 1px solid #e5e7eb;
   position: relative;
 
@@ -50,8 +50,9 @@ const ActionCard = styled.div<{ $isFavourite?: boolean; $gradient?: string }>`
   transition: all 0.2s ease;
 
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    transform: ${({ $disabled }) => ($disabled ? "none" : "translateY(-3px)")};
+    box-shadow: ${({ $disabled }) =>
+    $disabled ? "0 4px 10px rgba(0,0,0,0.08)" : "0 6px 16px rgba(0,0,0,0.12)"};
   }
 `;
 
@@ -271,15 +272,21 @@ const HomeDashboard = () => {
       <DashboardLayout>
         <DefaultCardsGrid>
           {actionCards.map(card => {
+            const isTeamCard = card.key === "team";
+            const isTeamCardDisabled = isTeamCard && (profile?.reporteeCount ?? 0) === 0;
             const badge =
-              card.key === "team"
+              isTeamCard
                 ? `${profile?.reporteeCount ?? 0} Members`
                 : undefined;
             return (
               <ActionCard
                 key={card.key}
-                onClick={() => navigate(card.route)}
+                onClick={() => {
+                  if (isTeamCardDisabled) return;
+                  navigate(card.route);
+                }}
                 $gradient={card.gradient}
+                $disabled={isTeamCardDisabled}
               >
                 {badge && <Badge>{badge}</Badge>}
                 <CardIcon>{card.icon}</CardIcon>

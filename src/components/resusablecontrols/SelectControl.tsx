@@ -21,6 +21,7 @@ interface SelectControlProps {
   sx?: object;
   disabled?: boolean;
   fontSize?: string | number;
+  labelFontWeight?: React.CSSProperties["fontWeight"];
   shrinkLabel?: boolean;
   //size?: "small" | "medium";
 }
@@ -38,6 +39,7 @@ const SelectControl: React.FC<SelectControlProps> = ({
   error = false,
   helperText,
   fontSize = "0.9rem",
+  labelFontWeight = 600,
   shrinkLabel = true,
   sx = {},
 }) => {
@@ -69,6 +71,7 @@ const selectedOption =
         "& .MuiInputLabel-root": {
           fontFamily: controlFontFamily,
           fontSize,
+          fontWeight: labelFontWeight,
         },
         ...sx,
       }}
@@ -100,6 +103,7 @@ const selectedOption =
             sx={{
               "& .MuiInputLabel-root": {
                 fontSize,
+                fontWeight: labelFontWeight,
               },
             }}
           />

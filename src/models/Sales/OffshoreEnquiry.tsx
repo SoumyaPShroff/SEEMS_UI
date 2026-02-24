@@ -60,8 +60,8 @@ interface EnquiryForm {
    govt_tender: string;
    completeresponsibilityid: string;
    salesresponsibilityid: string;
-    referenceBy?: string;
-    remarks?: string;
+   referenceBy?: string;
+   remarks?: string;
    layout: string[];
    analysis: string[];
    va: string[];
@@ -96,17 +96,17 @@ function isEmployee(obj: any): obj is Employee {
 function isNPIManager(obj: any): obj is NPIManager {
    return obj && "iDno" in obj;
 }
-   // const standardInputStyle: React.CSSProperties = {
-   //    width: "100%",
-   //     height: 34,
-   //    border: "1px solid #cfd8e3",
-   //    borderRadius: 6,
-   //    padding: "0 10px",
-   //    fontSize: 13,
-   //    boxSizing: "border-box",
-   //    backgroundColor: "#fff",
-   //    marginTop: 2,
-   // };
+// const standardInputStyle: React.CSSProperties = {
+//    width: "100%",
+//     height: 34,
+//    border: "1px solid #cfd8e3",
+//    borderRadius: 6,
+//    padding: "0 10px",
+//    fontSize: 13,
+//    boxSizing: "border-box",
+//    backgroundColor: "#fff",
+//    marginTop: 2,
+// };
 
 const OffshoreEnquiry: React.FC = () => {
    const loginUser = sessionStorage.getItem("SessionUserName") || "guest";
@@ -947,8 +947,9 @@ const OffshoreEnquiry: React.FC = () => {
    };
    return (
       <Box
-         sx={{ maxWidth: 850, width: "100%", mx: "auto", mt: isEditMode ? 18 : 0.9, px: { xs: 2, md: 0 },  
-          //  fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+         sx={{
+            maxWidth: 850, width: "100%", mx: "auto", mt: isEditMode ? 18 : 0.9, px: { xs: 2, md: 0 },
+            //  fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
             fontFamily: "Arial",
          }}
       >
@@ -960,11 +961,11 @@ const OffshoreEnquiry: React.FC = () => {
                borderRadius: 3,
                border: "1px solid  #557ec6",
                boxShadow: "0 14px 30px  rgba(24, 71, 153, 0.16)",
-         //       background:
-         //          "linear-gradient(180deg, #f9fbff 0%, #f3f7ff 100%)",
-           background: "linear-gradient(145deg, #f7fbff 0%, #e8f2ff 52%, #dbeaff 100%)",
-          "& .MuiTypography-root, & .MuiInputBase-input, & .MuiFormControlLabel-label, & .MuiInputLabel-root": {
-            fontFamily: "Arial",
+               //       background:
+               //          "linear-gradient(180deg, #f9fbff 0%, #f3f7ff 100%)",
+               background: "linear-gradient(145deg, #f7fbff 0%, #e8f2ff 52%, #dbeaff 100%)",
+               "& .MuiTypography-root, & .MuiInputBase-input, & .MuiFormControlLabel-label, & .MuiInputLabel-root": {
+                  fontFamily: "Arial",
                },
             }}
          >
@@ -1041,20 +1042,20 @@ const OffshoreEnquiry: React.FC = () => {
                                  />
                               </Box>
                               <Box>
-                                 <Label text="Email Address" />
+                                 <Label text="Email Address" bold />
                                  <TextControl name="emailAddress" value={form.email11 || ""} onChange={() => { }} disabled={true} style={standardInputStyle} />
                               </Box>
                               <Box>
-                                 <Label text="Address" />
+                                 <Label text="Address" bold />
                                  <TextControl
                                     name="address"
-                                   // value={form.address}
-                                   value={form.address || ""}
+                                    // value={form.address}
+                                    value={form.address || ""}
                                     multiline
                                     rows={2}
                                     fullWidth
                                     disabled={true}
-                                    style={{ ...standardInputStyle, padding: "8px", height: "60px"  }}
+                                    style={{ ...standardInputStyle, padding: "8px", height: "60px" }}
                                  />
                               </Box>
                            </Box>
@@ -1080,7 +1081,7 @@ const OffshoreEnquiry: React.FC = () => {
                            >
                               {/* ROW 1 */}
                               <Box>
-                                 <Label text="Board Ref" />
+                                 <Label text="Board Ref" bold />
                                  <TextControl
                                     name="jobnames"
                                     value={form.jobnames || ""}
@@ -1098,8 +1099,8 @@ const OffshoreEnquiry: React.FC = () => {
                                        value: tool,
                                        label: tool,
                                     }))}
-                                    // height={40}
                                     required
+
                                  />
                               </Box>
                               {/* ROW 2 */}
@@ -1118,6 +1119,7 @@ const OffshoreEnquiry: React.FC = () => {
                                     required
                                     fullWidth
                                     height={34}
+
                                  />
                               </Box>
                               <Box >
@@ -1131,12 +1133,12 @@ const OffshoreEnquiry: React.FC = () => {
                                        { value: "Time and Material", label: "Time and Material" },
                                     ]}
                                     required
-                                 // fullWidth
+
                                  />
                               </Box>
                               {/* ROW 3 */}
                               <Box >
-                                 <Label text="Currency" />
+                                 <Label text="Currency" bold />
                                  <CompactRadioGroup
                                     name="currency"
                                     value={String(form.currency)}
@@ -1150,7 +1152,7 @@ const OffshoreEnquiry: React.FC = () => {
                                  />
                               </Box>
                               <Box>
-                                 <Label text="Type" />
+                                 <Label text="Type" bold />
                                  <CompactRadioGroup
                                     name="type"
                                     value={form.type}
@@ -1295,7 +1297,7 @@ const OffshoreEnquiry: React.FC = () => {
                                  />
                               </Box>
                               <Box sx={{ width: 150 }}>
-                                 <Label text="Quotation Request Last Date" />
+                                 <Label text="Quotation Request Last Date" bold />
                                  <TextField
                                     type="date"
                                     name="quotation_request_lastdate"
@@ -1318,9 +1320,9 @@ const OffshoreEnquiry: React.FC = () => {
                                  <SelectControl
                                     name="referenceBy"
                                     label="Reference By"
-                                   // value={form.referenceBy}
-                                   value={form.referenceBy || ""} 
-                                   onChange={handleChange}
+                                    // value={form.referenceBy}
+                                    value={form.referenceBy || ""}
+                                    onChange={handleChange}
                                     options={lookups.AllActiveEmployees.map((e) => ({
                                        value: e.name,
                                        label: e.name,
@@ -1330,16 +1332,16 @@ const OffshoreEnquiry: React.FC = () => {
                                  />
                               </Box>
                               <Box>
-                                 <Label text="Remarks" />
+                                 <Label text="Remarks" bold />
                                  <TextControl
                                     fullWidth
                                     multiline
                                     rows={2}
                                     name="remarks"
-                                   // value={form.remarks}
-                                   value={form.remarks || ""}
+                                    // value={form.remarks}
+                                    value={form.remarks || ""}
                                     onChange={handleChange}
-                                    style={{ ...standardInputStyle, padding: "8px", height: "60px"  }}
+                                    style={{ ...standardInputStyle, padding: "8px", height: "60px" }}
                                  />
                               </Box>
                            </Box>

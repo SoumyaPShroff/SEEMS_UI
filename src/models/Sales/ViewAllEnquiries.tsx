@@ -27,10 +27,10 @@ const ViewAllEnquiries = () => {
 
   // ✅ Correct column typing
   const columns: GridColDef[] = [
-    { field: "enquiryno", headerName: "Enquiryno", flex: 1, minWidth: 100 },
-    { field: "customer", headerName: "Customer", flex: 1, minWidth: 200 },
-    { field: "createdon", headerName: "Createdon", flex: 1, minWidth: 100 },
-    { field: "endDate", headerName: "EndDate", flex: 1, minWidth: 100 },
+    { field: "enquiryno", headerName: "Enquiry No", flex: 1, minWidth: 150 },
+    { field: "customer", headerName: "Customer", flex: 1, minWidth: 250 },
+    { field: "createdon", headerName: "Createdon", flex: 1, minWidth: 150 },
+    { field: "endDate", headerName: "EndDate", flex: 1, minWidth: 150 },
     { field: "salesResponsibility", headerName: "Sales Resp", flex: 1, minWidth: 150 },
 
     // 🟢 Add link columns like in your screenshot
@@ -38,7 +38,7 @@ const ViewAllEnquiries = () => {
       field: "editEnquiry",
       headerName: "Edit Enquiry",
       flex: 1,
-      minWidth: 120,
+      minWidth: 140,
       sortable: false,
       renderCell: (params) => {
         const enabled = canEditRow(params.row);
@@ -66,7 +66,7 @@ const ViewAllEnquiries = () => {
       field: "addQuote",
       headerName: "Add Quote",
       flex: 1,
-      minWidth: 120,
+      minWidth: 140,
       sortable: false,
       renderCell: (params) => {
         const enabled = canEditRow(params.row);
@@ -128,7 +128,7 @@ const ViewAllEnquiries = () => {
       field: "addEstimate",
       headerName: "Add Estimate",
       flex: 1,
-      minWidth: 130,
+      minWidth: 140,
       sortable: false,
       renderCell: (params) => {
         const estiValue = params.row.esti?.toUpperCase() || "";
@@ -160,11 +160,11 @@ const ViewAllEnquiries = () => {
         );
       },
     },
-    { field: "esti", headerName: "Esti", flex: 1, minWidth:70 },
-    { field: "completeResponsibility", headerName: "PM Resp", flex: 1, minWidth: 140 },
-    { field: "enquiryType", headerName: "EnqType", flex: 1, minWidth: 100 },
-    { field: "boardRef", headerName: "Board Ref", flex: 1, minWidth: 100 },
-    { field: "referenceBy", headerName: "Reference By", flex: 1, minWidth: 100 },
+    { field: "esti", headerName: "Esti", flex: 1, minWidth:100 },
+    { field: "completeResponsibility", headerName: "PM Resp", flex: 1, minWidth: 150 },
+    { field: "enquiryType", headerName: "EnqType", flex: 1, minWidth: 150 },
+    { field: "boardRef", headerName: "Board Ref", flex: 1, minWidth: 200 },
+    { field: "referenceBy", headerName: "Reference By", flex: 1, minWidth: 170 },
   ];
 
   const loadData = async () => {

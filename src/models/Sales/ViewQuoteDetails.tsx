@@ -33,13 +33,13 @@ export default function ViewQuoteDetails() {
     const [loading, setLoading] = useState<boolean>(false);
 
     const columns: GridColDef[] = [
-        { field: "enquiryno", headerName: "enquiryno", width: 120 },
-        { field: "quoteNo", headerName: "quoteNo", width: 120 },
-        { field: "customer", headerName: "customer", width: 350 },
-        { field: "createdon", headerName: "createdon", width: 120 },
-        { field: "name", headerName: "name", width: 160 },
-        { field: "totalquoteAmt", headerName: "totalquoteamt", width: 160 },
-        { field: "versionno", headerName: "versionno", width: 130 },
+        { field: "enquiryno", headerName: "Enquiry No", minWidth : 130 },
+        { field: "quoteNo", headerName: "Quote No", minWidth: 120 },
+        { field: "customer", headerName: "Customer", minWidth: 350 },
+        { field: "createdon", headerName: "CreatedOn", minWidth: 150 },
+        { field: "name", headerName: "Name", minWidth: 160 },
+        { field: "totalquoteAmt", headerName: "TotalQuoteAmt", minWidth: 200 },
+        { field: "versionno", headerName: "Versionno", minWidth: 150 },
         // ⭐ NEW COLUMN
         {
             field: "viewQuote",

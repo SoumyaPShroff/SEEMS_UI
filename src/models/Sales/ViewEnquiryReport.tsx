@@ -17,13 +17,13 @@ export default function ViewEnquiryReport() {
     //const loginId = sessionStorage.getItem("SessionUserID") || "guest";
 
     const columns: GridColDef[] = [
-        { field: "enquiryno", headerName: "Enquiry No", width: 100 },
+        { field: "enquiryno", headerName: "Enquiry No", flex:1, minWidth : 150 },
         { field: "customer", headerName: "Customer", width: 300 },
-        { field: "enquiry_createdon", headerName: "Enquiry_Createdon", width: 150 },
-        { field: "quote_generatedon", headerName: "Quote_Generatedon", width: 160 },
-        { field: "job_Createdon", headerName: "Job_Createdon", width: 150 },
-        { field: "salesperson", headerName: "Sales Person", width: 150 },
-        { field: "completeresponsibility", headerName: "Complete Responsibility", width: 200 },
+        { field: "enquiry_createdon", headerName: "Enquiry_Createdon", width: 220 },
+        { field: "quote_generatedon", headerName: "Quote_Generatedon", width: 220 },
+        { field: "job_Createdon", headerName: "Job_Createdon", width: 200 },
+        { field: "salesperson", headerName: "Sales Person", width: 200 },
+        { field: "completeresponsibility", headerName: "Complete Responsibility", width: 240 },
         { field: "quoteCreatedby", headerName: "QuoteCreatedby", width: 200 },
         { field: "status", headerName: "Status", width: 120 },
         { field: "remarks", headerName: "Remarks", width: 200 },

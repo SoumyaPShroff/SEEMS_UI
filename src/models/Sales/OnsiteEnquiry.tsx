@@ -10,6 +10,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { standardInputStyle } from "./styles/standardInputStyle";
+import { width } from "@mui/system";
 
 interface EnquiryForm {
   enquirytype: string;
@@ -47,7 +48,7 @@ interface EnquiryForm {
 
   //added
   jobnames: string;               // ✅ ADD THIS
-  inputreceivedthru: string;  
+  inputreceivedthru: string;
 }
 
 interface HOPCManager {
@@ -67,17 +68,17 @@ function isHOPCManager(obj: any): obj is HOPCManager {
   return obj && "hopc1id" in obj;
 }
 
-  // const standardInputStyle: React.CSSProperties = {
-  //   width: "100%",
-  //   height: 34,
-  //   border: "1px solid #cfd8e3",
-  //   borderRadius: 6,
-  //   padding: "0 10px",
-  //   fontSize: 13,
-  //   boxSizing: "border-box",
-  //   backgroundColor: "#fff",
-  //   marginTop: 2,
-  // };
+// const standardInputStyle: React.CSSProperties = {
+//   width: "100%",
+//   height: 34,
+//   border: "1px solid #cfd8e3",
+//   borderRadius: 6,
+//   padding: "0 10px",
+//   fontSize: 13,
+//   boxSizing: "border-box",
+//   backgroundColor: "#fff",
+//   marginTop: 2,
+// };
 const OnsiteEnquiry: React.FC = () => {
   const navigate = useNavigate();
   const { enquiryNo } = useParams();
@@ -667,11 +668,10 @@ const OnsiteEnquiry: React.FC = () => {
                         options={lookups.Contacts.map((c: any) => ({ value: c.contact_id.toString(), label: c.contactName }))}
                         onChange={handleChange}
                         required
-                      //  height={34}
                       />
                     </Box>
                     <Box>
-                      <Label text="Email Address" />
+                      <Label text="Email Address" bold />
                       <TextControl name="emailAddress" value={form.email11 || ""} onChange={() => { }} disabled={true} style={standardInputStyle} />
                     </Box>
                   </Box>
@@ -685,16 +685,19 @@ const OnsiteEnquiry: React.FC = () => {
                   <Typography sx={{ fontSize: 13, fontWeight: 700, color: "#214b95", mb: 1.1 }}>ENQUIRY DETAILS</Typography>
                   <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" }, columnGap: 1.5, rowGap: 1.5, alignItems: "start" }}>
                     <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" }, columnGap: 1.5, rowGap: 1.8 }}>
-                      <Box >
-                        <Label text="Board Ref" />
-                        <TextControl
+                      <Box sx={{ width: "100%" }}>
+                        <TextField
+                          label="Board Ref"
                           name="jobnames"
                           value={form.jobnames || ""}
                           onChange={handleChange}
-                          style={standardInputStyle}
+                          size="small"
+                          fullWidth
+                          InputLabelProps={{ shrink: true }}
+                          sx={{ "& .MuiInputLabel-root": { fontWeight: 700 } }}
                         />
                       </Box>
-                      <Box sx={{ mt: 2.7, width: { xs: "100%", sm: 220 } }}>
+                      <Box sx={{ width: "100%" }}>
                         <SelectControl
                           name="toolId"
                           label="Tool Name"
@@ -714,10 +717,9 @@ const OnsiteEnquiry: React.FC = () => {
                             label: t.tools,
                           }))}
                           required
-                        //      height={34}
                         />
                       </Box>
-                      <Box >
+                      <Box sx={{ width: "100%" }}>
                         <SelectControl
                           name="taskId"
                           label="Task"
@@ -728,10 +730,9 @@ const OnsiteEnquiry: React.FC = () => {
                             label: t.tasktype,
                           }))}
                           required
-                        //  height={34}
                         />
                       </Box>
-                      <Box sx={{ width: { xs: "100%", sm: 220 } }}>
+                      <Box sx={{ width: "100%" }}>
                         <SelectControl
                           name="tm"
                           label="Enquiry Billing Type"
@@ -743,20 +744,49 @@ const OnsiteEnquiry: React.FC = () => {
                             { value: "Fixed_Monthly Billing", label: "Fixed_Monthly Billing" },
                           ]}
                           required
-                        //   height={34}
                         />
                       </Box>
-                      <Box sx={{ width: { xs: "100%", sm: 180 } }}>
-                        <TextField label="Experience From" name="expFrom" value={form.expFrom} onChange={handleNumericChange} required size="small" fullWidth />
+                      <Box sx={{ width: "100%" }}>
+                        <TextField
+                          label="Experience From"
+                          name="expFrom"
+                          value={form.expFrom}
+                          onChange={handleNumericChange}
+                          required
+                          size="small"
+                          fullWidth
+                          InputLabelProps={{ shrink: true }}
+                          sx={{ "& .MuiInputLabel-root": { fontWeight: 700 } }}
+                        />
                       </Box>
-                      <Box sx={{ width: { xs: "100%", sm: 180 } }}>
-                        <TextField label="To" name="expTo" value={form.expTo} onChange={handleNumericChange} required size="small" fullWidth />
+                      <Box sx={{ width: "100%" }}>
+                        <TextField
+                          label="To"
+                          name="expTo"
+                          value={form.expTo}
+                          onChange={handleNumericChange}
+                          required
+                          size="small"
+                          fullWidth
+                          InputLabelProps={{ shrink: true }}
+                          sx={{ "& .MuiInputLabel-root": { fontWeight: 700 } }}
+                        />
                       </Box>
-                      <Box sx={{ width: { xs: "100%", sm: 180 } }}>
-                        <TextField label="No of Resources" type="number" name="noOfResources" value={form.noOfResources}
-                          onChange={handleChange} required size="small" fullWidth />
+                      <Box sx={{ width: "100%" }}>
+                        <TextField
+                          label="No of Resources"
+                          type="number"
+                          name="noOfResources"
+                          value={form.noOfResources}
+                          onChange={handleChange}
+                          required
+                          size="small"
+                          fullWidth
+                          InputLabelProps={{ shrink: true }}
+                          sx={{ "& .MuiInputLabel-root": { fontWeight: 700 } }}
+                        />
                       </Box>
-                      <Box sx={{ width: { xs: "100%", sm: 180 } }}>
+                      <Box sx={{ width: "100%" }}>
                         <TextField type="date" label="Profile Request Last Date"
                           name="profReqLastDate"
                           value={form.profReqLastDate}
@@ -764,9 +794,10 @@ const OnsiteEnquiry: React.FC = () => {
                           size="small"
                           fullWidth
                           required
+                          sx={{ "& .MuiInputLabel-root": { fontWeight: 700 } }}
                         />
                       </Box>
-                      <Box sx={{ width: { xs: "100%", sm: 180 } }}>
+                      <Box sx={{ width: "100%" }}>
                         <TextField type="date" label="Tentative Start Date"
                           name="tentStartDate"
                           value={form.tentStartDate || ""}
@@ -776,9 +807,10 @@ const OnsiteEnquiry: React.FC = () => {
                           }} InputLabelProps={{ shrink: true }}
                           size="small"
                           fullWidth
+                          sx={{ "& .MuiInputLabel-root": { fontWeight: 700 } }}
                           required />
                       </Box>
-                      <Box sx={{ width: { xs: "100%", sm: 180 } }}>
+                      <Box sx={{ width: "100%" }}>
                         <SelectControl
                           name="inputreceivedthru"
                           label="Input Received Thru"
@@ -790,78 +822,73 @@ const OnsiteEnquiry: React.FC = () => {
                             { value: "Other", label: "Other" },
                           ]}
                           required
-                          height={37}
                         />
                       </Box>
                     </Box>
 
                     <Box sx={{ display: "grid", gridTemplateColumns: "1fr", rowGap: 1.2, justifyItems: "start" }}>
-                      <Box sx={{ width: "100%" }}>
-                        <Label text="Tool License" />
+                      <Box sx={{ width: "100%", mt: -3 }}>
+                        <Label text="Tool License" bold />
                         <CompactRadioGroup
                           name="toolLicense"
                           value={form.toolLicense}
                           onChange={handleChange}
                           options={[{ value: "1", label: "With" }, { value: "2", label: "Without" }]}
                           sx={{ "& .MuiRadioGroup-root": { justifyContent: "flex-start", gap: 5 } }}
-                        //   height={34}
                         />
                       </Box>
                       <Box sx={{ width: "100%" }}>
-                        <Label text="Logistics" />
+                        <Label text="Logistics" bold />
                         <CompactRadioGroup
                           name="logistics"
                           value={form.logistics}
                           onChange={handleChange}
                           options={[{ value: "1", label: "Customer" }, { value: "2", label: "Sienna ECAD" }]}
                           sx={{ "& .MuiRadioGroup-root": { justifyContent: "flex-start", gap: 1.5 } }}
-                        //   height={34}
                         />
                       </Box>
                       <Box sx={{ width: "100%" }}>
-                        <Label text="Type" />
+                        <Label text="Type" bold />
                         <CompactRadioGroup
                           name="type"
                           value={form.type}
                           onChange={handleChange}
                           options={[{ value: "Export", label: "Export" }, { value: "Domestic", label: "Domestic" }]}
-                          sx={{ "& .MuiRadioGroup-root": { justifyContent: "flex-start", gap: 3.6} }}
-                        // height={34}
+                          sx={{ "& .MuiRadioGroup-root": { justifyContent: "flex-start", gap: 3.6 } }}
                         />
                       </Box>
-                       {/* fr means fractional unit of the available space, so 1fr takes up all available space, and 2fr would take up twice as much as 1fr. 
+                      {/* fr means fractional unit of the available space, so 1fr takes up all available space, and 2fr would take up twice as much as 1fr. 
                        This allows the first column to be wider than the second, giving more room for the radio buttons and labels,
                         while still allowing the second column to adjust based on the content
                          (like the TextField for onsite duration).*/}
-                      <Box sx={{ display: "grid", gridTemplateColumns: "200px 1fr"  , columnGap: 1, alignItems: "start", justifyContent: "start" }}> 
+                      <Box sx={{ display: "grid", gridTemplateColumns: "200px 1fr", columnGap: 1, alignItems: "start", justifyContent: "start" }}>
                         <Box >
-                          <Label text="Onsite Duration" />
+                          <Label text="Onsite Duration" bold />
                           <CompactRadioGroup
                             name="onsiteDurationType"
                             value={form.onsiteDurationType}
                             onChange={handleChange}
                             options={[{ value: "1", label: "Days" }, { value: "2", label: "Months" }]}
                             sx={{ "& .MuiRadioGroup-root": { justifyContent: "flex-start", gap: 4.5 } }}
-                          //  height={34}
                           />
                         </Box>
-                        <TextField type="number" size="small" sx={{ mt: 3, width: 100, "& .MuiOutlinedInput-root": { height: 30, borderRadius: "8px" } }} onChange={handleTwoDigitNumber} name="onsiteDuration"
+                        <TextField type="number" sx={{ mt: 3, width: 110, "& .MuiOutlinedInput-root": { height: 30, borderRadius: "8px" } }} onChange={handleTwoDigitNumber} name="onsiteDuration"
                           label={form.onsiteDurationType === "1" ? "In Days" : "In Months"}
                           value={form.onsiteDuration}
-                          required />
+                          required
+                          InputLabelProps={{ shrink: true }} />
                       </Box>
-                      <Box sx={{ display: "grid", gridTemplateColumns:  "200px 1fr" , columnGap: 1, alignItems: "start", justifyContent: "start" }}>
-                        <Box sx={{ minWidth: 0 }}>
-                          <Label text="Currency" />
+                      <Box sx={{ display: "grid", gridTemplateColumns: "200px 1fr", columnGap: 1, alignItems: "start", justifyContent: "start" }}>
+                        <Box >
+                          <Label text="Currency" bold />
                           <CompactRadioGroup
                             name="hourlyRateType"
                             value={form.hourlyRateType}
                             onChange={handleChange}
                             options={[{ value: "1", label: "INR" }, { value: "2", label: "USD" }, { value: "3", label: "EURO" }]}
-                          //   height={34}
                           />
                         </Box>
-                        <TextField size="small" sx={{ mt: 3, width: 100, "& .MuiOutlinedInput-root": { height: 30, borderRadius: "8px" } }} label="Hourly Rate" name="hourlyReate" onChange={handleHourlyRateChange} value={form.hourlyReate} InputLabelProps={{ shrink: true }} required />
+                        <TextField size="small" sx={{ mt: 3, width: 100, "& .MuiOutlinedInput-root": { height: 30, borderRadius: "8px", width: 110 } }} label="Hourly Rate" name="hourlyReate" onChange={handleHourlyRateChange} value={form.hourlyReate} InputLabelProps={{ shrink: true }} required />
                       </Box>
                     </Box>
                   </Box>
@@ -896,7 +923,7 @@ const OnsiteEnquiry: React.FC = () => {
                         onChange={handleChange} />
                     </Box>
                     <Box>
-                      <Label text="Remarks" />
+                      <Label text="Remarks" bold />
                       <TextControl
                         name="remarks"
                         value={form.remarks}

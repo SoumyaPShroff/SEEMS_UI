@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import enquiryService from "../services/enquiryService";
+//import enquiryService from "../services/enquiryService";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
 const EnquiryStatus = () => {
