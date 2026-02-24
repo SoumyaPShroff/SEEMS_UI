@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 //import enquiryService from "../services/enquiryService";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { REMARKS_ALLOWED_CHARS_REGEX } from "../../const/ValidationPatterns";
 
 const EnquiryStatus = () => {
   const [searchParams] = useSearchParams();
@@ -38,7 +39,7 @@ const EnquiryStatus = () => {
       tentativeDate
     });
 
-    navigate("/view-enquiries");
+    navigate("/ViewAllEnquiries");
   };
 
   if (loading) return <div>Loading...</div>;

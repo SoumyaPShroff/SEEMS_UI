@@ -10,6 +10,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { standardInputStyle } from "./styles/standardInputStyle";
+import { REMARKS_ALLOWED_CHARS_REGEX } from "../../const/ValidationPatterns";
 import { width } from "@mui/system";
 
 interface EnquiryForm {
@@ -346,6 +347,14 @@ const OnsiteEnquiry: React.FC = () => {
         taskId: value,
         SI,
         PI,
+      }));
+      return;
+    }
+
+    if (name === "remarks") {
+      setForm((prev) => ({
+        ...prev,
+        remarks: String(value ?? "").replace(REMARKS_ALLOWED_CHARS_REGEX, ""),
       }));
       return;
     }
