@@ -99,6 +99,7 @@ const ViewAllEnquiries = () => {
       renderCell: (params) => {
         const statusValue = params.value?.toString() || "";
         const isDisabled =
+          statusValue === "Realised" ||
           statusValue === "Cancelled" ||
           statusValue === "Rejected By Customer" ||
           statusValue === "Rejected By Sienna";
@@ -114,8 +115,8 @@ const ViewAllEnquiries = () => {
             onClick={(e) => {
               e.preventDefault();
               if (!isDisabled) {
-                // ✅ Navigate only if not disabled
-                // navigate(`/enquiry-details/${params.row.enquiryno}`);
+                const enqNo = params.row.enquiryno;
+                navigate(`/Home/EnquiryStatus?enquiryno=${encodeURIComponent(enqNo)}`);
               }
             }}
           >

@@ -14,6 +14,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { standardInputStyle } from "./styles/standardInputStyle";
+import { REMARKS_ALLOWED_CHARS_REGEX } from "../../const/ValidationPatterns";
 
 interface Customer { itemno: string; customer: string; }
 
@@ -478,7 +479,13 @@ const OffshoreEnquiry: React.FC = () => {
    const handleChange = async (e: any) => {
       const { name, value } = e.target as HTMLInputElement;
       // Prepare an updated form object (no state reset yet)
-      let updatedForm = { ...form, [name]: value };
+      let updatedForm = {
+         ...form,
+         [name]:
+            name === "remarks"
+               ? String(value ?? "").replace(REMARKS_ALLOWED_CHARS_REGEX, "")
+               : value,
+      };
 
       if (name === "currency") {
          // Convert string "1" | "2" | "3" to number 1 | 2 | 3

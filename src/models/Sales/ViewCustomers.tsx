@@ -11,8 +11,6 @@ import { toast } from "react-toastify";
 
 type ViewTab = "customers" | "locations" | "contacts";
 
-//const ACCESS_PAGE_KEYS = ["ViewCustomers"];
-
 const parseRoleFlag = (value: unknown): boolean => {
   if (typeof value === "boolean") return value;
   if (typeof value === "number") return value === 1;
@@ -38,9 +36,7 @@ const ViewCustomers = () => {
   const [locationRows, setLocationRows] = useState<any[]>([]);
   const [contactRows, setContactRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
- // const [selectedLocationCustomerId, setSelectedLocationCustomerId] = useState("");
- // const [selectedContactCustomerId, setSelectedContactCustomerId] = useState("");
-
+ 
   useEffect(() => {
     const requestedTab = (searchParams.get("tab") || "").toLowerCase();
     if (requestedTab === "customers" || requestedTab === "locations" || requestedTab === "contacts") {
@@ -183,12 +179,12 @@ const ViewCustomers = () => {
   const customerColumns: GridColDef[] = useMemo(
     () => [
       { field: "customer", headerName: "Customer", minWidth: 280, flex: 1 },
-      { field: "customer_abb", headerName: "Abbrev", minWidth: 90, flex: 1 },
+      { field: "customer_abb", headerName: "Abbrev", minWidth: 130, flex: 1 },
       { field: "sales_resp", headerName: "Sales Resp", minWidth: 180, flex: 1 },
       {
         field: "editCustomer",
         headerName: "Edit Customer",
-        minWidth: 130,
+        minWidth: 140,
         sortable: false,
         filterable: false,
         renderCell: (params) =>
@@ -199,26 +195,26 @@ const ViewCustomers = () => {
       },
 
       { field: "customer_Type", headerName: "Type", minWidth: 110, flex: 1 },
-      { field: "sapcustcode", headerName: "SAP CustCode", minWidth: 130, flex: 1 },
-      { field: "sales_resp_id", headerName: "Sales Resp ID", minWidth: 130, flex: 1 },
-      { field: "itemno", headerName: "CustomerId", minWidth: 120, flex: 1 },
-      { field: "gst_no", headerName: "GST No", minWidth: 110, flex: 1 },
+      { field: "sapcustcode", headerName: "SAP CustCode", minWidth: 180, flex: 1 },
+      { field: "sales_resp_id", headerName: "Sales Resp ID", minWidth: 170, flex: 1 },
+      { field: "itemno", headerName: "CustomerId", minWidth: 150, flex: 1 },
+      { field: "gst_no", headerName: "GST No", minWidth: 140, flex: 1 },
     ],
     [navigate]
   );
 
   const locationColumns: GridColDef[] = useMemo(
     () => [
-      { field: "customer", headerName: "Customer", minWidth: 250, flex: 1 },
-      { field: "customerAbb", headerName: "Cust Abbrev", minWidth: 150, flex: 1 },
+      { field: "customer", headerName: "Customer", minWidth: 280, flex: 1 },
+      { field: "customerAbb", headerName: "Abbrev", minWidth: 130, flex: 1 },
       { field: "location", headerName: "Location", minWidth: 180, flex: 1 },
       { field: "address", headerName: "Address", minWidth: 280, flex: 1.2 },
-      { field: "phoneno1", headerName: "Phone1", minWidth: 120, flex: 1 },
-      { field: "phoneno2", headerName: "Phone2", minWidth: 120, flex: 1 },
+      { field: "phoneno1", headerName: "Phone1", minWidth: 140, flex: 1 },
+      { field: "phoneno2", headerName: "Phone2", minWidth: 140, flex: 1 },
       {
         field: "editLocation",
         headerName: "Edit Location",
-        minWidth: 130,
+        minWidth: 140,
         sortable: false,
         filterable: false,
         renderCell: (params) => {
@@ -232,8 +228,8 @@ const ViewCustomers = () => {
           });
         },
       },
-      { field: "customer_id", headerName: "Customer Id", minWidth: 130, flex: 1 },
-      { field: "location_id", headerName: "Location Id", minWidth: 130, flex: 1 }
+      { field: "customer_id", headerName: "Customer Id", minWidth: 150, flex: 1 },
+      { field: "location_id", headerName: "Location Id", minWidth: 150, flex: 1 }
 
     ],
     [navigate]
@@ -241,17 +237,17 @@ const ViewCustomers = () => {
 
   const contactColumns: GridColDef[] = useMemo(
     () => [
-      { field: "customer", headerName: "Customer", minWidth: 220, flex: 1 },
-      { field: "customerAbb", headerName: "Cust Abbrev", minWidth: 130, flex: 1 },
+      { field: "customer", headerName: "Customer", minWidth: 280, flex: 1 },
+      { field: "customerAbb", headerName: "Abbrev", minWidth: 130, flex: 1 },
       { field: "contactName", headerName: "Contact Name", minWidth: 180, flex: 1 },
-      { field: "contactTitle", headerName: "Title", minWidth: 100, flex: 1 },
-      { field: "mobile1", headerName: "Mobile1", minWidth: 120, flex: 1 },
-      { field: "mobile2", headerName: "Mobile2", minWidth: 120, flex: 1 },
+      { field: "contactTitle", headerName: "Title", minWidth: 110, flex: 1 },
+      { field: "mobile1", headerName: "Mobile1", minWidth: 140, flex: 1 },
+      { field: "mobile2", headerName: "Mobile2", minWidth: 140, flex: 1 },
       { field: "email11", headerName: "Email", minWidth: 200, flex: 1 },
       {
         field: "editContact",
         headerName: "Edit Contact",
-        minWidth: 120,
+        minWidth: 140,
         sortable: false,
         filterable: false,
         renderCell: (params) => {
@@ -491,11 +487,6 @@ const ViewCustomers = () => {
             getRowId={getRowId}
             searchableFields={searchableFields}
             placeholder={`Search ${title.toLowerCase()}...`}
-          //  onRowClick={(row: any) => {
-            //  const customerId = getCustomerId(row);
-              //if (activeTab === "locations") setSelectedLocationCustomerId(customerId);
-             // if (activeTab === "contacts") setSelectedContactCustomerId(customerId);
-          //  }}
           />
         </Box>
       )}

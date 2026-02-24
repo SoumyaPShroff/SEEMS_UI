@@ -10,6 +10,7 @@ import axios from "axios";
 import { baseUrl } from "../../const/BaseUrl";
 import EditableGrid, { type EditableGridColumn, } from "../../components/resusablecontrols/EditableGrid";
 import StandardPageLayout, { StandardPageCard, } from "../../components/resusablecontrols/StandardPageLayout";
+import { REMARKS_ALLOWED_CHARS_REGEX } from "../../const/ValidationPatterns";
 
 type Filters = {
   month: number;
@@ -160,7 +161,7 @@ async function savePlannedHours(rows: PlannedHoursRow[], filters: Filters) {
       jobNumber: row.jobNumber,
       month: monthStr,
       monthlyHrs: toNumber(row.monthlyHrs),
-      remarks: row.remarks ?? "",
+      remarks: (row.remarks ?? "").replace(REMARKS_ALLOWED_CHARS_REGEX, ""),
     }));
 
   console.log("PAYLOAD", payload);
@@ -234,13 +235,18 @@ export default function PlannedHours() {
   }, [filters.month, filters.year, filters.managerCostCenter]);
 
   const handleRowsChange = useCallback((nextRows: PlannedHoursRow[]) => {
+    const sanitizedRows = nextRows.map((row) => ({
+      ...row,
+      remarks: (row.remarks ?? "").replace(REMARKS_ALLOWED_CHARS_REGEX, ""),
+    }));
+
     const nextInvalidRow = nextRows.find(
       (row) => toNumber(row.monthlyHrs) > toNumber(row.balanceHrs)
     );
 
     if (!nextInvalidRow) {
       lastInvalidToastKeyRef.current = "";
-      setRows(nextRows);
+      setRows(sanitizedRows);
       return;
     }
 
@@ -253,7 +259,7 @@ export default function PlannedHours() {
       lastInvalidToastKeyRef.current = toastKey;
     }
 
-    setRows(nextRows);
+    setRows(sanitizedRows);
   }, []);
 
   const handleValidateCellEdit = useCallback(
