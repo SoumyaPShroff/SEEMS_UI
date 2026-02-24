@@ -192,6 +192,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, 
   const handleLogout = (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
     sessionStorage.removeItem("SessionUserID");
+    sessionStorage.removeItem("SessionUserName");
     setUserId(null);
     navigate("/Login", { replace: true });
   };

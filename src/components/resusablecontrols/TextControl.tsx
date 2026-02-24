@@ -24,7 +24,6 @@ const TextControl: React.FC<TextControlProps> = ({
   placeholder,
   style,
   fontSize = "0.9rem",
-  fontWeight = 800,
   disabled,
   type = "text",
   inputMode,
@@ -36,7 +35,6 @@ const TextControl: React.FC<TextControlProps> = ({
   const baseStyle: React.CSSProperties = {
     fontFamily: "Arial",
     fontSize,
-    fontWeight,
     borderRadius: 4,
     border: "1px solid #ccc",
     padding: "8px 12px",  
