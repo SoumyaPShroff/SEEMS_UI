@@ -11,7 +11,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { standardInputStyle } from "./styles/standardInputStyle";
 import { REMARKS_ALLOWED_CHARS_REGEX } from "../../const/ValidationPatterns";
-import { width } from "@mui/system";
 
 interface EnquiryForm {
   enquirytype: string;
