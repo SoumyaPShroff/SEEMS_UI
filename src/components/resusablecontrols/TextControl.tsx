@@ -12,6 +12,7 @@ interface TextControlProps {
   type?: "text" | "number" | "date";
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   className?: string;
+  lang?: string;
   multiline?: boolean;
   rows?: number;
   fullWidth?: boolean;
