@@ -62,11 +62,28 @@ const ViewCustomers = () => {
   }, [loginId]);
 
   const getOrLoadRoleFlag = useCallback(async (): Promise<boolean> => {
-    if (roleFlag !== null) return roleFlag;
+
+    const cacheKey = `viewCustomers_${loginId}_role`;
+    const cached = sessionStorage.getItem(cacheKey);
+
+  // ✅ Check cache first
+  if (cached !== null) {
+    const parsed = cached === "true";
+    setRoleFlag(parsed);
+    return parsed;
+  }
+   // ❌ Not cached → fetch
+   // if (roleFlag !== null) return roleFlag; //commented for cache
     const flag = await loadRoleFlag();
     setRoleFlag(flag);
+
+    // ✅ Store in session
+    sessionStorage.setItem(cacheKey, String(flag));
+
     return flag;
-  }, [loadRoleFlag, roleFlag]);
+  //}, [loadRoleFlag, roleFlag]);
+  }, [loadRoleFlag, loginId]);
+
 
   const fetchCustomersByRights = useCallback(
     async (hasAllAccess: boolean): Promise<any[]> => {
@@ -84,66 +101,171 @@ const ViewCustomers = () => {
     [loginId]
   );
 
+  // const loadCustomers = useCallback(async () => {
+  //   setLoading(true);
+  //   try {
+  //     const hasAllAccess = await getOrLoadRoleFlag();
+  //     const rows = await fetchCustomersByRights(hasAllAccess);
+  //     setCustomerRows(rows);
+  //   } catch (err) {
+  //     console.error("Error loading customers:", err);
+  //     setCustomerRows([]);
+  //     toast.error("Unable to load customer records.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [fetchCustomersByRights, getOrLoadRoleFlag]);
+
   const loadCustomers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const hasAllAccess = await getOrLoadRoleFlag();
-      const rows = await fetchCustomersByRights(hasAllAccess);
-      setCustomerRows(rows);
-    } catch (err) {
-      console.error("Error loading customers:", err);
-      setCustomerRows([]);
-      toast.error("Unable to load customer records.");
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchCustomersByRights, getOrLoadRoleFlag]);
+  const cacheKey = `viewCustomers_${loginId}_customers`;
 
+  // ✅ 1️⃣ Check cache
+  const cached = sessionStorage.getItem(cacheKey);
+  if (cached) {
+    console.log("⚡ Customers loaded from session cache");
+    setCustomerRows(JSON.parse(cached));
+    return;
+  }
+
+  // ❌ 2️⃣ Not cached → fetch
+  setLoading(true);
+  try {
+    const hasAllAccess = await getOrLoadRoleFlag();
+    const rows = await fetchCustomersByRights(hasAllAccess);
+
+    setCustomerRows(rows);
+
+    // ✅ Store in session
+    sessionStorage.setItem(cacheKey, JSON.stringify(rows));
+  } catch (err) {
+    console.error("Error loading customers:", err);
+    setCustomerRows([]);
+    toast.error("Unable to load customer records.");
+  } finally {
+    setLoading(false);
+  }
+}, [fetchCustomersByRights, getOrLoadRoleFlag, loginId]);
+
+  // const loadLocations = useCallback(async () => {
+  //   setLoading(true);
+  //   try {
+  //     const hasAllAccess = await getOrLoadRoleFlag();
+  //     const res = await axios.get(`${baseUrl}/api/Sales/customerlocations`);
+  //     let rows = Array.isArray(res.data) ? res.data : [];
+
+  //     if (!hasAllAccess) {
+  //       const scopedCustomers = await fetchCustomersByRights(false);
+  //       const allowedCustomerIds = new Set(scopedCustomers.map(getCustomerId).filter(Boolean));
+  //       rows = rows.filter((row: any) => allowedCustomerIds.has(getCustomerId(row)));
+  //     }
+
+  //     setLocationRows(rows);
+  //   } catch (err) {
+  //     console.error("Error loading locations:", err);
+  //     setLocationRows([]);
+  //     toast.error("Unable to load locations.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [fetchCustomersByRights, getOrLoadRoleFlag]);
   const loadLocations = useCallback(async () => {
-    setLoading(true);
-    try {
-      const hasAllAccess = await getOrLoadRoleFlag();
-      const res = await axios.get(`${baseUrl}/api/Sales/customerlocations`);
-      let rows = Array.isArray(res.data) ? res.data : [];
+  const cacheKey = `viewCustomers_${loginId}_locations`;
 
-      if (!hasAllAccess) {
-        const scopedCustomers = await fetchCustomersByRights(false);
-        const allowedCustomerIds = new Set(scopedCustomers.map(getCustomerId).filter(Boolean));
-        rows = rows.filter((row: any) => allowedCustomerIds.has(getCustomerId(row)));
-      }
+  const cached = sessionStorage.getItem(cacheKey);
+  if (cached) {
+    console.log("⚡ Locations loaded from session cache");
+    setLocationRows(JSON.parse(cached));
+    return;
+  }
 
-      setLocationRows(rows);
-    } catch (err) {
-      console.error("Error loading locations:", err);
-      setLocationRows([]);
-      toast.error("Unable to load locations.");
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  try {
+    const hasAllAccess = await getOrLoadRoleFlag();
+    const res = await axios.get(`${baseUrl}/api/Sales/customerlocations`);
+    let rows = Array.isArray(res.data) ? res.data : [];
+
+    if (!hasAllAccess) {
+      const scopedCustomers = await fetchCustomersByRights(false);
+      const allowedCustomerIds = new Set(
+        scopedCustomers.map(getCustomerId).filter(Boolean)
+      );
+      rows = rows.filter((row: any) =>
+        allowedCustomerIds.has(getCustomerId(row))
+      );
     }
-  }, [fetchCustomersByRights, getOrLoadRoleFlag]);
+
+    setLocationRows(rows);
+
+    sessionStorage.setItem(cacheKey, JSON.stringify(rows));
+  } catch (err) {
+    console.error("Error loading locations:", err);
+    setLocationRows([]);
+    toast.error("Unable to load locations.");
+  } finally {
+    setLoading(false);
+  }
+}, [fetchCustomersByRights, getOrLoadRoleFlag, loginId]);
+
+  // const loadContacts = useCallback(async () => {
+  //   setLoading(true);
+  //   try {
+  //     const hasAllAccess = await getOrLoadRoleFlag();
+  //     const res = await axios.get(`${baseUrl}/api/Sales/customercontacts`);
+  //     let rows = Array.isArray(res.data) ? res.data : [];
+
+  //     if (!hasAllAccess) {
+  //       const scopedCustomers = await fetchCustomersByRights(false);
+  //       const allowedCustomerIds = new Set(scopedCustomers.map(getCustomerId).filter(Boolean));
+  //       rows = rows.filter((row: any) => allowedCustomerIds.has(getCustomerId(row)));
+  //     }
+
+  //     setContactRows(rows);
+  //   } catch (err) {
+  //     console.error("Error loading contacts:", err);
+  //     setContactRows([]);
+  //     toast.error("Unable to load contacts.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [fetchCustomersByRights, getOrLoadRoleFlag]);
 
   const loadContacts = useCallback(async () => {
-    setLoading(true);
-    try {
-      const hasAllAccess = await getOrLoadRoleFlag();
-      const res = await axios.get(`${baseUrl}/api/Sales/customercontacts`);
-      let rows = Array.isArray(res.data) ? res.data : [];
+  const cacheKey = `viewCustomers_${loginId}_contacts`;
 
-      if (!hasAllAccess) {
-        const scopedCustomers = await fetchCustomersByRights(false);
-        const allowedCustomerIds = new Set(scopedCustomers.map(getCustomerId).filter(Boolean));
-        rows = rows.filter((row: any) => allowedCustomerIds.has(getCustomerId(row)));
-      }
+  const cached = sessionStorage.getItem(cacheKey);
+  if (cached) {
+    console.log("⚡ Contacts loaded from session cache");
+    setContactRows(JSON.parse(cached));
+    return;
+  }
 
-      setContactRows(rows);
-    } catch (err) {
-      console.error("Error loading contacts:", err);
-      setContactRows([]);
-      toast.error("Unable to load contacts.");
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  try {
+    const hasAllAccess = await getOrLoadRoleFlag();
+    const res = await axios.get(`${baseUrl}/api/Sales/customercontacts`);
+    let rows = Array.isArray(res.data) ? res.data : [];
+
+    if (!hasAllAccess) {
+      const scopedCustomers = await fetchCustomersByRights(false);
+      const allowedCustomerIds = new Set(
+        scopedCustomers.map(getCustomerId).filter(Boolean)
+      );
+      rows = rows.filter((row: any) =>
+        allowedCustomerIds.has(getCustomerId(row))
+      );
     }
-  }, [fetchCustomersByRights, getOrLoadRoleFlag]);
+
+    setContactRows(rows);
+
+    sessionStorage.setItem(cacheKey, JSON.stringify(rows));
+  } catch (err) {
+    console.error("Error loading contacts:", err);
+    setContactRows([]);
+    toast.error("Unable to load contacts.");
+  } finally {
+    setLoading(false);
+  }
+}, [fetchCustomersByRights, getOrLoadRoleFlag, loginId]);
 
   useEffect(() => {
     if (activeTab === "customers") {

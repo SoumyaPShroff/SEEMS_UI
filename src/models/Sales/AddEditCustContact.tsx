@@ -62,6 +62,13 @@ const AddEditCustContact = () => {
   const { itemno } = useParams();
   const selectedItemNo = decodeURIComponent(itemno ?? "").trim();
   const isAddNewMode = selectedItemNo.toLowerCase() === "new";
+  const loginId = sessionStorage.getItem("SessionUserID") || "guest";
+  const clearViewCustomersCache = () => {
+    sessionStorage.removeItem(`viewCustomers_${loginId}_customers`);
+    sessionStorage.removeItem(`viewCustomers_${loginId}_locations`);
+    sessionStorage.removeItem(`viewCustomers_${loginId}_contacts`);
+    //clear all since each interdependent cache can data in the others 
+  };
 
   const [loadingPage, setLoadingPage] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -282,6 +289,7 @@ const AddEditCustContact = () => {
         await axios.put(`${baseUrl}/api/Sales/EditCustContact/${encodeURIComponent(contactId || selectedItemNo)}`, payload);
         toast.success("Customer contact updated successfully.");
       }
+      clearViewCustomersCache();
       navigate("/Home/ViewCustomers?tab=contacts");
     } catch (error) {
       console.error("Contact save failed:", error);

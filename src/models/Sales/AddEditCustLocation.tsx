@@ -33,6 +33,12 @@ const AddEditCustLocation = () => {
   const selectedLocationId = decodeURIComponent(searchParams.get("locationId") ?? "").trim();
   const isAddNewMode = selectedItemNo.toLowerCase() === "new";
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
+  const clearViewCustomersCache = () => {
+    sessionStorage.removeItem(`viewCustomers_${loginId}_customers`);
+    sessionStorage.removeItem(`viewCustomers_${loginId}_locations`);
+    sessionStorage.removeItem(`viewCustomers_${loginId}_contacts`);
+        //clear all since each interdependent cache can data in the others 
+  };
 
   const [loadingPage, setLoadingPage] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -156,6 +162,7 @@ const AddEditCustLocation = () => {
         );
         toast.success("Customer location updated successfully.");
       }
+      clearViewCustomersCache();
       navigate("/Home/ViewCustomers?tab=locations");
     } catch (error) {
       console.error("Location save failed:", error);

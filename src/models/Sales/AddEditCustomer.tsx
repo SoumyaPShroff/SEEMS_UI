@@ -47,6 +47,14 @@ const AddEditCustomer = () => {
   const [customerTypeOptions, setCustomerTypeOptions] = useState<Option[]>([]);
   const pageTitle = isEditMode ? "Edit Customer Details" : "Add New Customer";
   const loginUser = sessionStorage.getItem("SessionUserName") || "guest";
+  const loginId = sessionStorage.getItem("SessionUserID") || "guest";
+
+  const clearViewCustomersCache = () => {
+    sessionStorage.removeItem(`viewCustomers_${loginId}_customers`);
+  //  sessionStorage.removeItem(`viewCustomers_${loginId}_locations`);
+  //  sessionStorage.removeItem(`viewCustomers_${loginId}_contacts`);
+    // here clearing only customers cache will not affect other data, hence do not clear other cache
+  };
 
   const onTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -160,6 +168,7 @@ const AddEditCustomer = () => {
     setSaving(true);
     try {
       await saveCustomer();
+      clearViewCustomersCache();
       toast.success(isEditMode ? "Customer updated successfully." : "Customer added successfully.");
       navigate("/Home/ViewCustomers");
     } catch (err) {
