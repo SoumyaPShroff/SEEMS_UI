@@ -635,13 +635,25 @@ const RptBillingPlanner: React.FC = () => {
       setLoadingData(true); // show spinner
       setShowResults(false);
       setInvoiceDict(new Set()); // reset old data
+      setInvoicePendingData([]);
+      setPendingSummary(null);
 
       // Fetch billing data startdate,
-      await fetchBillingData(startdate, enddate, selectedManager.costcenter);
+      // await fetchBillingData(startdate, enddate, selectedManager.costcenter);
+      // // ✅ Fetch Invoice Dictionary
+       const invUrl = `${baseUrl}/api/Job/InvoiceDictionary/${startdate}/${enddate}`;
+     //  const invResponse = await axios.get<{ jobnumber: string; month: number; year: number }[]>(invUrl);
 
-      // ✅ Fetch Invoice Dictionary
-      const invUrl = `${baseUrl}/api/Job/InvoiceDictionary/${startdate}/${enddate}`;
-      const invResponse = await axios.get<{ jobnumber: string; month: number; year: number }[]>(invUrl);
+      const invPendingUrl = `${baseUrl}/api/Sales/PendingInvoices/${selectedManager.costcenter}`;
+      const billingPromise = fetchBillingData(startdate, enddate, selectedManager.costcenter);
+      const invoicePromise = axios.get(invUrl);
+      const pendingPromise = axios.get<BillingData[]>(invPendingUrl);
+      // to improve performance, fetch billing data and invoice dictionary in parallel,all api run at same time
+      const [_, invResponse, pendingResponse] = await Promise.all([
+        billingPromise,
+        invoicePromise,
+        pendingPromise
+      ]);
 
       const invSet = new Set<string>();
       invResponse.data.forEach((row) => {
@@ -651,8 +663,6 @@ const RptBillingPlanner: React.FC = () => {
 
       setInvoiceDict(invSet);
 
-      const invPendingUrl = `${baseUrl}/api/Sales/PendingInvoices/${selectedManager.costcenter}`;
-      const pendingResponse = await axios.get<BillingData[]>(invPendingUrl);
       setInvoicePendingData(pendingResponse.data);
 
       const pending = buildPendingSummary(pendingResponse.data);
@@ -821,7 +831,7 @@ const RptBillingPlanner: React.FC = () => {
 
   const hasResults = !loadingData && showResults && data?.length > 0;
   const hasPendingInvoices =
-    hasResults && Array.isArray(invoicePendingData) && invoicePendingData.length > 0;
+    !loadingData && showResults && Array.isArray(invoicePendingData) && invoicePendingData.length > 0;
 
   return (
     <PageContainer>

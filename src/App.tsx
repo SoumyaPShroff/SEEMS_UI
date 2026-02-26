@@ -18,7 +18,6 @@ import ViewPOEnqData from './models/Sales/ViewPOEnqData';
 import OnsiteEnquiry from './models/Sales/OnsiteEnquiry';
 import AddQuotation from './models/Sales/AddQuotation';
 import ViewQuoteDetails from './models/Sales/ViewQuoteDetails';
-import Feasibility from './models/Sales/Feasibility';
 import ViewQuoteReport from "./models/Sales/ViewQuoteReport";
 import HomeDashboard from './components/HomeDashboard';
 import MeetMyTeam from './components/MeetMyTeam';
@@ -76,7 +75,6 @@ const App: React.FC = () => {
           <Route path="AddQuotation/:enquiryNo" element={<AddQuotation />} />
           <Route path="ViewQuoteDetails" element={<ViewQuoteDetails />} /> 
           <Route path="ViewQuoteReport/:quoteNo/:versionNo/:enquiryNo" element={<ViewQuoteReport />} />
-          <Route path="Feasibility/:enquiryno" element={<Feasibility />} />
           <Route path="PlannedHours" element={<PlannedHours />} />
           <Route path="MeetMyTeam" element={<MeetMyTeam />} />
           <Route path="ViewCustomers" element={<ViewCustomers />} />
