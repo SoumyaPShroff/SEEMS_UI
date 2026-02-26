@@ -28,10 +28,7 @@ const ViewCustomers = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
-
   const [activeTab, setActiveTab] = useState<ViewTab>("customers");
-  const [roleFlag, setRoleFlag] = useState<boolean | null>(null);
-
   const [customerRows, setCustomerRows] = useState<any[]>([]);
   const [locationRows, setLocationRows] = useState<any[]>([]);
   const [contactRows, setContactRows] = useState<any[]>([]);
@@ -69,19 +66,13 @@ const ViewCustomers = () => {
   // ✅ Check cache first
   if (cached !== null) {
     const parsed = cached === "true";
-    setRoleFlag(parsed);
     return parsed;
   }
    // ❌ Not cached → fetch
-   // if (roleFlag !== null) return roleFlag; //commented for cache
     const flag = await loadRoleFlag();
-    setRoleFlag(flag);
-
     // ✅ Store in session
     sessionStorage.setItem(cacheKey, String(flag));
-
     return flag;
-  //}, [loadRoleFlag, roleFlag]);
   }, [loadRoleFlag, loginId]);
 
 

@@ -41,12 +41,16 @@ interface TotalsRow {
   GrandTotal: number;
 }
 
-
 interface SummaryResult {
   buckets: Record<string, TotalsRow>;
   total: TotalsRow;
 }
 
+interface InvoiceDictionaryItem {
+  jobnumber: string;
+  month: number;
+  year: number;
+}
 const PageContainer = styled(Box)`
   width: 100%;
   max-width: 1400px;
@@ -646,7 +650,8 @@ const RptBillingPlanner: React.FC = () => {
 
       const invPendingUrl = `${baseUrl}/api/Sales/PendingInvoices/${selectedManager.costcenter}`;
       const billingPromise = fetchBillingData(startdate, enddate, selectedManager.costcenter);
-      const invoicePromise = axios.get(invUrl);
+    //  const invoicePromise = axios.get(invUrl);
+      const invoicePromise = axios.get<InvoiceDictionaryItem[]>(invUrl);
       const pendingPromise = axios.get<BillingData[]>(invPendingUrl);
       // to improve performance, fetch billing data and invoice dictionary in parallel,all api run at same time
       const [_, invResponse, pendingResponse] = await Promise.all([

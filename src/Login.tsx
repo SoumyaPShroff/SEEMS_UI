@@ -6,6 +6,7 @@ import logo2 from './const/Images/Sienna-Ecad-logo2.jpg'
 import "../src/mainstyles/Login.css";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { getFavourites, writeFavouritesCache } from "./components/Favourites";
 
 interface ILogin {
   userId: string | null; // Add userId to the interface
@@ -95,6 +96,12 @@ const LoginPage: React.FC<ILogin> = ({ setUserId }) => {
           setUserId(result.loginId);
           sessionStorage.setItem('SessionUserID', result.loginId);
           setSessionUserID(result.loginId);
+          try {
+            const favouritesRes = await getFavourites(result.loginId);
+            writeFavouritesCache(result.loginId, favouritesRes.data || []);
+          } catch (favouritesError) {
+            console.error("Failed to cache user favourites", favouritesError);
+          }
           const responseName = await axios.get<string>(`${baseUrl}/UserName/${loginId}`);
           sessionStorage.setItem('SessionUserName', responseName.data);
           const resDesgnName = await axios.get<string>(`${baseUrl}/UserDesignation/${loginId}`);

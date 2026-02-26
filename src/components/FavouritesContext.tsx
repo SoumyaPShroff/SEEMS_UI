@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import axios from 'axios';
 import { baseUrl } from '../const/BaseUrl';
 import { addFavourite as apiAdd, removeFavourite as apiRemove } from '../components/Favourites';
+import { readFavouritesCache, writeFavouritesCache } from './Favourites';
 import type { FavouriteDto } from './Favourites';
 
 interface FavouritesContextType {
@@ -27,12 +28,20 @@ export const FavouritesProvider: React.FC<{ children: React.ReactNode; sessionUs
       setLoading(false);
       return;
     }
+    const cachedFavourites = readFavouritesCache(sessionUserID);
+    if (cachedFavourites) {
+      setFavouriteLinks(cachedFavourites);
+      setFavourites(cachedFavourites.map(f => f.pageid));
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const res = await axios.get<FavouriteDto[]>(`${baseUrl}/UserFavourites/${sessionUserID}`);
       const favs = res.data || [];
       setFavouriteLinks(favs);
       setFavourites(favs.map(f => f.pageid));
+      writeFavouritesCache(sessionUserID, favs);
     } catch (err) {
       console.error("Failed to fetch favourites", err);
     } finally {
@@ -49,7 +58,11 @@ export const FavouritesProvider: React.FC<{ children: React.ReactNode; sessionUs
     try {
       await apiAdd(sessionUserID, pageId);
       setFavourites(prev => [...prev, pageId]);
-      setFavouriteLinks(prev => [...prev, { pageid: pageId, pagename: title, route }]);
+      setFavouriteLinks(prev => {
+        const updated = [...prev, { pageid: pageId, pagename: title, route }];
+        writeFavouritesCache(sessionUserID, updated);
+        return updated;
+      });
     } catch (err) {
       console.error("Failed to add favourite", err);
     }
@@ -60,7 +73,11 @@ export const FavouritesProvider: React.FC<{ children: React.ReactNode; sessionUs
     try {
       await apiRemove(sessionUserID, pageId);
       setFavourites(prev => prev.filter(id => id !== pageId));
-      setFavouriteLinks(prev => prev.filter(link => link.pageid !== pageId));
+      setFavouriteLinks(prev => {
+        const updated = prev.filter(link => link.pageid !== pageId);
+        writeFavouritesCache(sessionUserID, updated);
+        return updated;
+      });
     } catch (err) {
       console.error("Failed to remove favourite", err);
     }
