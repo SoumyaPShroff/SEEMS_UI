@@ -1,5 +1,6 @@
 import  { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+//, useNavigate
+import { useSearchParams } from "react-router-dom";
 import { Box, Button, Card, CardContent, CircularProgress, Stack, Typography } from "@mui/material";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -13,7 +14,7 @@ import { formatDateYYYYMMDD } from "../../components/utils/DateUtils";
 
 const EnquiryStatus = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+ // const navigate = useNavigate();
   const enquiryNo = searchParams.get("enquiryno");
   const [statusOptions, setStatusOptions] = useState<string[]>([]);
   const [status, setStatus] = useState("");
@@ -22,10 +23,10 @@ const EnquiryStatus = () => {
   const [reason, setReason] = useState("");
   const [tentativeDate, setTentativeDate] = useState("");
   const [enquiryType, setEnquiryType] = useState("");
-  const [salesResponsibilityId, setSalesResponsibilityId] = useState("");
-  const [completeResponsibilityId, setCompleteResponsibilityId] = useState("");
+  //const [salesResponsibilityId, setSalesResponsibilityId] = useState("");
+  //const [completeResponsibilityId, setCompleteResponsibilityId] = useState("");
   const [loading, setLoading] = useState(true);
-  const loginId = sessionStorage.getItem("SessionUserID") || "";
+ // const loginId = sessionStorage.getItem("SessionUserID") || "";
   const defaultStatusOptions = [
     "Open",
     "Tentative",
@@ -85,8 +86,8 @@ const EnquiryStatus = () => {
       const detailsRes = await axios.get(`${baseUrl}/api/Sales/EnquiryDetailsByEnquiryno/${enquiryNo}`);
       const row = Array.isArray(detailsRes.data) ? detailsRes.data[0] : detailsRes.data;
       setEnquiryType(String(row?.enquirytype ?? row?.enquirytype ?? ""));
-      setSalesResponsibilityId(String(row?.salesresponsibilityid ?? ""));
-      setCompleteResponsibilityId(String(row?.completeresponsibilityid ?? ""));
+   //   setSalesResponsibilityId(String(row?.salesresponsibilityid ?? ""));
+    //  setCompleteResponsibilityId(String(row?.completeresponsibilityid ?? ""));
 
       const currentStatus = String(row?.status ?? "");
       setStatus("");
@@ -100,78 +101,78 @@ const EnquiryStatus = () => {
   };
 
   const handleSubmit = async () => {
-    if (!enquiryNo) {
-      toast.error("Invalid enquiry number.");
-      return;
-    }
-    const normalizedStatus = String(status ?? "").trim().toLowerCase();
-    if (!normalizedStatus || normalizedStatus === "select") {
-      toast.error("Status is required.");
-      return;
-    }
+    // if (!enquiryNo) {
+    //   toast.error("Invalid enquiry number.");
+    //   return;
+    // }
+    // const normalizedStatus = String(status ?? "").trim().toLowerCase();
+    // if (!normalizedStatus || normalizedStatus === "select") {
+    //   toast.error("Status is required.");
+    //   return;
+    // }
 
-    if (status === "Confirmed" && !tentativeDate &&  enquiryType === "OFFSHORE") {
-      toast.error("Tentative Start Date is required for OFFSHORE enquiry.");
-      return;
-    }
+    // if (status === "Confirmed" && !tentativeDate &&  enquiryType === "OFFSHORE") {
+    //   toast.error("Tentative Start Date is required for OFFSHORE enquiry.");
+    //   return;
+    // }
 
-    if (status === "Realised" && enquiryType === "ONSITE" && !billingDate) {
-      toast.error("Billing Date is required for ONSITE realised enquiry.");
-      return;
-    }
+    // if (status === "Realised" && enquiryType === "ONSITE" && !billingDate) {
+    //   toast.error("Billing Date is required for ONSITE realised enquiry.");
+    //   return;
+    // }
 
-    const fetchEmailListFromIds = async (ids: string[]) => {
-      const uniqueIds = [...new Set(ids.map((id) => id.trim()).filter(Boolean))];
-      if (uniqueIds.length === 0) return [];
-      const { data } = await axios.get(`${baseUrl}/EmailId/${uniqueIds.join(",")}`);
-      const list = Array.isArray(data) ? data : [data];
-      return list.map((x) => String(x ?? "").trim()).filter(Boolean);
-    };
+    // const fetchEmailListFromIds = async (ids: string[]) => {
+    //   const uniqueIds = [...new Set(ids.map((id) => id.trim()).filter(Boolean))];
+    //   if (uniqueIds.length === 0) return [];
+    //   const { data } = await axios.get(`${baseUrl}/EmailId/${uniqueIds.join(",")}`);
+    //   const list = Array.isArray(data) ? data : [data];
+    //   return list.map((x) => String(x ?? "").trim()).filter(Boolean);
+    // };
 
-    let toList: string[] = [];
-    let ccList: string[] = [];
-    try {
-      toList = await fetchEmailListFromIds([salesResponsibilityId, completeResponsibilityId]);
-      ccList = await fetchEmailListFromIds([loginId]);
-    } catch (error) {
-      console.warn("Failed to resolve To/CC email lists.", error);
-    }
+    // let toList: string[] = [];
+    // let ccList: string[] = [];
+    // try {
+    //   toList = await fetchEmailListFromIds([salesResponsibilityId, completeResponsibilityId]);
+    //   ccList = await fetchEmailListFromIds([loginId]);
+    // } catch (error) {
+    //   console.warn("Failed to resolve To/CC email lists.", error);
+    // }
 
-    const isReasonStatus = defaultStatusOptions.includes(status);
+    // const isReasonStatus = defaultStatusOptions.includes(status);
 
-    const payload = {
-      enquiryno: enquiryNo,
-      status,
-      billingDate: enquiryType === "ONSITE" ?  billingDate  || null : null,
-      tentativeDate: enquiryType === "OFFSHORE" ? tentativeDate || null : null,
-      reason: isReasonStatus ? reason : null,
-     // statusremarks: !isReasonStatus ? statusremarks : null,
-      statusremarks: status === "Realised" ? statusremarks : null,
-      ToMailList: JSON.stringify(toList),
-      CCMailList: JSON.stringify(ccList),
-    };
+    // const payload = {
+    //   enquiryno: enquiryNo,
+    //   status,
+    //   billingDate: enquiryType === "ONSITE" ?  billingDate  || null : null,
+    //   tentativeDate: enquiryType === "OFFSHORE" ? tentativeDate || null : null,
+    //   reason: isReasonStatus ? reason : null,
+    //  // statusremarks: !isReasonStatus ? statusremarks : null,
+    //   statusremarks: status === "Realised" ? statusremarks : null,
+    //   ToMailList: JSON.stringify(toList),
+    //   CCMailList: JSON.stringify(ccList),
+    // };
 
-    const endpoints = [{ method: "put" as const, url: `${baseUrl}/api/Sales/UpdateEnquiryStatus` },];
+    // const endpoints = [{ method: "put" as const, url: `${baseUrl}/api/Sales/UpdateEnquiryStatus` },];
 
-    let updated = false;
-    for (const ep of endpoints) {
-      try {
-        await axios[ep.method](ep.url, payload);
-        updated = true;
-        break;
-      } catch (error) {
-        console.warn("Failed to update enquiry status:", ep, error);
-        // try next endpoint variant
-      }
-    }
+    // let updated = false;
+    // for (const ep of endpoints) {
+    //   try {
+    //     await axios[ep.method](ep.url, payload);
+    //     updated = true;
+    //     break;
+    //   } catch (error) {
+    //     console.warn("Failed to update enquiry status:", ep, error);
+    //     // try next endpoint variant
+    //   }
+    // }
 
-    if (!updated) {
-      toast.error("Unable to update enquiry status.");
-      return;
-    }
+    // if (!updated) {
+    //   toast.error("Unable to update enquiry status.");
+    //   return;
+    // }
 
-    toast.success("Enquiry status updated.");
-    navigate("/Home/ViewAllEnquiries");
+    // toast.success("Enquiry status updated.");
+    // navigate("/Home/ViewAllEnquiries");
   };
 
   return (

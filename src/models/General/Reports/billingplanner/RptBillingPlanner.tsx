@@ -18,7 +18,7 @@ import SelectControl from "../../../../components/resusablecontrols/SelectContro
 import { formatInLakhs } from "../../../../components/utils/formatInLakhs";
 import SearchControl from "../../../../components/resusablecontrols/SearchControl";
 import styled from "styled-components";
-import {useManagerCostCenterSelect} from "../../../../components/utils/useMgrCostCenterSelect";
+import { useManagerCostCenterSelect } from "../../../../components/utils/useMgrCostCenterSelect";
 
 // ✅ Types
 interface BillingData {
@@ -552,7 +552,7 @@ const RptBillingPlanner: React.FC = () => {
 
     // ❌ hidden initially
 
-   // poDate: false,
+    // poDate: false,
     realisedDate: false,
     bilHrs_CurrentMonth: false,
     billPerctg_CurMonth: false,
@@ -643,14 +643,10 @@ const RptBillingPlanner: React.FC = () => {
       setPendingSummary(null);
 
       // Fetch billing data startdate,
-      // await fetchBillingData(startdate, enddate, selectedManager.costcenter);
       // // ✅ Fetch Invoice Dictionary
-       const invUrl = `${baseUrl}/api/Job/InvoiceDictionary/${startdate}/${enddate}`;
-     //  const invResponse = await axios.get<{ jobnumber: string; month: number; year: number }[]>(invUrl);
-
+      const invUrl = `${baseUrl}/api/Job/InvoiceDictionary/${startdate}/${enddate}`;
       const invPendingUrl = `${baseUrl}/api/Sales/PendingInvoices/${selectedManager.costcenter}`;
       const billingPromise = fetchBillingData(startdate, enddate, selectedManager.costcenter);
-    //  const invoicePromise = axios.get(invUrl);
       const invoicePromise = axios.get<InvoiceDictionaryItem[]>(invUrl);
       const pendingPromise = axios.get<BillingData[]>(invPendingUrl);
       // to improve performance, fetch billing data and invoice dictionary in parallel,all api run at same time
@@ -713,9 +709,9 @@ const RptBillingPlanner: React.FC = () => {
   const columns: GridColDef[] = useMemo(() => [
     { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 400, },
     { field: "customer", headerName: "Customer", flex: 1, minWidth: 300 },
-    { field: "startDate", headerName: "Start Date", flex: 1,  minWidth: 110 },
-    { field: "plannedEndDate", headerName: "Planned End Date", flex: 1, minWidth: 130 },
-    { field: "totalHrs", headerName: "Total Hrs", flex: 1,  minWidth: 112 },
+    { field: "startDate", headerName: "Start Date", flex: 1, minWidth: 110 },
+    { field: "plannedEndDate", headerName: "Planned End Date", flex: 1, minWidth: 150 },
+    { field: "totalHrs", headerName: "Total Hrs", flex: 1, minWidth: 112 },
     { field: "plannedHrs", headerName: "Planned Hrs", flex: 1, minWidth: 130 },
     { field: "bilHrs_CurrentMonth", headerName: "BilHrs_CurrentMonth", flex: 1, minWidth: 230 },
     { field: "billPerctg_CurMonth", headerName: "BillPerctg_CurMonth", flex: 1, minWidth: 230 },
@@ -748,7 +744,6 @@ const RptBillingPlanner: React.FC = () => {
     { field: "jobtitle", headerName: "Job Title", flex: 1, minWidth: 140 },
     { field: "rejectedHrs", headerName: "Rejected Hrs", flex: 1, minWidth: 140 },
     { field: "projectmanagerid", headerName: "projectmanagerid", flex: 1, minWidth: 100 },
-  //  { field: "poDate", headerName: "PO Date", flex: 1, minWidth: 100 },
     { field: "realisedDate", headerName: "Realised Date", flex: 1, minWidth: 140 },
     { field: "ndaValidity", headerName: "NDA Validity", flex: 1, minWidth: 140 },
   ], []);
@@ -770,14 +765,14 @@ const RptBillingPlanner: React.FC = () => {
         const diffDays = Math.floor((currentDate.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
         // 🟠 PO delay > 7 days
         if (diffDays > 7) {
-       //   return "row-purple";
+          //   return "row-purple";
           return "row-red";
         }
       }
 
       // 🟥 Default PO not received
-    //  return "row-red";
-        return "row-purple";
+      //  return "row-red";
+      return "row-purple";
     }
 
     // 🟦 Case 2 — Flag date present
@@ -818,10 +813,10 @@ const RptBillingPlanner: React.FC = () => {
     { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 400 },
     { field: "startDate", headerName: "Start Date", flex: 1, minWidth: 120 },
     { field: "enddate", headerName: "End Date", flex: 1, minWidth: 120 },
-    { field: "costCenter", headerName: "Cost Center", flex: 1, minWidth: 120},
+    { field: "costCenter", headerName: "Cost Center", flex: 1, minWidth: 120 },
     { field: "projectManager", headerName: "Project Manager", flex: 1, minWidth: 160 },
     { field: "flag_Raisedon", headerName: "Flag Raised Date", flex: 1, minWidth: 160 },
-    { field: "totTimesheetHrs", headerName: "Total Timesheet Hrs", flex: 1, minWidth: 160 },
+    { field: "totTimesheetHrs", headerName: "Total Timesheet Hrs", flex: 1, minWidth: 180 },
     { field: "approvedHrs", headerName: "Approved Hrs", flex: 1, minWidth: 140 },
     { field: "rateperhour", headerName: "Rate Per hr", flex: 1, minWidth: 120 },
     { field: "poDate", headerName: "PO Date", flex: 1, minWidth: 110 },
@@ -902,7 +897,6 @@ const RptBillingPlanner: React.FC = () => {
 
       {/* ✅ Show results only after data is ready */}
       <>
-        {/* <div>{renderSummaryTable()}</div> */}
         {hasResults && (
           <SummarySection summary={summary} pendingSummary={pendingSummary} />
         )}

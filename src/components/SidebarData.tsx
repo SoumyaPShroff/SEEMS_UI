@@ -24,7 +24,6 @@ export const useSideBarData = () => {
         if (!designationId) return;
 
         const res = await axios.get(`${baseUrl}/SideBarAccessMenus/${designationId}`);
-        // const raw = res.data; // adjust if API wraps data differently
         const raw = res.data as any[];
         const structured: SidebarItem[] = [];
 

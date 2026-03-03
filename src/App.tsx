@@ -31,6 +31,7 @@ import AddEditCustLocation from './models/Sales/AddEditCustLocation';
 import AddEditCustContact from './models/Sales/AddEditCustContact';
 import EnquiryStatus from './models/Sales/EnquiryStatus';
 import InvoiceRegister from './models/Sales/InvoiceRegister';
+import PageAccessManagement from './components/PageAccessManagement';
 
 const App: React.FC = () => {
   const [userId, setUserId] = useState(sessionStorage.getItem('SessionUserID'));
@@ -84,6 +85,7 @@ const App: React.FC = () => {
           <Route path="AddEditCustContact/:itemno" element={<AddEditCustContact />} />
           <Route path="EnquiryStatus" element={<EnquiryStatus />} />
           <Route path="InvoiceRegister" element={<InvoiceRegister />} />
+          <Route path="PageAccessManagement" element={<PageAccessManagement />} />
         </Route>
         {/* Password + Blank */}
         <Route path="/ResetPassword" element={<ResetPassword />} />

@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import {FormControl, Select, MenuItem, RadioGroup, FormControlLabel,  Radio,  Grid,  InputLabel,  Box,
+import  { useMemo, useState } from "react";
+import {FormControl, Select, MenuItem, RadioGroup, FormControlLabel,  Radio,  InputLabel,  Box,
   Card,  CardContent,  Typography,  CircularProgress,  Paper,  Button,
 } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
@@ -166,8 +166,15 @@ const InvoiceRegister = () => {
               p: { xs: 1.4, md: 1.7 },
             }}
           >
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} md={3}>
+            <Box
+              sx={{
+                display: "grid",
+                gap: 2,
+                alignItems: "center",
+                gridTemplateColumns: { xs: "1fr", md: "repeat(4, minmax(0, 1fr))" },
+              }}
+            >
+              <Box>
                 <FormControl fullWidth>
                   <InputLabel>Month-Year</InputLabel>
                   <Select
@@ -183,17 +190,17 @@ const InvoiceRegister = () => {
                     ))}
                   </Select>
                 </FormControl>
-              </Grid>
+              </Box>
 
-              <Grid item xs={12} md={3}>
+              <Box>
                 <RadioGroup row value={status} onChange={(e) => setStatus(e.target.value)}>
                   <FormControlLabel value="Open" control={<Radio />} label="Open" />
                   <FormControlLabel value="Closed" control={<Radio />} label="Closed" />
                   <FormControlLabel value="All" control={<Radio />} label="All" />
                 </RadioGroup>
-              </Grid>
+              </Box>
 
-              <Grid item xs={12} md={3}>
+              <Box>
                 <Button
                   variant="contained"
                   onClick={fetchInvoiceRows}
@@ -207,16 +214,16 @@ const InvoiceRegister = () => {
                 >
                   {loading ? "Loading..." : "Load Data"}
                 </Button>
-              </Grid>
+              </Box>
 
-              <Grid item xs={12} md={3}>
+              <Box>
                 <ExportButton
                   label={loading ? "Exporting..." : "Export to Excel"}
                   onClick={handleExport}
                   disabled={loading || rows.length === 0}
                 />
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </Box>
 
           {loading ? (
