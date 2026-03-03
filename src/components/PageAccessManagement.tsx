@@ -279,14 +279,11 @@ const PageAccessManagement = () => {
   };
 
   return (
-    <Box p={3}>
-      <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>
+    <Box p={4}>
+      <Typography variant="h5" sx={{  fontWeight: 700 }}>
         User Access Control
       </Typography>
-
-      <Card sx={{ border: "1px solid #d5e1f8", boxShadow: "0 6px 14px rgba(33, 75, 149, 0.08)" }}>
-        <CardContent>
-          <Box sx={{ maxWidth: 360 }}>
+        <Box sx={{ maxWidth: 300, mt: 2 }}>
             <SelectControl
               name="selectedUser"
               label="Select User"
@@ -312,9 +309,7 @@ const PageAccessManagement = () => {
               }}
             />
           </Box>
-        </CardContent>
-      </Card>
-
+    
       <Box sx={{ mt: 2 }}>
         {loading ? (
           <CircularProgress />
@@ -322,7 +317,8 @@ const PageAccessManagement = () => {
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" },
+              gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(320px, 420px))" },
+              justifyContent: "center",
               gap: 1.5,
             }}
           >
@@ -330,8 +326,10 @@ const PageAccessManagement = () => {
               <Card
                 key={main.id}
                 sx={{
+                  width: "100%",
+                  maxWidth: 420,
                   borderRadius: 2,
-                  border: "1px solid #d5e1f8",
+                  border: "2px solid #7aa7eb",
                   boxShadow: "0 6px 14px rgba(33, 75, 149, 0.08)",
                   background: "#ffffff",
                 }}
@@ -352,10 +350,10 @@ const PageAccessManagement = () => {
                       <Box
                         key={sub.id}
                         sx={{
-                          border: "1px solid #e4ebfb",
+                          border: "2px solid #b8d0f5",
                           borderRadius: 1.5,
                           p: 1,
-                          background: "#fbfdff",
+                          background: "#f6faff",
                         }}
                       >
                         <Typography sx={{ fontWeight: 700, mb: 0.4, color: "#214b95", fontSize: "0.85rem" }}>
@@ -396,7 +394,7 @@ const PageAccessManagement = () => {
       </Box>
 
       {menuTree.length > 0 && (
-        <Box mt={2}>
+        <Box mt={2} display="flex" justifyContent="center">
           <Button variant="contained" color="success" onClick={handleSave}>
             Save Changes
           </Button>
