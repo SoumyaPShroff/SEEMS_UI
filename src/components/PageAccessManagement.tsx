@@ -1,7 +1,9 @@
-import  { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import {  Box,  Button,  Card,  CardContent,  Checkbox,  CircularProgress,  FormControlLabel,
-  FormGroup,  Typography,} from "@mui/material";
+import {
+  Box, Button, Card, CardContent, Checkbox, CircularProgress, FormControlLabel,
+  FormGroup, Typography,
+} from "@mui/material";
 import { baseUrl } from "../const/BaseUrl";
 import SelectControl from "./resusablecontrols/SelectControl";
 
@@ -9,17 +11,16 @@ type UserItem = {
   id: string;
   name: string;
   jobTitle: string | null;
-  designationId: string | null;
+  designationId: long | null;
 };
 
 type MenuPageRow = {
-  mainmenuid: string;
+  mainmenuid: long;
   mainmenu: string;
-  submenuid: string;
+  submenuid: long;
   submenu: string;
-  pageid: number;
+  pageid: long;
   pagename: string;
-  route: string;
 };
 
 type MenuTree = {
@@ -42,8 +43,8 @@ const normalizeFlatRows = (payload: any): MenuPageRow[] => {
   const unique = new Map<string, MenuPageRow>();
 
   rows.forEach((item: any) => {
-    const mainmenuid = String(item.mainmenuid ?? item.mainMenuId ?? item.mainmenu ?? "").trim();
-    const submenuid = String(item.submenuid ?? item.subMenuId ?? item.submenu ?? "").trim();
+    const mainmenuid = String(item.mainmenuid ?? "").trim();
+    const submenuid = String(item.submenuid ?? "").trim();
     const pageid = Number(item.pageid ?? item.pageId);
     if (!mainmenuid || !submenuid || !Number.isFinite(pageid)) return;
 
@@ -51,11 +52,11 @@ const normalizeFlatRows = (payload: any): MenuPageRow[] => {
     if (!unique.has(key)) {
       unique.set(key, {
         mainmenuid,
-        mainmenu: String(item.mainmenu ?? item.mainMenu ?? "").trim(),
+        mainmenu: String(item.mainmenu ?? "").trim(),
         submenuid,
-        submenu: String(item.submenu ?? item.subMenu ?? "").trim(),
+        submenu: String(item.submenu ?? "").trim(),
         pageid,
-        pagename: String(item.pagename ?? item.pageName ?? "").trim(),
+        pagename: String(item.pagename ?? "").trim(),
         route: String(item.route ?? "").trim(),
       });
     }
@@ -219,11 +220,13 @@ const PageAccessManagement = () => {
   }, [designationId, allMenuRows]);
 
   const userOptions = useMemo(
-    () =>
-      users.map((u) => ({
+    () => [
+      { value: "", label: "-- Select User --" },
+      ...users.map((u) => ({
         value: u.id,
         label: `${u.id} --- ${u.name}`,
       })),
+    ],
     [users]
   );
 
@@ -261,55 +264,71 @@ const PageAccessManagement = () => {
   const handleSave = async () => {
     if (!designationId) return;
 
-    const pageids: number[] = [];
+    const payload: any[] = [];
+
     menuTree.forEach((main) =>
       main.submenus.forEach((sub) =>
         sub.pages.forEach((p) => {
-          if (p.checked) pageids.push(p.id);
+          if (p.checked) {
+            payload.push({
+              accessid: 0, // let backend handle insert/update
+              designationid: Number(designationId),
+              pageid: p.id,
+              can_view: 1,
+              can_add: 1,
+              can_edit: 1,
+              can_delete: 1,
+            });
+          }
         })
       )
     );
 
-    // await axios.post(`${baseUrl}/api/access/update`, {
-    //   designationid: designationId,
-    //   pageids,
-    // });
-
-    alert("Access rights updated successfully!");
+    try {
+      await axios.post(
+        `${baseUrl}/UpdateUserPageAccessRights`,
+        payload
+      );
+      
+      alert("Access rights updated successfully!");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to update access rights.");
+    }
   };
 
   return (
     <Box p={4}>
-      <Typography variant="h5" sx={{  fontWeight: 700 }}>
+      <Typography variant="h5" sx={{ fontWeight: 700 }}>
         User Access Control
       </Typography>
-        <Box sx={{ maxWidth: 300, mt: 2 }}>
-            <SelectControl
-              name="selectedUser"
-              label="Select User"
-              value={selectedUser}
-              options={userOptions}
-              onChange={async (e: any) => {
-                const selectedId = String(e.target.value ?? "");
-                setSelectedUser(selectedId);
-                const user = users.find((u) => u.id === selectedId);
-                if (!user) {
-                  setDesignationId(null);
-                  return;
-                }
+      <Box sx={{ maxWidth: 300, mt: 2 }}>
+        <SelectControl
+          name="selectedUser"
+          label="Select User"
+          value={selectedUser}
+          options={userOptions}
+          onChange={async (e: any) => {
+            const selectedId = String(e.target.value ?? "");
+            setSelectedUser(selectedId);
+            const user = users.find((u) => u.id === selectedId);
+            if (!user) {
+              setDesignationId(null);
+              return;
+            }
 
-                setLoading(true);
-                try {
-                  const designationFromRole = await resolveDesignationIdByJobTitle(user.jobTitle);
-                  const selectedUserDesignationId = user.designationId ? String(user.designationId).trim() : null;
-                  setDesignationId(designationFromRole ?? selectedUserDesignationId);
-                } finally {
-                  setLoading(false);
-                }
-              }}
-            />
-          </Box>
-    
+            setLoading(true);
+            try {
+              const designationFromRole = await resolveDesignationIdByJobTitle(user.jobTitle);
+              const selectedUserDesignationId = user.designationId ? String(user.designationId).trim() : null;
+              setDesignationId(designationFromRole ?? selectedUserDesignationId);
+            } finally {
+              setLoading(false);
+            }
+          }}
+        />
+      </Box>
+
       <Box sx={{ mt: 2 }}>
         {loading ? (
           <CircularProgress />
@@ -393,7 +412,7 @@ const PageAccessManagement = () => {
         )}
       </Box>
 
-      {menuTree.length > 0 && (
+      {!loading && Boolean(selectedUser) && menuTree.length > 0 && (
         <Box mt={2} display="flex" justifyContent="center">
           <Button variant="contained" color="success" onClick={handleSave}>
             Save Changes

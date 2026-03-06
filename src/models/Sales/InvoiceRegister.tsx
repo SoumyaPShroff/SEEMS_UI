@@ -73,6 +73,7 @@ const InvoiceRegister = () => {
   const [status, setStatus] = useState("All");
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<any[]>([]);
+  const [hasFetched, setHasFetched] = useState(false);
 
   const months = useMemo(() => {
     const start = dayjs("2025-01-01").startOf("month");
@@ -90,6 +91,7 @@ const InvoiceRegister = () => {
 
   const fetchInvoiceRows = async () => {
     try {
+      setHasFetched(true);
       setLoading(true);
       const response = await axios.get(`${baseUrl}/api/Sales/InvoiceRegister/${monthYear}`, {
         params: { status },
@@ -122,10 +124,9 @@ const InvoiceRegister = () => {
   return (
     <Box
       sx={{
-        maxWidth: 1280,
+        maxWidth: 1150,
         mx: "auto",
         mt: 15,
-        px: { xs: 1.5, md: 0 },
         fontFamily: "Arial",
       }}
     >
@@ -226,11 +227,13 @@ const InvoiceRegister = () => {
             </Box>
           </Box>
 
-          {loading ? (
+          {loading && (
             <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
               <CircularProgress />
             </Box>
-          ) : rows.length === 0 ? (
+          )}
+
+          {!loading && hasFetched && rows.length === 0 && (
             <Paper
               elevation={0}
               sx={{
@@ -245,7 +248,9 @@ const InvoiceRegister = () => {
             >
               <Typography>No records found.</Typography>
             </Paper>
-          ) : (
+          )}
+
+          {!loading && rows.length > 0 && (
             <Box
               sx={{
                 mt: 2,

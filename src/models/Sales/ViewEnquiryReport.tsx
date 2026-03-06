@@ -28,6 +28,8 @@ export default function ViewEnquiryReport() {
         { field: "status", headerName: "Status", width: 120 },
         { field: "remarks", headerName: "Remarks", width: 200 },
         { field: "cancelledremarks", headerName: "Cancelled Remarks", width: 200 },
+        { field: "enquirytype", headerName: "enquirytype", width: 200 },
+        { field: "esti", headerName: "esti", width: 200 },
     ];
 
     const fetchData = async () => {
