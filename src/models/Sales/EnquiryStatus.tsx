@@ -86,9 +86,6 @@ const EnquiryStatus = () => {
       const detailsRes = await axios.get(`${baseUrl}/api/Sales/EnquiryDetailsByEnquiryno/${enquiryNo}`);
       const row = Array.isArray(detailsRes.data) ? detailsRes.data[0] : detailsRes.data;
       setEnquiryType(String(row?.enquirytype ?? row?.enquirytype ?? ""));
-   //   setSalesResponsibilityId(String(row?.salesresponsibilityid ?? ""));
-    //  setCompleteResponsibilityId(String(row?.completeresponsibilityid ?? ""));
-
       const currentStatus = String(row?.status ?? "");
       setStatus("");
       setStatusOptions(buildStatusOptions(currentStatus, defaultStatusOptions));

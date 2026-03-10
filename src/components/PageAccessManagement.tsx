@@ -11,15 +11,15 @@ type UserItem = {
   id: string;
   name: string;
   jobTitle: string | null;
-  designationId: long | null;
+  designationId: number | null;
 };
 
 type MenuPageRow = {
-  mainmenuid: long;
+  mainmenuid: number;
   mainmenu: string;
-  submenuid: long;
+  submenuid: number;
   submenu: string;
-  pageid: long;
+  pageid: number;
   pagename: string;
 };
 
@@ -32,7 +32,6 @@ type MenuTree = {
     pages: {
       id: number;
       name: string;
-      route: string;
       checked: boolean;
     }[];
   }[];
@@ -43,21 +42,21 @@ const normalizeFlatRows = (payload: any): MenuPageRow[] => {
   const unique = new Map<string, MenuPageRow>();
 
   rows.forEach((item: any) => {
-    const mainmenuid = String(item.mainmenuid ?? "").trim();
-    const submenuid = String(item.submenuid ?? "").trim();
+    const mainmenuid = Number(item.mainmenuid ?? "");
+    const submenuid = Number(item.submenuid ?? "");
     const pageid = Number(item.pageid ?? item.pageId);
-    if (!mainmenuid || !submenuid || !Number.isFinite(pageid)) return;
+   // if (!mainmenuid || !submenuid || !Number.isFinite(pageid)) return;
+   if (!Number.isFinite(mainmenuid) || !Number.isFinite(submenuid) || !Number.isFinite(pageid)) return;
 
     const key = `${mainmenuid}-${submenuid}-${pageid}`;
     if (!unique.has(key)) {
       unique.set(key, {
         mainmenuid,
-        mainmenu: String(item.mainmenu ?? "").trim(),
+        mainmenu: String(item.mainmenu ?? ""),
         submenuid,
-        submenu: String(item.submenu ?? "").trim(),
+        submenu: String(item.submenu ?? ""),
         pageid,
-        pagename: String(item.pagename ?? "").trim(),
-        route: String(item.route ?? "").trim(),
+        pagename: String(item.pagename ?? ""),
       });
     }
   });
@@ -85,7 +84,7 @@ const extractAssignedPageIds = (payload: any): Set<number> => {
 };
 
 const fetchAssignedByDesignation = async (desigId: string) => {
-  const id = String(desigId).trim();
+  const id = Number(desigId);
   if (!id) return [];
 
   try {
@@ -99,11 +98,11 @@ const fetchAssignedByDesignation = async (desigId: string) => {
   }
 };
 
-const resolveUserDesignationId = (user: any): string | null => {
+const resolveUserDesignationId = (user: any): number  | null => {
   const raw = user?.designationId ?? user?.designationid ?? user?.SessionDesigID ?? null;
 
   if (raw == null) return null;
-  const value = String(raw).trim();
+  const value = Number(raw);
   return value || null;
 };
 
@@ -133,7 +132,6 @@ const buildTree = (rows: MenuPageRow[], checkedPageIds: Set<number>): MenuTree =
       sub.pages.push({
         id: row.pageid,
         name: row.pagename,
-        route: row.route,
         checked: checkedPageIds.has(row.pageid),
       });
     }
@@ -176,9 +174,9 @@ const PageAccessManagement = () => {
         const userRows = Array.isArray(usersRes.data) ? usersRes.data : [];
         const mappedUsers: UserItem[] = userRows
           .map((u: any) => ({
-            id: String(u.iDno ?? u.idno ?? u.id ?? "").trim(),
-            name: String(u.name ?? u.username ?? "").trim(),
-            jobTitle: String(u.jobtitle ?? u.jobTitle ?? "").trim() || null,
+            id: String(u.iDno ?? u.idno ?? u.id ?? ""),
+            name: String(u.name ?? u.username ?? ""),
+            jobTitle: String(u.jobtitle ?? u.jobTitle ?? "") || null,
             designationId: resolveUserDesignationId(u),
           }))
           .filter((u: UserItem) => Boolean(u.id) && Boolean(u.name))
@@ -207,7 +205,7 @@ const PageAccessManagement = () => {
 
       setLoading(true);
       try {
-        const selectedDesignationId = String(designationId).trim();
+        const selectedDesignationId = String(designationId);
         const assignedData = await fetchAssignedByDesignation(selectedDesignationId);
         const checkedPageIds = extractAssignedPageIds(assignedData);
         setMenuTree(buildTree(allMenuRows, checkedPageIds));
@@ -231,12 +229,12 @@ const PageAccessManagement = () => {
   );
 
   const resolveDesignationIdByJobTitle = async (jobTitle: string | null): Promise<string | null> => {
-    const title = String(jobTitle ?? "").trim();
+    const title = String(jobTitle ?? "");
     if (!title) return null;
 
     try {
       const res = await axios.get(`${baseUrl}/RoleDesignID/${encodeURIComponent(title)}`);
-      const resolved = String(res.data ?? "").trim();
+      const resolved = String(res.data ?? "");
       return resolved || null;
     } catch {
       return null;
@@ -320,7 +318,7 @@ const PageAccessManagement = () => {
             setLoading(true);
             try {
               const designationFromRole = await resolveDesignationIdByJobTitle(user.jobTitle);
-              const selectedUserDesignationId = user.designationId ? String(user.designationId).trim() : null;
+              const selectedUserDesignationId = user.designationId ? String(user.designationId) : null;
               setDesignationId(designationFromRole ?? selectedUserDesignationId);
             } finally {
               setLoading(false);
