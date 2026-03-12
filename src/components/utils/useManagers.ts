@@ -25,21 +25,51 @@ export const useManagers = (loginId: string, pageName: string) => {
       const hasSpecialRole = roleCheck.data === true;
 
       if (!hasSpecialRole) {
-         // fill mutliple cost centers for same user (eg. managers with multiple cost centers)
-        const costCenterRes = await axios.get<CostCenterInfo[]>(
-          `${baseUrl}/ManagerCostcenterInfo/${loginId}`
-        );
+        let hasDelegate = false;
+        try {
+          const delegateRes = await axios.get(`${baseUrl}/CostcenterDelegates/${loginId}`);
+          const delegateData = delegateRes.data;
+          hasDelegate = Array.isArray(delegateData) && delegateData.length > 0;
+        } catch (delegateErr) {
+          console.warn("Delegate details lookup failed. Falling back to cost center info.", delegateErr);
+        }
 
-        if (costCenterRes.data && costCenterRes.data.length > 0) {
-          setManagers(
-            costCenterRes.data.map(item => ({
-              hopc1id: item.hopc1id,
-              hopc1name: item.hopc1name,
-              costcenter: item.costcenter,
-            }))
+        if (hasDelegate) {
+          const [hopcRes, costCenterRes] = await Promise.all([
+            axios.get<CostCenterInfo[]>(
+              `${baseUrl}/HOPCManagerList?sessionUserId=${encodeURIComponent(loginId)}`
+            ),
+            axios.get<CostCenterInfo[]>(`${baseUrl}/ManagerCostcenterInfo/${loginId}`),
+          ]);
+
+          const hopcData = hopcRes.data || [];
+          const costCenterData = costCenterRes.data || [];
+          const costCenterSet = new Set(
+            costCenterData.map(item => String(item.costcenter ?? "").trim()).filter(Boolean)
           );
+
+          const filtered = hopcData.filter(item =>
+            costCenterSet.has(String(item.costcenter ?? "").trim())
+          );
+
+          setManagers(filtered);
         } else {
-          console.warn("No manager info found for", loginId);
+          // fill mutliple cost centers for same user (eg. managers with multiple cost centers)
+          const costCenterRes = await axios.get<CostCenterInfo[]>(
+            `${baseUrl}/ManagerCostcenterInfo/${loginId}`
+          );
+
+          if (costCenterRes.data && costCenterRes.data.length > 0) {
+            setManagers(
+              costCenterRes.data.map(item => ({
+                hopc1id: item.hopc1id,
+                hopc1name: item.hopc1name,
+                costcenter: item.costcenter,
+              }))
+            );
+          } else {
+            console.warn("No manager info found for", loginId);
+          }
         }
       } else {
         //fill All
