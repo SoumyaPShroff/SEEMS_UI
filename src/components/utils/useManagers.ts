@@ -19,19 +19,45 @@ export const useManagers = (loginId: string, pageName: string) => {
       // Step 1: Get user jobtitle
       const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
       const userRole = userRoleRes.data;
+      const isManagerTitle = String(userRole ?? "").toLowerCase().includes("manager");
 
       // Step 2: Check if user has special role for this page and role
       const roleCheck = await axios.get<boolean>(`${baseUrl}/UserRoleInternalRights/${userRole}/${pageName}`)
       const hasSpecialRole = roleCheck.data === true;
 
       if (!hasSpecialRole) {
+        let managerCostCenterId = loginId;
         let hasDelegate = false;
-        try {
-          const delegateRes = await axios.get(`${baseUrl}/CostcenterDelegates/${loginId}`);
-          const delegateData = delegateRes.data;
+        //promise consts  return Promises which then run them together,so once all api's runs at same time
+        const delegatePromise = axios.get(`${baseUrl}/CostcenterDelegates/${loginId}`);
+        //A Promise represents a value that will be available in the future.
+        const employeePromise = !isManagerTitle
+          ? axios.get<{ reporttopersonid?: string | number }>(`${baseUrl}/EmployeeDetails/${loginId}`)
+          : Promise.resolve(null);
+          //handle asynchronous operations
+          // Promise.allSettled used because if one API fails, the other still succeeds.
+        const [delegateResult, employeeResult] = await Promise.allSettled([
+          delegatePromise,
+          employeePromise,
+        ]);
+
+        if (delegateResult.status === "fulfilled") {
+          const delegateData = delegateResult.value.data;
           hasDelegate = Array.isArray(delegateData) && delegateData.length > 0;
-        } catch (delegateErr) {
-          console.warn("Delegate details lookup failed. Falling back to cost center info.", delegateErr);
+        } else {
+          console.warn(
+            "Delegate details lookup failed. Falling back to cost center info.",
+            delegateResult.reason
+          );
+        }
+        // if delegated user lgoins, consider reportingpersonif of this user (which is manager as param to checking managercostcener)
+        //if manager logins and he has delegated any user, then send his id as prama to checking manager costcenter
+        //managerCostCenterId will set accordingly and sent to ManagerCostcenterInfo api
+        if (employeeResult.status === "fulfilled" && employeeResult.value) {
+          const reportToPersonId = String(employeeResult.value.data?.reporttopersonid ?? "").trim();
+          managerCostCenterId = reportToPersonId || loginId;
+        } else if (employeeResult.status === "rejected") {
+          console.warn("Employee details lookup failed. Falling back to loginId.", employeeResult.reason);
         }
 
         if (hasDelegate) {
@@ -39,9 +65,10 @@ export const useManagers = (loginId: string, pageName: string) => {
             axios.get<CostCenterInfo[]>(
               `${baseUrl}/HOPCManagerList?sessionUserId=${encodeURIComponent(loginId)}`
             ),
-            axios.get<CostCenterInfo[]>(`${baseUrl}/ManagerCostcenterInfo/${loginId}`),
+            axios.get<CostCenterInfo[]>(
+              `${baseUrl}/ManagerCostcenterInfo/${encodeURIComponent(managerCostCenterId)}`
+            )
           ]);
-
           const hopcData = hopcRes.data || [];
           const costCenterData = costCenterRes.data || [];
           const costCenterSet = new Set(
@@ -56,7 +83,7 @@ export const useManagers = (loginId: string, pageName: string) => {
         } else {
           // fill mutliple cost centers for same user (eg. managers with multiple cost centers)
           const costCenterRes = await axios.get<CostCenterInfo[]>(
-            `${baseUrl}/ManagerCostcenterInfo/${loginId}`
+            `${baseUrl}/ManagerCostcenterInfo/${encodeURIComponent(managerCostCenterId)}`
           );
 
           if (costCenterRes.data && costCenterRes.data.length > 0) {
