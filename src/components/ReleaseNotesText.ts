@@ -6,16 +6,25 @@ export interface ReleaseNote {
 
 const ReleaseNotesText: ReleaseNote[] = [
    {
-    version: "v1.2.0",
-    date: "2026-03-10",
+
+    version: "v1.3.0",
+    date: "2026-03-16",
     changes: [
-      "Billing Planner - Grid column header styles updated - three dots menu visibile by default",
-      "Billing Planner - NDA Validity Column introduced",
-      "My Team Info - Meet My Team page introduced with team members details",
-      "Other Sales Reports grid header column width altered",
-      "View Enquiry Report - added esti and type columns"
+      "Billing Planner - costcenter delegation implemented",
+      "Planned Hours - costcenter delegation implemented",
     ],
   },
+  // {
+  //   version: "v1.2.0",
+  //   date: "2026-03-13",
+  //   changes: [
+  //     "Billing Planner - costcenter delegation implemented",
+  //     "Planned Hours - costcenter delegation implemented",
+  //     "My Team Info - Meet My Team page introduced with team members details",
+  //     "Other Sales Reports grid header column width altered",
+  //     "View Enquiry Report - added esti and type columns"
+  //   ],
+  // },
   // {
   //   version: "v1.1.0",
   //   date: "2026-02-17",

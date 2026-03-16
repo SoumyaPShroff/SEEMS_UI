@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import {
-  Box, Button, Card, CardContent, Checkbox, CircularProgress, FormControlLabel,
-  FormGroup, Typography,
-} from "@mui/material";
+import { Box, Button, Card, CardContent, Checkbox, CircularProgress, FormControlLabel, FormGroup, Typography,} from "@mui/material";
 import { baseUrl } from "../const/BaseUrl";
 import SelectControl from "./resusablecontrols/SelectControl";
 
@@ -21,6 +18,7 @@ type MenuPageRow = {
   submenu: string;
   pageid: number;
   pagename: string;
+  defaultpage?: string | boolean | number | null;
 };
 
 type MenuTree = {
@@ -37,6 +35,8 @@ type MenuTree = {
   }[];
 }[];
 
+const isDefaultYes = (value: unknown) => String(value ?? "").trim().toUpperCase() === "YES";
+
 const normalizeFlatRows = (payload: any): MenuPageRow[] => {
   const rows = Array.isArray(payload) ? payload : [];
   const unique = new Map<string, MenuPageRow>();
@@ -45,23 +45,47 @@ const normalizeFlatRows = (payload: any): MenuPageRow[] => {
     const mainmenuid = Number(item.mainmenuid ?? "");
     const submenuid = Number(item.submenuid ?? "");
     const pageid = Number(item.pageid ?? item.pageId);
-   // if (!mainmenuid || !submenuid || !Number.isFinite(pageid)) return;
    if (!Number.isFinite(mainmenuid) || !Number.isFinite(submenuid) || !Number.isFinite(pageid)) return;
 
     const key = `${mainmenuid}-${submenuid}-${pageid}`;
-    if (!unique.has(key)) {
-      unique.set(key, {
-        mainmenuid,
-        mainmenu: String(item.mainmenu ?? ""),
-        submenuid,
-        submenu: String(item.submenu ?? ""),
-        pageid,
-        pagename: String(item.pagename ?? ""),
-      });
+
+    const defaultpage =
+      item.defaultpage ??
+      item.defaultPage ??
+      item.default ??
+      item.isDefault ??
+      item.isdefault ??
+      null;
+
+    const existing = unique.get(key);
+    if (existing) {
+      if (!isDefaultYes(existing.defaultpage) && isDefaultYes(defaultpage)) {
+        existing.defaultpage = "YES";
+        unique.set(key, existing);
+      }
+      return;
     }
+
+    unique.set(key, {
+      mainmenuid,
+      mainmenu: String(item.mainmenu ?? ""),
+      submenuid,
+      submenu: String(item.submenu ?? ""),
+      pageid,
+      pagename: String(item.pagename ?? ""),
+      defaultpage,
+    });
   });
 
   return Array.from(unique.values());
+};
+
+const extractDefaultPageIds = (rows: MenuPageRow[]) => {
+  const ids = new Set<number>();
+  rows.forEach((row) => {
+    if (isDefaultYes(row.defaultpage)) ids.add(row.pageid);
+  });
+  return ids;
 };
 
 const extractAssignedPageIds = (payload: any): Set<number> => {
@@ -99,7 +123,7 @@ const fetchAssignedByDesignation = async (desigId: string) => {
 };
 
 const resolveUserDesignationId = (user: any): number  | null => {
-  const raw = user?.designationId ?? user?.designationid ?? user?.SessionDesigID ?? null;
+  const raw = user?.SessionDesigID ?? null;
 
   if (raw == null) return null;
   const value = Number(raw);
@@ -159,6 +183,7 @@ const PageAccessManagement = () => {
   const [selectedUser, setSelectedUser] = useState<string>("");
   const [designationId, setDesignationId] = useState<string | null>(null);
   const [allMenuRows, setAllMenuRows] = useState<MenuPageRow[]>([]);
+  const [defaultPageIds, setDefaultPageIds] = useState<Set<number>>(new Set<number>());
   const [menuTree, setMenuTree] = useState<MenuTree>([]);
   const [loading, setLoading] = useState(false);
 
@@ -183,9 +208,11 @@ const PageAccessManagement = () => {
           .sort((a: UserItem, b: UserItem) => a.name.localeCompare(b.name));
 
         const allRows = normalizeFlatRows(menusRes.data);
+        const defaults = extractDefaultPageIds(allRows);
         setUsers(mappedUsers);
         setAllMenuRows(allRows);
-        setMenuTree(buildTree(allRows, new Set<number>()));
+        setDefaultPageIds(defaults);
+        setMenuTree([]);
       } finally {
         setLoading(false);
       }
@@ -196,10 +223,15 @@ const PageAccessManagement = () => {
 
   useEffect(() => {
     const applyAssignedPages = async () => {
+      if (!selectedUser) {
+        setMenuTree([]);
+        return;
+      }
+
       if (!allMenuRows.length) return;
 
       if (!designationId) {
-        setMenuTree(buildTree(allMenuRows, new Set<number>()));
+        setMenuTree(buildTree(allMenuRows, defaultPageIds));
         return;
       }
 
@@ -208,14 +240,15 @@ const PageAccessManagement = () => {
         const selectedDesignationId = String(designationId);
         const assignedData = await fetchAssignedByDesignation(selectedDesignationId);
         const checkedPageIds = extractAssignedPageIds(assignedData);
-        setMenuTree(buildTree(allMenuRows, checkedPageIds));
+        const combinedChecked = new Set<number>([...Array.from(defaultPageIds), ...Array.from(checkedPageIds)]);
+        setMenuTree(buildTree(allMenuRows, combinedChecked));
       } finally {
         setLoading(false);
       }
     };
 
     applyAssignedPages();
-  }, [designationId, allMenuRows]);
+  }, [selectedUser, designationId, allMenuRows, defaultPageIds]);
 
   const userOptions = useMemo(
     () => [
@@ -312,6 +345,7 @@ const PageAccessManagement = () => {
             const user = users.find((u) => u.id === selectedId);
             if (!user) {
               setDesignationId(null);
+              setMenuTree([]);
               return;
             }
 
@@ -327,6 +361,11 @@ const PageAccessManagement = () => {
         />
       </Box>
 
+      {!selectedUser ? (
+        <Box sx={{ mt: 2 }}>
+          <Typography sx={{ color: "#6b7280" }}>Select a user to load page access.</Typography>
+        </Box>
+      ) : (
       <Box sx={{ mt: 2 }}>
         {loading ? (
           <CircularProgress />
@@ -409,6 +448,7 @@ const PageAccessManagement = () => {
           </Box>
         )}
       </Box>
+      )}
 
       {!loading && Boolean(selectedUser) && menuTree.length > 0 && (
         <Box mt={2} display="flex" justifyContent="center">

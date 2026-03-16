@@ -4,7 +4,7 @@ import styled from "styled-components"; //, { keyframes }
 import { FaTrash, FaStar } from "react-icons/fa"; //, FaRobot 
 import { baseUrl } from "../const/BaseUrl"
 import { useFavourites } from "./FavouritesContext";
-import { actionCards } from "../const/DashboardActionCards";
+import { fetchDefaultActionCards, type DashboardActionCard } from "../const/DashboardActionCards";
 
 interface TeamMemberApi {
   teamMemID: string;
@@ -12,9 +12,6 @@ interface TeamMemberApi {
   teamMemEmailId: string;
   teamMemJobTiTle: string;
   teamMemCostcenter: string;
-  //teamMemGender?: string;
-  // teamMemgender?: string;
-  // gender?: string;
   teamDescription?: string;
   age?: string;
   cellnumber?: string;
@@ -133,6 +130,12 @@ const DefaultCardsGrid = styled.div`
   flex-wrap: wrap;
 `;
 
+const DefaultCardsStatus = styled.p`
+  margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+`;
+
 const FavouritesCardsGrid = styled.div`
   display: flex;
   gap: 10px;
@@ -219,6 +222,8 @@ const FavouriteRemove = styled.button`
 
 const HomeDashboard = () => {
   const [profile, setProfile] = useState<EmployeeProfile | null>(null);
+  const [defaultCards, setDefaultCards] = useState<DashboardActionCard[]>([]);
+  const [defaultCardsLoading, setDefaultCardsLoading] = useState(true);
   const { favouriteLinks, removeFavourite } = useFavourites();
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
   //const [helpText, setHelpText] = useState("");
@@ -257,6 +262,27 @@ const HomeDashboard = () => {
     fetchProfile();
   }, [loginId]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchDefaultCards = async () => {
+      try {
+        setDefaultCardsLoading(true);
+        const cards = await fetchDefaultActionCards();
+        if (!cancelled) setDefaultCards(cards);
+      } catch (error) {
+        console.error("Failed to fetch default page cards", error);
+      } finally {
+        if (!cancelled) setDefaultCardsLoading(false);
+      }
+    };
+
+    fetchDefaultCards();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const handleRemoveFavourite = async (e: React.MouseEvent, pageId: number) => {
     e.stopPropagation(); // Prevent card navigation
     try {
@@ -271,8 +297,15 @@ const HomeDashboard = () => {
       {/* ===== Action Cards ===== */}
       <DashboardLayout>
         <DefaultCardsGrid>
-          {actionCards.map(card => {
-            const isTeamCard = card.key === "team";
+          {defaultCardsLoading && <DefaultCardsStatus>Loading default pages…</DefaultCardsStatus>}
+          {!defaultCardsLoading && defaultCards.length === 0 && (
+            <DefaultCardsStatus>No default pages configured.</DefaultCardsStatus>
+          )}
+          {defaultCards.map(card => {
+            const isTeamCard =
+              card.key === "team" ||
+              card.route.toLowerCase().includes("meetmyteam") ||
+              card.title.toLowerCase().includes("team");
             const isTeamCardDisabled = isTeamCard && (profile?.reporteeCount ?? 0) === 0;
             const badge =
               isTeamCard
