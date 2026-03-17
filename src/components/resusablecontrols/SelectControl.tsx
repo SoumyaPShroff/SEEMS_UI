@@ -23,6 +23,7 @@ interface SelectControlProps {
   fontSize?: string | number;
   labelFontWeight?: React.CSSProperties["fontWeight"];
   shrinkLabel?: boolean;
+  disablePortal?: boolean;
   //size?: "small" | "medium";
 }
 
@@ -41,6 +42,7 @@ const SelectControl: React.FC<SelectControlProps> = ({
   fontSize = "0.9rem",
   labelFontWeight = 600,
   shrinkLabel = true,
+  disablePortal = false,
   sx = {},
 }) => {
   // const controlFontFamily =
@@ -82,6 +84,7 @@ const selectedOption =
        options={options || []}
         getOptionLabel={(opt) => opt.label?.toString() ?? ""}
         isOptionEqualToValue={(option, val) => option.value === val.value}
+        disablePortal={disablePortal}
         onChange={(_, newValue) => {
           onChange({
             target: { name, value: newValue ? newValue.value : "" },

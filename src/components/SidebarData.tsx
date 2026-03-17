@@ -16,12 +16,15 @@ export interface SidebarItem {
 
 export const useSideBarData = () => {
   const [menu, setMenu] = useState<SidebarItem[]>([]);
+  const designationId = sessionStorage.getItem("SessionDesigID");
 
   useEffect(() => {
     const fetchSidebar = async () => {
       try {
-        const designationId = sessionStorage.getItem("SessionDesigID");
-        if (!designationId) return;
+        if (!designationId) {
+          setMenu([]);
+          return;
+        }
 
         const res = await axios.get(`${baseUrl}/SideBarAccessMenus/${designationId}`);
         const raw = res.data as any[];
@@ -71,7 +74,7 @@ export const useSideBarData = () => {
     };
 
     fetchSidebar();
-  }, []);
+  }, [designationId]);
 
   return menu;
 };

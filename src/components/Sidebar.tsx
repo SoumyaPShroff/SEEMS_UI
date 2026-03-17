@@ -9,7 +9,7 @@ import axios from "axios";
 import { baseUrl } from "../const/BaseUrl";
 //import logo from "../const/Images/Sienna-Ecad-logo.jpg";
 import { motion } from "framer-motion";
-import { FaBars, FaTimes, FaStar, FaRegStar, FaUserCircle, FaBell } from "react-icons/fa";
+import { FaBars, FaTimes, FaStar, FaRegStar, FaUserCircle, FaBell, FaUserCog } from "react-icons/fa";
 import { RiHome2Line } from "react-icons/ri";
 import { useFavourites } from "./FavouritesContext";
 import MyProfileBanner from "./MyProfileBanner";
@@ -26,6 +26,7 @@ interface SidebarProps {
   setUserId: React.Dispatch<React.SetStateAction<string | null>>;
   collapsed: boolean;
   setCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+  headerRight?: React.ReactNode;
 }
 
 /* ======================================================
@@ -110,6 +111,25 @@ const RightCorner = styled.div`
   }
 `;
 
+const HeaderRightPopover = styled.div`
+  position: absolute;
+  top: 78px;
+  right: 0;
+  width: 380px;
+  max-width: calc(100vw - 24px);
+  padding: 12px;
+
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  z-index: 1100;
+
+  @media (max-width: 1024px) {
+    width: calc(100vw - 24px);
+  }
+`;
+
 const NotificationBadge = styled.span`
   position: absolute;
   top: -2px;
@@ -164,16 +184,18 @@ const SidebarWrap = styled.div`
    COMPONENT
 ====================================================== */
 
-const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, setCollapsed, }) => {
+const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, setCollapsed, headerRight }) => {
   const [userName, setUserName] = useState("");
   const [hasNewReleases, setHasNewReleases] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showReleaseNotes, setShowReleaseNotes] = useState(false);
+  const [showHeaderRight, setShowHeaderRight] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const menu = useSideBarData();
   const isMobile = window.innerWidth < 768;
   const releasePopoverRef = useRef<HTMLDivElement | null>(null);
+  const headerRightPopoverRef = useRef<HTMLDivElement | null>(null);
 
   const LATEST_RELEASE_VERSION = ReleaseNotesText[0].version;
   const LAST_SEEN_VERSION_KEY = 'lastSeenReleaseVersion';
@@ -193,6 +215,8 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, 
     e.preventDefault();
     sessionStorage.removeItem("SessionUserID");
     sessionStorage.removeItem("SessionUserName");
+    sessionStorage.removeItem("SessionDesigID");
+    sessionStorage.removeItem("ImpersonatorUserID");
     setUserId(null);
     navigate("/Login", { replace: true });
   };
@@ -251,19 +275,22 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
-      if (releasePopoverRef.current && !releasePopoverRef.current.contains(target)) {
+      if (showReleaseNotes && releasePopoverRef.current && !releasePopoverRef.current.contains(target)) {
         setShowReleaseNotes(false);
+      }
+      if (showHeaderRight && headerRightPopoverRef.current && !headerRightPopoverRef.current.contains(target)) {
+        setShowHeaderRight(false);
       }
     };
 
-    if (showReleaseNotes) {
+    if (showReleaseNotes || showHeaderRight) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showReleaseNotes]);
+  }, [showReleaseNotes, showHeaderRight]);
 
   /* ======================================================
      RENDER
@@ -337,6 +364,21 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, 
               </ReleaseNotesPopover>
             )}
           </div>
+          {headerRight && (
+            <div ref={headerRightPopoverRef} style={{ position: "relative", display: "flex", alignItems: "center" }}>
+              <span
+                onClick={() => {
+                  setShowHeaderRight(prev => !prev);
+                  setShowReleaseNotes(false);
+                }}
+                style={{ cursor: "pointer", marginRight: "15px", fontSize: "1.2rem", display: "flex", alignItems: "center" }}
+                title="Employee switch"
+              >
+                <FaUserCog color="#ffffff" />
+              </span>
+              {showHeaderRight && <HeaderRightPopover>{headerRight}</HeaderRightPopover>}
+            </div>
+          )}
           <span
             onClick={() => setShowProfile(!showProfile)}
             style={{ cursor: "pointer", marginRight: "8px", fontSize: "1.5rem", display: "flex", alignItems: "center" }}

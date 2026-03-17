@@ -226,6 +226,7 @@ const HomeDashboard = () => {
   const [defaultCardsLoading, setDefaultCardsLoading] = useState(true);
   const { favouriteLinks, removeFavourite } = useFavourites();
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
+  const designationId = sessionStorage.getItem("SessionDesigID") || "";
   //const [helpText, setHelpText] = useState("");
   const navigate = useNavigate();
 
@@ -234,8 +235,8 @@ const HomeDashboard = () => {
     const source = Array.isArray(raw) ? raw[0] : raw;
     if (!source) return null;
 
-    const members: TeamMemberApi[] = source.teamMembers ?? source.teamMember ?? [];
-    const count = Number(source.reporteeCount ?? members.length ?? 0);
+    const members: TeamMemberApi[] = source.teamMembers ?? [];
+    const count = Number(source.reporteeCount  ?? 0);
 
     return {
       iDno: source.iDno ?? "",
@@ -267,6 +268,7 @@ const HomeDashboard = () => {
 
     const fetchDefaultCards = async () => {
       try {
+        if (!cancelled) setDefaultCards([]);
         setDefaultCardsLoading(true);
         const cards = await fetchDefaultActionCards();
         if (!cancelled) setDefaultCards(cards);
@@ -281,7 +283,7 @@ const HomeDashboard = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [designationId]);
 
   const handleRemoveFavourite = async (e: React.MouseEvent, pageId: number) => {
     e.stopPropagation(); // Prevent card navigation

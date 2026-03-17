@@ -63,6 +63,11 @@ const pickNumber = (...candidates: unknown[]) => {
   return null;
 };
 
+const isMeetMyTeam = (title: string, route: string) => {
+  const text = `${title} ${route}`.toLowerCase().replace(/\s+/g, "");
+  return text.includes("meetmyteam");
+};
+
 const resolveCardIcon = (title: string, route: string) => {
   const text = `${title} ${route}`.toLowerCase();
   if (text.includes("team")) return <FaUsers />;
@@ -116,6 +121,12 @@ export const fetchDefaultActionCards = async (): Promise<DashboardActionCard[]> 
   const res = await axios.get(`${baseUrl}/SideBarAccessMenus/${encodeURIComponent(designationId)}`);
   const rows = (Array.isArray(res.data) ? res.data : []) as DefaultPageRow[];
 
+  const meetMyTeamRow = rows.find((row) => {
+    const title = pickString(row.pagename, row.pageName);
+    const route = pickString(row.route, row.pageRoute, row.pageroute);
+    return isMeetMyTeam(title, route);
+  });
+
   const defaultRows = rows.filter((row) =>
     isDefaultYes(row.defaultpage)
   );
@@ -156,6 +167,23 @@ export const fetchDefaultActionCards = async (): Promise<DashboardActionCard[]> 
       gradient: gradients[index % gradients.length],
     });
   });
+
+  // Ensure "Meet My Team" shows up if the user has access, even if it's not configured as a default page.
+  const hasMeetMyTeam = Array.from(unique.values()).some((card) => isMeetMyTeam(card.title, card.route));
+  if (!hasMeetMyTeam && meetMyTeamRow) {
+    const title = pickString(meetMyTeamRow.pagename, meetMyTeamRow.pageName) || "Meet My Team";
+    const route =
+      normalizeRoute(meetMyTeamRow.route ?? meetMyTeamRow.pageRoute ?? meetMyTeamRow.pageroute) ?? "/Home/MeetMyTeam";
+    const key = `route-${route}`;
+    unique.set(key, {
+      key,
+      title,
+      desc: "Team",
+      icon: resolveCardIcon(title, route),
+      route,
+      gradient: gradients[0],
+    });
+  }
 
   return Array.from(unique.values());
 };
