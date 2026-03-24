@@ -412,4 +412,3 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, 
 };
 
 export default Sidebar;
-
