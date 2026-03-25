@@ -1,15 +1,110 @@
 import React, { ChangeEvent, useEffect, useState } from "react";
+import axios from "axios";
 import { Box,  Button, Card,  CardContent,  CircularProgress,  Divider,  Link,  Stack,  Typography,} from "@mui/material";
 import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import HourglassEmptyRoundedIcon from "@mui/icons-material/HourglassEmptyRounded";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { baseUrl } from "../../const/BaseUrl";
 import Label from "../../components/resusablecontrols/Label";
 import SelectControl from "../../components/resusablecontrols/SelectControl";
 import TextControl from "../../components/resusablecontrols/TextControl";
 import { standardInputStyle } from "../Sales/styles/standardInputStyle";
 
+type RequestStatus = "OPEN" | "IN-PROCESS" | "COMPLETED";
+
+interface RequestForm {
+  Requesttype: string;
+  Modulename: string;
+  Description: string;
+  Status: RequestStatus;
+  filename: string;
+}
+
+interface RequestItem extends RequestForm {
+  Reqid: string;
+  Requestedon: string;
+}
+
+interface ApiRequestRecord {
+  [key: string]: unknown;
+}
+
+const STATUS_OPTIONS: { value: RequestStatus; label: string }[] = [
+  { value: "OPEN", label: "OPEN" },
+  { value: "IN-PROCESS", label: "IN-PROCESS" },
+  { value: "COMPLETED", label: "COMPLETED" },
+];
+
+const createInitialForm = (): RequestForm => ({
+  Requesttype: "",
+  Modulename: "",
+  Description: "",
+  Status: "OPEN",
+  filename: "",
+});
+
+const REQUEST_ENDPOINT = `${baseUrl}/SEEMSRequestData`;
+
+const asString = (value: unknown): string => (value == null ? "" : String(value).trim());
+
+const normalizeStatus = (value: string): RequestStatus => {
+  const normalized = value.trim();
+  if (normalized === "IN-PROCESS") {
+    return "IN-PROCESS";
+  }
+  if (normalized === "completed") {
+    return "Completed";
+  }
+  return "OPEN";
+};
+
+const extractRecords = (data: unknown): ApiRequestRecord[] => {
+  if (Array.isArray(data)) {
+    return data as ApiRequestRecord[];
+  }
+
+  if (
+    typeof data === "object" &&
+    data !== null &&
+    "data" in data &&
+    Array.isArray((data as { data?: unknown }).data)
+  ) {
+    return (data as { data: ApiRequestRecord[] }).data;
+  }
+
+  if (
+    typeof data === "object" &&
+    data !== null &&
+    "data" in data &&
+    (data as { data?: unknown }).data &&
+    !Array.isArray((data as { data?: unknown }).data)
+  ) {
+    return [(data as { data: ApiRequestRecord }).data];
+  }
+
+  if (typeof data === "object" && data !== null) {
+    return [data as ApiRequestRecord];
+  }
+
+  return [];
+};
+
+const mapApiRequest = (record: ApiRequestRecord): RequestItem => ({
+  Reqid: asString(record.Reqid),
+  Requestedon: asString(record.Requestedon),
+  Requesttype: asString(record.Requesttype),
+  Modulename: asString(record.Modulename),
+  Description: asString(record.Description),
+  Status: normalizeStatus(asString(record.Status)),
+  filename: asString(record.filename),
+});
+
+const fetchSEEMSRequests = async (filters?: { Reqid?: string }): Promise<RequestItem[]> => {
+  const response = await axios.get(REQUEST_ENDPOINT, { params: filters });
+  return extractRecords(response.data).map(mapApiRequest).filter((item) => Boolean(item.id));
+};
 
 const REQUEST_TYPE_OPTIONS = [
   { value: "", label: "Select" },
@@ -60,17 +155,17 @@ const AddEditSEEMSRequest: React.FC = () => {
   };
 
   const validateForm = () => {
-    if (!form.type) {
+    if (!form.Requesttype.trim()) {
       toast.error("Request type is required.");
       return false;
     }
 
-    if (!form.module.trim()) {
+    if (!form.Modulename.trim()) {
       toast.error("Module / page name is required.");
       return false;
     }
 
-    if (!form.comments.trim()) {
+    if (!form.Description.trim()) {
       toast.error("Comments are required.");
       return false;
     }
@@ -87,8 +182,7 @@ const AddEditSEEMSRequest: React.FC = () => {
     const file = event.target.files?.[0] ?? null;
     setForm((prev) => ({
       ...prev,
-      file,
-      fileName: file?.name ?? "",
+      filename: file?.name ?? "",
     }));
   };
 
@@ -108,7 +202,7 @@ const AddEditSEEMSRequest: React.FC = () => {
   const loadRequestDetails = async (id: string) => {
     setLoadingDetails(true);
     try {
-      const result = await fetchSEEMSRequests({ requestid: id });
+      const result = await fetchSEEMSRequests({ Reqid: id });
       const mappedRequest = result[0];
       if (!mappedRequest?.id) {
         throw new Error("No request found");
@@ -119,12 +213,11 @@ const AddEditSEEMSRequest: React.FC = () => {
         return [...remaining, mappedRequest].sort((a, b) => a.id.localeCompare(b.id));
       });
       setForm({
-        type: mappedRequest.type,
-        module: mappedRequest.module,
-        comments: mappedRequest.comments,
-        status: mappedRequest.status,
-        file: null,
-        fileName: mappedRequest.fileName,
+        Requesttype: mappedRequest.Requesttype,
+        Modulename: mappedRequest.Modulename,
+        Description: mappedRequest.Description,
+        Status: mappedRequest.Status,
+        filename: mappedRequest.filename,
       });
     } catch (error) {
       toast.error("Unable to load the selected request.");
@@ -143,9 +236,9 @@ const AddEditSEEMSRequest: React.FC = () => {
       const newRequest: RequestItem = {
         id: Date.now().toString(),
         ...form,
-        module: form.module.trim(),
-        comments: form.comments.trim(),
-        requestDate: new Date().toISOString().slice(0, 10),
+        Modulename: form.Modulename.trim(),
+        Description: form.Description.trim(),
+        Requestedon: new Date().toISOString().slice(0, 10),
       };
 
       setRequests((prev) => [...prev, newRequest]);
@@ -160,8 +253,8 @@ const AddEditSEEMSRequest: React.FC = () => {
           ? {
               ...request,
               ...form,
-              module: form.module.trim(),
-              comments: form.comments.trim(),
+              Modulename: form.Modulename.trim(),
+              Description: form.Description.trim(),
             }
           : request
       )
@@ -189,9 +282,9 @@ const AddEditSEEMSRequest: React.FC = () => {
   };
 
   const counts = {
-    pending: requests.filter((request) => request.status === "Pending Review").length,
-    progress: requests.filter((request) => request.status === "In Progress").length,
-    done: requests.filter((request) => request.status === "Completed").length,
+    pending: requests.filter((request) => request.status === "OPEN").length,
+    progress: requests.filter((request) => request.status === "IN-PROCESS").length,
+    done: requests.filter((request) => request.status === "COMPLETED").length,
   };
 
   const openStatusView = (status: RequestStatus) => {
@@ -227,7 +320,7 @@ const AddEditSEEMSRequest: React.FC = () => {
                         component="button"
                         type="button"
                         underline="hover"
-                        onClick={() => openStatusView("Pending Review")}
+                        onClick={() => openStatusView("OPEN")}
                         sx={{
                           fontSize: "0.82rem",
                           color: "#1d5db2",
@@ -236,7 +329,7 @@ const AddEditSEEMSRequest: React.FC = () => {
                           cursor: "pointer",
                         }}
                       >
-                        Pending Review
+                        OPEN
                       </Link>
                       <Typography variant="h5" sx={{ fontWeight: 700, color: "#0f4ea6" }}>
                         {counts.pending}
@@ -254,7 +347,7 @@ const AddEditSEEMSRequest: React.FC = () => {
                         component="button"
                         type="button"
                         underline="hover"
-                        onClick={() => openStatusView("In Progress")}
+                        onClick={() => openStatusView("IN-PROCESS")}
                         sx={{
                           fontSize: "0.82rem",
                           color: "#1d5db2",
@@ -281,7 +374,7 @@ const AddEditSEEMSRequest: React.FC = () => {
                         component="button"
                         type="button"
                         underline="hover"
-                        onClick={() => openStatusView("Completed")}
+                        onClick={() => openStatusView("COMPLETED")}
                         sx={{
                           fontSize: "0.82rem",
                           color: "#1d5db2",

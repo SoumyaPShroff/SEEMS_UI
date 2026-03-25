@@ -9,7 +9,7 @@ import TextControl from "../../components/resusablecontrols/TextControl";
 import { standardInputStyle } from "../Sales/styles/standardInputStyle";
 import { baseUrl } from "../../const/BaseUrl";
 
-type RequestStatus = "Pending Review" | "In Progress" | "Completed";
+type RequestStatus = "OPEN" | "CLOSED" | "IN-PROCESS" | "COMPLETED" | "REJECTED" | "APPROVED";
 type ViewTab = RequestStatus;
 
 interface RequestItem {
@@ -21,43 +21,87 @@ interface RequestItem {
   status: RequestStatus;
   file: File | null;
   fileName: string;
+  reqid: string;
+  modulename: string;
+  description: string;
+  requestedby: string;
+  requestedon: string;
+  closedon: string;
+  appDateon: string;
+  approver: string;
+  approverremarks: string;
+  pickedby: string;
+  pickedon: string;
+  completedby: string;
+  completedon: string;
+  completedrem: string;
+  verifiedby: string;
+  verifiedon: string;
+  verifiedrem: string;
+  Requesttype: string;
 }
 
 interface ApiRequestRecord {
   [key: string]: unknown;
 }
 
-const TABS: ViewTab[] = ["Pending Review", "In Progress", "Completed"];
+const TABS: ViewTab[] = ["OPEN", "CLOSED", "IN-PROCESS", "COMPLETED", "REJECTED", "APPROVED"];
 
-const REQUEST_ENDPOINTS = [`${baseUrl}/api/SEEMSRequestData`];
+const REQUEST_ENDPOINTS = [`${baseUrl}/SEEMSRequestData`];
 
 const columns: GridColDef<RequestItem>[] = [
-  { field: "id", headerName: "Request ID", minWidth: 160, flex: 1 },
-  { field: "requestDate", headerName: "Request Date", minWidth: 150, flex: 1 },
-  { field: "type", headerName: "Request Type", minWidth: 170, flex: 1 },
-  { field: "module", headerName: "Module / Page", minWidth: 210, flex: 1.2 },
-  { field: "comments", headerName: "Comments", minWidth: 280, flex: 1.6 },
-  { field: "status", headerName: "Status", minWidth: 160, flex: 1 },
-  { field: "fileName", headerName: "Attachment", minWidth: 180, flex: 1 },
+  { field: "reqid", headerName: "Request ID", minWidth: 150, flex: 1 },
+  { field: "modulename", headerName: "Module Name", minWidth: 180, flex: 1 },
+  { field: "description", headerName: "Description", minWidth: 170, flex: 1 },
+  { field: "requestedby", headerName: "Requested By", minWidth: 170, flex: 1.2 },
+  { field: "requestedon", headerName: "Request Date", minWidth: 170, flex: 1.6 },
+  { field: "closedon", headerName: "Closed On", minWidth: 150, flex: 1 },
+  { field: "appDateon", headerName: "Approved On", minWidth: 170, flex: 1 },
+  { field: "approver", headerName: "Approver", minWidth: 210, flex: 1.2 },
+  { field: "approverremarks", headerName: "Approver Comments", minWidth: 280, flex: 1.6 },
+  { field: "pickedby", headerName: "Picked By", minWidth: 160, flex: 1 },
+  { field: "pickedon", headerName: "Picked On", minWidth: 170, flex: 1 },
+  { field: "completedby", headerName: "Completed By", minWidth: 170, flex: 1.2 },
+  { field: "completedon", headerName: "Completed On", minWidth: 170, flex: 1.6 },
+  { field: "completedrem", headerName: "Completed Remarks", minWidth: 160, flex: 1 },
+  { field: "verifiedby", headerName: "Verified By", minWidth: 170, flex: 1 },
+  { field: "verifiedon", headerName: "verifiedon", minWidth: 210, flex: 1.2 },
+  { field: "verifiedrem", headerName: "Verified Comments", minWidth: 280, flex: 1.6 },
+  { field: "Requesttype", headerName: "Request Type", minWidth: 160, flex: 1 },    
 ];
 
 const tabLabelMap: Record<ViewTab, string> = {
-  "Pending Review": "Pending",
-  "In Progress": "In-Progress",
-  "Completed": "Completed",
+  "OPEN": "OPEN",
+  "CLOSED": "CLOSED",
+  "IN-PROCESS": "IN-PROCESS",
+  "COMPLETED": "COMPLETED",
+  "REJECTED": "REJECTED",
+  "APPROVED": "APPROVED",
 };
 
 const asString = (value: unknown): string => (value == null ? "" : String(value).trim());
 
 const normalizeStatus = (value: string): RequestStatus => {
-  const normalized = value.toLowerCase();
-  if (normalized === "in progress" || normalized === "in-progress") {
-    return "In Progress";
+  const normalized = value.trim();
+  if (normalized === "CLOSED") {
+    return "CLOSED";
   }
-  if (normalized === "completed") {
-    return "Completed";
+  if (normalized === "IN-PROCESS") {
+    return "IN-PROCESS";
   }
-  return "Pending Review";
+  if (normalized === "COMPLETED") {
+    return "COMPLETED";
+  }
+  if (normalized === "REJECTED") {
+    return "REJECTED";
+  }
+  if (normalized === "APPROVED") {
+    return "APPROVED";
+  }
+  if (normalized === "OPEN") {
+    return "OPEN";
+  }
+  return "OPEN";
 };
 
 const extractRecords = (data: unknown): ApiRequestRecord[] => {
@@ -92,14 +136,50 @@ const extractRecords = (data: unknown): ApiRequestRecord[] => {
 };
 
 const mapApiRequest = (record: ApiRequestRecord): RequestItem => ({
-  id: asString(record.id ?? record.requestId ?? record.requestid ?? record.requestNo ?? record.requestno),
-  requestDate: asString(record.requestDate ?? record.requestdate ?? record.createdDate ?? record.createddate),
-  type: asString(record.type ?? record.requestType ?? record.requesttype),
+  id: asString(
+    record.id ??
+      record.reqid ??
+      record.requestId ??
+      record.requestid ??
+      record.requestNo ??
+      record.requestno
+  ),
+  requestDate: asString(
+    record.requestDate ?? record.requestdate ?? record.requestedon ?? record.createdDate ?? record.createddate
+  ),
+  type: asString(record.type ?? record.requestType ?? record.requesttype ?? record.Requesttype),
   module: asString(record.module ?? record.moduleName ?? record.modulename ?? record.pageName ?? record.pagename),
   comments: asString(record.comments ?? record.comment ?? record.remarks ?? record.description),
-  status: normalizeStatus(asString(record.status)),
+  status: normalizeStatus(asString(record.status ?? record.Requesttype)),
   file: null,
   fileName: asString(record.fileName ?? record.filename ?? record.attachmentName ?? record.attachmentname),
+  reqid: asString(
+    record.reqid ??
+      record.id ??
+      record.requestId ??
+      record.requestid ??
+      record.requestNo ??
+      record.requestno
+  ),
+  modulename: asString(record.modulename ?? record.moduleName ?? record.module ?? record.pageName ?? record.pagename),
+  description: asString(record.description ?? record.comments ?? record.comment ?? record.remarks),
+  requestedby: asString(record.requestedby ?? record.requestedBy ?? record.createdBy ?? record.createdby),
+  requestedon: asString(
+    record.requestedon ?? record.requestDate ?? record.requestdate ?? record.createdDate ?? record.createddate
+  ),
+  closedon: asString(record.closedon ?? record.closedOn),
+  appDateon: asString(record.appDateon ?? record.approvedon ?? record.approvedOn),
+  approver: asString(record.approver),
+  approverremarks: asString(record.approverremarks ?? record.approverRemarks),
+  pickedby: asString(record.pickedby ?? record.pickedBy),
+  pickedon: asString(record.pickedon ?? record.pickedOn),
+  completedby: asString(record.completedby ?? record.completedBy),
+  completedon: asString(record.completedon ?? record.completedOn),
+  completedrem: asString(record.completedrem ?? record.completedRemarks),
+  verifiedby: asString(record.verifiedby ?? record.verifiedBy),
+  verifiedon: asString(record.verifiedon ?? record.verifiedOn),
+  verifiedrem: asString(record.verifiedrem ?? record.verifiedRemarks),
+  Requesttype: asString(record.Requesttype ?? record.status ?? record.requestType ?? record.requesttype),
 });
 
 const normalizeStatusParam = (value: string | null): ViewTab | null => {
@@ -107,15 +187,24 @@ const normalizeStatusParam = (value: string | null): ViewTab | null => {
     return null;
   }
 
-  const normalized = value.trim().toLowerCase();
-  if (normalized === "pending review" || normalized === "pending") {
-    return "Pending Review";
+  const normalized = value.trim();
+  if (normalized === "OPEN") {
+    return "OPEN";
   }
-  if (normalized === "in progress" || normalized === "in-progress") {
-    return "In Progress";
+  if (normalized === "CLOSED") {
+    return "CLOSED";
   }
-  if (normalized === "completed") {
-    return "Completed";
+  if (normalized === "IN-PROCESS") {
+    return "IN-PROCESS";
+  }
+  if (normalized === "COMPLETED") {
+    return "COMPLETED";
+  }
+  if (normalized === "REJECTED") {
+    return "REJECTED";
+  }
+  if (normalized === "APPROVED") {
+    return "APPROVED";
   }
   return null;
 };
@@ -126,14 +215,14 @@ const ViewSEEMSRequests: React.FC = () => {
   const routeStatus = normalizeStatusParam(searchParams.get("status"));
   const routeDate = searchParams.get("requestdate") ?? "";
 
-  const [activeTab, setActiveTab] = useState<ViewTab>(routeStatus ?? "Pending Review");
+  const [activeTab, setActiveTab] = useState<ViewTab>(routeStatus ?? "OPEN");
   const [requestDate, setRequestDate] = useState(routeDate);
   const [rows, setRows] = useState<RequestItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
-    setActiveTab(routeStatus ?? "Pending Review");
+    setActiveTab(routeStatus ?? "OPEN");
   }, [routeStatus]);
 
   useEffect(() => {
@@ -216,18 +305,13 @@ const ViewSEEMSRequests: React.FC = () => {
     setSearchParams(params);
   };
 
-  const handleLoadAll = () => {
-    setActiveTab("Pending Review");
-    setSearchParams(requestDate ? { requestdate: requestDate } : {});
-  };
-
   return (
     <Box
       sx={{
         p: { xs: 1, md: 1.5 },
         mt: 15,
         width: "100%",
-        maxWidth: 1280,
+        maxWidth: 1100,
         mx: "auto",
         background: "radial-gradient(circle at top right, #ecf4ff 0%, #f7fbff 42%, #eef6ff 100%)",
         borderRadius: 2,
@@ -250,6 +334,8 @@ const ViewSEEMSRequests: React.FC = () => {
       <Card
         sx={{
           width: "100%",
+          maxWidth: 1100,
+          mx: "auto",
           borderRadius: 3,
           border: "1px solid #557ec6",
           boxShadow: "0 14px 30px rgba(24, 71, 153, 0.12)",
@@ -262,7 +348,7 @@ const ViewSEEMSRequests: React.FC = () => {
               display: "grid",
               gap: 1.5,
               alignItems: "end",
-              gridTemplateColumns: { xs: "1fr", md: "1.3fr 0.8fr auto auto" },
+              gridTemplateColumns: { xs: "1fr", md: "1.3fr minmax(150px, 190px) auto auto" },
               mb: 1.5,
             }}
           >
@@ -308,8 +394,8 @@ const ViewSEEMSRequests: React.FC = () => {
               </Tabs>
             </Paper>
 
-            <Box>
-              <Typography sx={{ mb: 0.4, fontSize: "0.84rem", fontWeight: 700, color: "#31527d" }}>
+            <Box sx={{ width: "100%", maxWidth: 190 }}>
+              <Typography sx={{ mb: 0.4, width: "100%", fontSize: "0.84rem", fontWeight: 700, color: "#31527d" }}>
                 Request Date
               </Typography>
               <TextControl
@@ -320,22 +406,6 @@ const ViewSEEMSRequests: React.FC = () => {
                 fullWidth
               />
             </Box>
-
-            <Button
-              variant="outlined"
-              onClick={handleLoadAll}
-              sx={{ textTransform: "none", fontWeight: 700, height: 36 }}
-            >
-              Load All
-            </Button>
-
-            <Button
-              variant="contained"
-              onClick={() => navigate("/Home/AddEditSEEMSRequest")}
-              sx={{ textTransform: "none", fontWeight: 700, height: 36 }}
-            >
-              Back
-            </Button>
           </Box>
 
           {loading ? (
