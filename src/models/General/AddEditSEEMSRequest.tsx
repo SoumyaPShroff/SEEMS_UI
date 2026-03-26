@@ -18,34 +18,36 @@ interface RequestForm {
   Requesttype: string;
   Modulename: string;
   Description: string;
-  Status: RequestStatus;
   filename: string;
 }
 
 interface RequestItem extends RequestForm {
   Reqid: string;
   Requestedon: string;
+  Requestedby: string;
+}
+
+interface AddRequestPayload {
+  Modulename: string;
+  Description: string;
+  Requestedby: string;
+  filename?: string;
 }
 
 interface ApiRequestRecord {
   [key: string]: unknown;
 }
 
-const STATUS_OPTIONS: { value: RequestStatus; label: string }[] = [
-  { value: "OPEN", label: "OPEN" },
-  { value: "IN-PROCESS", label: "IN-PROCESS" },
-  { value: "COMPLETED", label: "COMPLETED" },
-];
-
 const createInitialForm = (): RequestForm => ({
   Requesttype: "",
   Modulename: "",
   Description: "",
-  Status: "OPEN",
   filename: "",
 });
 
 const REQUEST_ENDPOINT = `${baseUrl}/SEEMSRequestData`;
+const ADD_REQUEST_ENDPOINT = `${baseUrl}/AddSEEMSRequest`;
+const EDIT_REQUEST_ENDPOINT = `${baseUrl}/EditSEEMSRequest`;
 
 const asString = (value: unknown): string => (value == null ? "" : String(value).trim());
 
@@ -54,8 +56,8 @@ const normalizeStatus = (value: string): RequestStatus => {
   if (normalized === "IN-PROCESS") {
     return "IN-PROCESS";
   }
-  if (normalized === "completed") {
-    return "Completed";
+  if (normalized === "COMPLETED") {
+    return "COMPLETED";
   }
   return "OPEN";
 };
@@ -94,16 +96,47 @@ const extractRecords = (data: unknown): ApiRequestRecord[] => {
 const mapApiRequest = (record: ApiRequestRecord): RequestItem => ({
   Reqid: asString(record.Reqid),
   Requestedon: asString(record.Requestedon),
+  Requestedby: asString(record.Requestedby),
   Requesttype: asString(record.Requesttype),
   Modulename: asString(record.Modulename),
   Description: asString(record.Description),
   Status: normalizeStatus(asString(record.Status)),
-  filename: asString(record.filename),
+  filename: asString(record.filename ?? record.fileName),
 });
+
+const fetchEmailFromId = async (id: string): Promise<string> => {
+  const trimmedId = id.trim();
+  if (!trimmedId) {
+    return "";
+  }
+
+  const { data } = await axios.get(`${baseUrl}/EmailId/${trimmedId}`);
+  const list = Array.isArray(data) ? data : [data];
+  return String(list[0] ?? "").trim();
+};
 
 const fetchSEEMSRequests = async (filters?: { Reqid?: string }): Promise<RequestItem[]> => {
   const response = await axios.get(REQUEST_ENDPOINT, { params: filters });
-  return extractRecords(response.data).map(mapApiRequest).filter((item) => Boolean(item.id));
+  return extractRecords(response.data).map(mapApiRequest).filter((item) => Boolean(item.Reqid));
+};
+
+const saveSEEMSRequest = async ({
+  payload,
+  mode,
+  Reqid,
+  emaillist,
+}: {
+  payload: RequestForm | AddRequestPayload;
+  mode: "create" | "edit";
+  Reqid?: string;
+  emaillist: string;
+}) => {
+  await axios.post(mode === "create" ? ADD_REQUEST_ENDPOINT : EDIT_REQUEST_ENDPOINT, payload, {
+    params: {
+      ...(mode === "edit" && Reqid ? { Reqid } : {}),
+      emaillist,
+    },
+  });
 };
 
 const REQUEST_TYPE_OPTIONS = [
@@ -139,6 +172,7 @@ const AddEditSEEMSRequest: React.FC = () => {
   const [form, setForm] = useState<RequestForm>(createInitialForm);
   const [loadingRequests, setLoadingRequests] = useState(false);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const loginId = sessionStorage.getItem("SessionUserID") || "";
 
   useEffect(() => {
     void loadRequestIds();
@@ -204,19 +238,18 @@ const AddEditSEEMSRequest: React.FC = () => {
     try {
       const result = await fetchSEEMSRequests({ Reqid: id });
       const mappedRequest = result[0];
-      if (!mappedRequest?.id) {
+      if (!mappedRequest?.Reqid) {
         throw new Error("No request found");
       }
 
       setRequests((prev) => {
-        const remaining = prev.filter((item) => item.id !== mappedRequest.id);
-        return [...remaining, mappedRequest].sort((a, b) => a.id.localeCompare(b.id));
+        const remaining = prev.filter((item) => item.Reqid !== mappedRequest.Reqid);
+        return [...remaining, mappedRequest].sort((a, b) => a.Reqid.localeCompare(b.Reqid));
       });
       setForm({
         Requesttype: mappedRequest.Requesttype,
         Modulename: mappedRequest.Modulename,
         Description: mappedRequest.Description,
-        Status: mappedRequest.Status,
         filename: mappedRequest.filename,
       });
     } catch (error) {
@@ -227,40 +260,41 @@ const AddEditSEEMSRequest: React.FC = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateForm()) {
       return;
     }
 
-    if (mode === "create") {
-      const newRequest: RequestItem = {
-        id: Date.now().toString(),
-        ...form,
-        Modulename: form.Modulename.trim(),
-        Description: form.Description.trim(),
-        Requestedon: new Date().toISOString().slice(0, 10),
-      };
-
-      setRequests((prev) => [...prev, newRequest]);
-      toast.success("SEEMS request created.");
-      resetForm();
-      return;
-    }
-
-    setRequests((prev) =>
-      prev.map((request) =>
-        request.id === selectedId
+    try {
+      const sessionUserEmail = await fetchEmailFromId(loginId);
+      const payload: RequestForm | AddRequestPayload =
+        mode === "create"
           ? {
-              ...request,
-              ...form,
               Modulename: form.Modulename.trim(),
               Description: form.Description.trim(),
+              Requestedby: loginId,
+              ...(form.filename ? { filename: form.filename } : {}),
             }
-          : request
-      )
-    );
-    toast.success("SEEMS request updated.");
-    resetForm();
+          : {
+              Requesttype: form.Requesttype.trim(),
+              Modulename: form.Modulename.trim(),
+              Description: form.Description.trim(),
+              filename: form.filename,
+            };
+
+      await saveSEEMSRequest({
+        payload,
+        mode,
+        Reqid: mode === "edit" ? selectedId : undefined,
+        emaillist: sessionUserEmail,
+      });
+      await loadRequestIds();
+      toast.success(mode === "create" ? "SEEMS request created." : "SEEMS request updated.");
+      resetForm();
+    } catch (error) {
+      toast.error(mode === "create" ? "Unable to create SEEMS request." : "Unable to update SEEMS request.") +   " " +
+      (error?.response?.data?.message || error.message || "");
+    }
   };
 
   const handleEditSelect = async (id: string) => {
@@ -282,9 +316,9 @@ const AddEditSEEMSRequest: React.FC = () => {
   };
 
   const counts = {
-    pending: requests.filter((request) => request.status === "OPEN").length,
-    progress: requests.filter((request) => request.status === "IN-PROCESS").length,
-    done: requests.filter((request) => request.status === "COMPLETED").length,
+    pending: requests.filter((request) => request.Status === "OPEN").length,
+    progress: requests.filter((request) => request.Status === "IN-PROCESS").length,
+    done: requests.filter((request) => request.Status === "COMPLETED").length,
   };
 
   const openStatusView = (status: RequestStatus) => {
@@ -423,17 +457,17 @@ const AddEditSEEMSRequest: React.FC = () => {
                   </Box>
                 ) : (
                   <SelectControl
-                    name="requestId"
+                    name="Reqid"
                     label="Select Request ID"
                     value={selectedId}
                     options={[
                       { value: "", label: "Select" },
                       ...requests
                         .slice()
-                        .sort((a, b) => a.id.localeCompare(b.id))
+                        .sort((a, b) => a.Reqid.localeCompare(b.Reqid))
                         .map((request) => ({
-                          value: request.id,
-                          label: request.id,
+                          value: request.Reqid,
+                          label: request.Reqid,
                         })),
                     ]}
                     onChange={(event: { target: { value: string } }) =>
@@ -460,10 +494,10 @@ const AddEditSEEMSRequest: React.FC = () => {
                 <SelectControl
                   name="type"
                   label="Request Type"
-                  value={form.type}
+                  value={form.Requesttype}
                   options={REQUEST_TYPE_OPTIONS}
                   onChange={(event: { target: { value: string } }) =>
-                    updateForm("type", event.target.value)
+                    updateForm("Requesttype", event.target.value)
                   }
                   required
                   fullWidth
@@ -475,8 +509,8 @@ const AddEditSEEMSRequest: React.FC = () => {
                 <Label text="Module / Page Name" bold required />
                 <TextControl
                   name="module"
-                  value={form.module}
-                  onChange={(event) => updateForm("module", event.target.value)}
+                  value={form.Modulename}
+                  onChange={(event) => updateForm("Modulename", event.target.value)}
                   placeholder="Enter module or page name"
                   style={standardInputStyle}
                   fullWidth
@@ -487,8 +521,8 @@ const AddEditSEEMSRequest: React.FC = () => {
                 <Label text="Comments" bold required />
                 <TextControl
                   name="comments"
-                  value={form.comments}
-                  onChange={(event) => updateForm("comments", event.target.value)}
+                  value={form.Description}
+                  onChange={(event) => updateForm("Description", event.target.value)}
                   placeholder="Describe the request"
                   style={{ ...standardInputStyle, minHeight: 90, padding: "10px 12px" }}
                   multiline
@@ -512,8 +546,8 @@ const AddEditSEEMSRequest: React.FC = () => {
                     py: 1,
                   }}
                 >
-                  <Typography sx={{ fontSize: "0.88rem", color: form.fileName ? "#1f2f46" : "#6b7a90" }}>
-                    {form.fileName || "No file selected"}
+                  <Typography sx={{ fontSize: "0.88rem", color: form.filename ? "#1f2f46" : "#6b7a90" }}>
+                    {form.filename || "No file selected"}
                   </Typography>
                   <Button component="label" variant="outlined" size="small" sx={{ textTransform: "none" }}>
                     Upload
@@ -522,21 +556,6 @@ const AddEditSEEMSRequest: React.FC = () => {
                 </Box>
               </Box>
 
-              {mode === "edit" && (
-                <Box sx={{ maxWidth: { xs: "100%", md: 320 } }}>
-                  <SelectControl
-                    name="status"
-                    label="Status"
-                    value={form.status}
-                    options={STATUS_OPTIONS}
-                    onChange={(event: { target: { value: RequestStatus } }) =>
-                      updateForm("status", event.target.value)
-                    }
-                    fullWidth
-                    height={36}
-                  />
-                </Box>
-              )}
             </Box>
 
             {mode === "edit" && loadingDetails && (
