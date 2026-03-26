@@ -12,7 +12,7 @@ import SelectControl from "../../components/resusablecontrols/SelectControl";
 import TextControl from "../../components/resusablecontrols/TextControl";
 import { standardInputStyle } from "../Sales/styles/standardInputStyle";
 
-type RequestStatus = "OPEN" | "IN-PROCESS" | "COMPLETED";
+type RequestStatus = "OPEN" | "IN-PROCESS" | "COMPLETED" | "REJECTED" | "CLOSED";
 
 interface RequestForm {
   Requesttype: string;
@@ -34,6 +34,13 @@ interface AddRequestPayload {
   filename?: string;
 }
 
+interface EditRequestPayload {
+  Modulename: string;
+  Description: string;
+  Requesttype: string;
+  filename: string;
+}
+
 interface ApiRequestRecord {
   [key: string]: unknown;
 }
@@ -53,6 +60,12 @@ const asString = (value: unknown): string => (value == null ? "" : String(value)
 
 const normalizeStatus = (value: string): RequestStatus => {
   const normalized = value.trim();
+  if (normalized === "REJECTED") {
+    return "REJECTED";
+  }
+  if (normalized === "CLOSED") {
+    return "CLOSED";
+  }
   if (normalized === "IN-PROCESS") {
     return "IN-PROCESS";
   }
@@ -93,14 +106,16 @@ const extractRecords = (data: unknown): ApiRequestRecord[] => {
   return [];
 };
 
+//normalised the parameters using api returned fieldnames adn table column names, since api return lowercase whereeas actual table field be different
+//especially when its returns from SP
 const mapApiRequest = (record: ApiRequestRecord): RequestItem => ({
-  Reqid: asString(record.Reqid),
-  Requestedon: asString(record.Requestedon),
-  Requestedby: asString(record.Requestedby),
-  Requesttype: asString(record.Requesttype),
-  Modulename: asString(record.Modulename),
-  Description: asString(record.Description),
-  Status: normalizeStatus(asString(record.Status)),
+  Reqid: asString(record.ReqId ??   record.reqid),
+  Requestedon: asString(record.Requestedon ?? record.requestedon),
+  Requestedby: asString(record.Requestedby ?? record.requestedby),
+  Requesttype: asString(record.Requesttype ?? record.requesttype),
+  Modulename: asString(record.Modulename ?? record.modulename),
+  Description: asString(record.Description ?? record.description),
+  Status: normalizeStatus(asString(record.Status ?? record.status)),
   filename: asString(record.filename ?? record.fileName),
 });
 
@@ -115,9 +130,18 @@ const fetchEmailFromId = async (id: string): Promise<string> => {
   return String(list[0] ?? "").trim();
 };
 
-const fetchSEEMSRequests = async (filters?: { Reqid?: string }): Promise<RequestItem[]> => {
-  const response = await axios.get(REQUEST_ENDPOINT, { params: filters });
-  return extractRecords(response.data).map(mapApiRequest).filter((item) => Boolean(item.Reqid));
+const fetchSEEMSRequests = async (filters?: { Reqid?: string; reqid?: string }): Promise<RequestItem[]> => {
+  const requestId = filters?.Reqid ?? filters?.reqid;
+  const params = requestId
+    ? {
+        Reqid: requestId,
+        reqid: requestId,
+      }
+    : filters;
+
+  const response = await axios.get(REQUEST_ENDPOINT, { params });
+  const items = extractRecords(response.data).map(mapApiRequest).filter((item) => Boolean(item.Reqid));
+  return requestId ? items.filter((item) => item.Reqid === requestId) : items;
 };
 
 const saveSEEMSRequest = async ({
@@ -126,7 +150,7 @@ const saveSEEMSRequest = async ({
   Reqid,
   emaillist,
 }: {
-  payload: RequestForm | AddRequestPayload;
+  payload: AddRequestPayload | EditRequestPayload;
   mode: "create" | "edit";
   Reqid?: string;
   emaillist: string;
@@ -140,7 +164,7 @@ const saveSEEMSRequest = async ({
 };
 
 const REQUEST_TYPE_OPTIONS = [
-  { value: "", label: "Select" },
+  { value: "Select", label: "Select" },
   { value: "New Request", label: "New Request" },
   { value: "Bug Fix", label: "Bug Fix" },
   { value: "Others", label: "Others" },
@@ -237,7 +261,7 @@ const AddEditSEEMSRequest: React.FC = () => {
     setLoadingDetails(true);
     try {
       const result = await fetchSEEMSRequests({ Reqid: id });
-      const mappedRequest = result[0];
+      const mappedRequest = result.find((request) => request.Reqid === id);
       if (!mappedRequest?.Reqid) {
         throw new Error("No request found");
       }
@@ -267,7 +291,7 @@ const AddEditSEEMSRequest: React.FC = () => {
 
     try {
       const sessionUserEmail = await fetchEmailFromId(loginId);
-      const payload: RequestForm | AddRequestPayload =
+      const payload: AddRequestPayload | EditRequestPayload =
         mode === "create"
           ? {
               Modulename: form.Modulename.trim(),
@@ -276,10 +300,10 @@ const AddEditSEEMSRequest: React.FC = () => {
               ...(form.filename ? { filename: form.filename } : {}),
             }
           : {
-              Requesttype: form.Requesttype.trim(),
               Modulename: form.Modulename.trim(),
               Description: form.Description.trim(),
-              filename: form.filename,
+              Requesttype: form.Requesttype.trim(),
+              ...(form.filename ? { filename: form.filename } : {}),
             };
 
       await saveSEEMSRequest({
@@ -288,9 +312,8 @@ const AddEditSEEMSRequest: React.FC = () => {
         Reqid: mode === "edit" ? selectedId : undefined,
         emaillist: sessionUserEmail,
       });
-      await loadRequestIds();
       toast.success(mode === "create" ? "SEEMS request created." : "SEEMS request updated.");
-      resetForm();
+      window.location.reload();
     } catch (error) {
       toast.error(mode === "create" ? "Unable to create SEEMS request." : "Unable to update SEEMS request.") +   " " +
       (error?.response?.data?.message || error.message || "");
@@ -299,8 +322,8 @@ const AddEditSEEMSRequest: React.FC = () => {
 
   const handleEditSelect = async (id: string) => {
     setSelectedId(id);
+    setForm(createInitialForm());
     if (!id) {
-      setForm(createInitialForm());
       return;
     }
 
@@ -316,7 +339,7 @@ const AddEditSEEMSRequest: React.FC = () => {
   };
 
   const counts = {
-    pending: requests.filter((request) => request.Status === "OPEN").length,
+    pending: requests.filter((request) => request.Status === "OPEN").length,  //includes APPROVED alone
     progress: requests.filter((request) => request.Status === "IN-PROCESS").length,
     done: requests.filter((request) => request.Status === "COMPLETED").length,
   };
@@ -464,6 +487,7 @@ const AddEditSEEMSRequest: React.FC = () => {
                       { value: "", label: "Select" },
                       ...requests
                         .slice()
+                        .filter((request) => request.Status !== "CLOSED")
                         .sort((a, b) => a.Reqid.localeCompare(b.Reqid))
                         .map((request) => ({
                           value: request.Reqid,
