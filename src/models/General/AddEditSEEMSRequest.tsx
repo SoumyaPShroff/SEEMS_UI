@@ -1,4 +1,5 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import type { ChangeEvent } from "react";
 import axios from "axios";
 import { Box,  Button, Card,  CardContent,  CircularProgress,  Divider,  Link,  Stack,  Typography,} from "@mui/material";
 import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
@@ -25,6 +26,7 @@ interface RequestItem extends RequestForm {
   Reqid: string;
   Requestedon: string;
   Requestedby: string;
+  Status: RequestStatus;
 }
 
 interface AddRequestPayload {
@@ -38,7 +40,7 @@ interface EditRequestPayload {
   Modulename: string;
   Description: string;
   Requesttype: string;
-  filename: string;
+  filename?: string;
 }
 
 interface ApiRequestRecord {
@@ -144,6 +146,40 @@ const fetchSEEMSRequests = async (filters?: { Reqid?: string; reqid?: string }):
   return requestId ? items.filter((item) => item.Reqid === requestId) : items;
 };
 
+const isAxiosLikeError = (
+  error: unknown
+): error is { message: string; response?: { data?: unknown } } => {
+  if (typeof error !== "object" || error === null) {
+    return false;
+  }
+
+  return "message" in error;
+};
+
+const getErrorMessage = (error: unknown): string => {
+  if (isAxiosLikeError(error)) {
+    const apiMessage = error.response?.data;
+    if (typeof apiMessage === "string" && apiMessage.trim()) {
+      return apiMessage.trim();
+    }
+    if (
+      typeof apiMessage === "object" &&
+      apiMessage !== null &&
+      "message" in apiMessage &&
+      typeof apiMessage.message === "string"
+    ) {
+      return apiMessage.message.trim();
+    }
+    return error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "";
+};
+
 const saveSEEMSRequest = async ({
   payload,
   mode,
@@ -155,12 +191,21 @@ const saveSEEMSRequest = async ({
   Reqid?: string;
   emaillist: string;
 }) => {
-  await axios.post(mode === "create" ? ADD_REQUEST_ENDPOINT : EDIT_REQUEST_ENDPOINT, payload, {
-    params: {
-      ...(mode === "edit" && Reqid ? { Reqid } : {}),
-      emaillist,
-    },
-  });
+    if (mode === "create") {
+    return await axios.post(ADD_REQUEST_ENDPOINT, payload, {
+      params: { emaillist },
+    });
+  }
+
+  if (mode === "edit" && Reqid) {
+    return await axios.put(
+      `${EDIT_REQUEST_ENDPOINT}/${Reqid}`, // ✅ path param
+      payload,
+      {
+        params: { emaillist }, // still query param
+      }
+    );
+  }
 };
 
 const REQUEST_TYPE_OPTIONS = [
@@ -315,8 +360,12 @@ const AddEditSEEMSRequest: React.FC = () => {
       toast.success(mode === "create" ? "SEEMS request created." : "SEEMS request updated.");
       window.location.reload();
     } catch (error) {
-      toast.error(mode === "create" ? "Unable to create SEEMS request." : "Unable to update SEEMS request.") +   " " +
-      (error?.response?.data?.message || error.message || "");
+      const message = getErrorMessage(error);
+      toast.error(
+        `${mode === "create" ? "Unable to create SEEMS request." : "Unable to update SEEMS request."}${
+          message ? ` ${message}` : ""
+        }`
+      );
     }
   };
 
@@ -386,7 +435,7 @@ const AddEditSEEMSRequest: React.FC = () => {
                           cursor: "pointer",
                         }}
                       >
-                        OPEN
+                        Open
                       </Link>
                       <Typography variant="h5" sx={{ fontWeight: 700, color: "#0f4ea6" }}>
                         {counts.pending}
@@ -413,7 +462,7 @@ const AddEditSEEMSRequest: React.FC = () => {
                           cursor: "pointer",
                         }}
                       >
-                        In-Progress
+                        In-Process
                       </Link>
                       <Typography variant="h5" sx={{ fontWeight: 700, color: "#0f4ea6" }}>
                         {counts.progress}

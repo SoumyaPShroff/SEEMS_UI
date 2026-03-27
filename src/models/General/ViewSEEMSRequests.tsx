@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Box, Button, Card, CardContent, CircularProgress, Paper, Tab, Tabs, Typography } from "@mui/material";
+import { Box, Card, CardContent, CircularProgress, Paper, Tab, Tabs, Typography } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
 import axios from "axios";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import {  useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import CustomDataGrid2 from "../../components/resusablecontrols/CustomDataGrid2";
 import TextControl from "../../components/resusablecontrols/TextControl";
@@ -210,7 +210,6 @@ const normalizeStatusParam = (value: string | null): ViewTab | null => {
 };
 
 const ViewSEEMSRequests: React.FC = () => {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const routeStatus = normalizeStatusParam(searchParams.get("status"));
   const routeDate = searchParams.get("requestdate") ?? "";

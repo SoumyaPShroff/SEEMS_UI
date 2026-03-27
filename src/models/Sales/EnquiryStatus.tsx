@@ -1,5 +1,5 @@
-import  { useEffect, useState , useNavigate} from "react";
-import { useSearchParams } from "react-router-dom";
+import  { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Box, Button, Card, CardContent, CircularProgress, Stack, Typography } from "@mui/material";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -12,8 +12,8 @@ import { standardInputStyle } from "./styles/standardInputStyle";
 import { formatDateYYYYMMDD } from "../../components/utils/DateUtils";
 
 const EnquiryStatus = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const enquiryNo = searchParams.get("enquiryno");
   const [statusOptions, setStatusOptions] = useState<string[]>([]);
   const [status, setStatus] = useState("");
@@ -85,6 +85,8 @@ const EnquiryStatus = () => {
       const detailsRes = await axios.get(`${baseUrl}/api/Sales/EnquiryDetailsByEnquiryno/${enquiryNo}`);
       const row = Array.isArray(detailsRes.data) ? detailsRes.data[0] : detailsRes.data;
       setEnquiryType(String(row?.enquirytype ?? row?.enquirytype ?? ""));
+      setSalesResponsibilityId(String(row?.salesresponsibilityid ?? ""));
+      setCompleteResponsibilityId(String(row?.completeresponsibilityid ?? ""));
       const currentStatus = String(row?.status ?? "");
       setStatus("");
       setStatusOptions(buildStatusOptions(currentStatus, defaultStatusOptions));
