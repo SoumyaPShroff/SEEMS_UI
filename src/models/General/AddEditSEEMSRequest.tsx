@@ -30,6 +30,7 @@ interface RequestItem extends RequestForm {
 }
 
 interface AddRequestPayload {
+  Requesttype: string;
   Modulename: string;
   Description: string;
   Requestedby: string;
@@ -209,7 +210,7 @@ const saveSEEMSRequest = async ({
 };
 
 const REQUEST_TYPE_OPTIONS = [
-  { value: "Select", label: "Select" },
+  { value: "", label: "Select" },
   { value: "New Request", label: "New Request" },
   { value: "Bug Fix", label: "Bug Fix" },
   { value: "Others", label: "Others" },
@@ -258,7 +259,7 @@ const AddEditSEEMSRequest: React.FC = () => {
   };
 
   const validateForm = () => {
-    if (!form.Requesttype.trim()) {
+    if (!form.Requesttype.trim() || form.Requesttype.trim().toLowerCase() === "select") {
       toast.error("Request type is required.");
       return false;
     }
@@ -339,6 +340,7 @@ const AddEditSEEMSRequest: React.FC = () => {
       const payload: AddRequestPayload | EditRequestPayload =
         mode === "create"
           ? {
+              Requesttype: form.Requesttype.trim(),
               Modulename: form.Modulename.trim(),
               Description: form.Description.trim(),
               Requestedby: loginId,
