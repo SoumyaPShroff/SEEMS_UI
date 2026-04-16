@@ -3,7 +3,7 @@ import axios from "axios";
 
 export default function Chatbot() {
   const [message, setMessage] = useState("");
-  const [chat, setChat] = useState([]);
+  const [chat, setChat] = useState<{ role: string; text: string }[]>([]);
 
   const sendMessage = async () => {
     const res = await axios.post("/api/chat", { message });
@@ -17,7 +17,7 @@ export default function Chatbot() {
   };
 
   return (
-    <div>
+    <div style={{  fontSize: "28px", marginBottom: "10px" }}>
       <div>
         {chat.map((c, i) => (
           <div key={i}>
@@ -29,8 +29,9 @@ export default function Chatbot() {
       <input 
         value={message}
         onChange={(e) => setMessage(e.target.value)}
+        style={{ fontSize: "inherit" }}
       />
-      <button onClick={sendMessage}>Send</button>
+      <button onClick={sendMessage} style={{ fontSize: "inherit" }}>Send</button>
     </div>
   );
 }

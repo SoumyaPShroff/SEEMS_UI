@@ -198,7 +198,7 @@ const HelpBotInput = styled.input`
   width: 100%;
   border-radius: 999px;
   padding: 10px 12px;
-  font-size: 13px;
+  font-size: 15px;
 
   &::placeholder {
     color: #9ca3af;
@@ -219,6 +219,9 @@ const ChatMessages = styled.div`
   max-height: 200px;
   max-width: 280px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 `;
 
 const ChatMessageRow = styled.div<{ $role: "user" | "bot" }>`
@@ -229,6 +232,7 @@ const ChatMessageRow = styled.div<{ $role: "user" | "bot" }>`
 const ChatBubble = styled.span<{ $role: "user" | "bot" }>`
   background: ${({ $role }) => ($role === "user" ? "#2563eb" : "#374151")};
   padding: 4px 8px;
+   font-size: 15px;   
   border-radius: 8px;
   display: inline-block;
   white-space: normal;
@@ -430,7 +434,7 @@ const HomeDashboard = () => {
             <HelpBotInput
               value={helpText}
               onChange={event => setHelpText(event.target.value)}
-              placeholder="Ask me anything..."
+              placeholder="Ask me anything SEEMS related..."
               onKeyDown={event => {
                 if (event.key === "Enter") {
                   void sendMessage();
