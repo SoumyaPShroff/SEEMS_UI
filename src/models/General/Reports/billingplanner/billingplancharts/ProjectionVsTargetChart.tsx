@@ -132,12 +132,22 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
   const chartOptions: ChartOptions<'bar'> = {
     responsive: true,
     maintainAspectRatio: false,
+    font: {
+      family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    },
+    layout: {
+      padding: {
+        top: 30,
+        bottom: 10,
+      },
+    },
     plugins: {
       title: {
         display: true,
         text: "Overall Target vs Projection (in Lakhs)",
         font: { size: 16, weight: "bold" as const },
         color: "rgb(0,102,204)",
+        padding: 20,
       },
       legend: { display: false },
       datalabels: { display: true },

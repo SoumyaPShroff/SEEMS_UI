@@ -175,15 +175,26 @@ export const ProjectManagerChart: React.FC<ChartProps> = ({ data }) => {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    font: {
+      family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    },
     layout: {
       padding: {
         top: 30,
         bottom: 10,
       },
     },
+
     plugins: {
       legend: {
         position: "bottom" as const,
+      },
+    title: {
+        display: true,
+        text: "Project Manager vs Billing Amount",
+          padding: 20,
+        font: { size: 16, weight: "bold" as const },
+        color: "rgb(0,102,204)",
       },
       datalabels: {
         display: true,

@@ -1,6 +1,11 @@
 import React from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import type { GridColDef, GridColumnVisibilityModel, } from "@mui/x-data-grid";
+import type {
+  GridColDef,
+  GridColumnVisibilityModel,
+  GridRowHeightParams,
+  GridRowHeightReturnValue,
+} from "@mui/x-data-grid";
 
 interface CustomDataGridProps {
   rows: any[];
@@ -15,6 +20,7 @@ interface CustomDataGridProps {
   onColumnVisibilityModelChange?: (
     model: GridColumnVisibilityModel
   ) => void;
+  getRowHeight?: (params: GridRowHeightParams) => GridRowHeightReturnValue;
 }
 
 const CustomDataGrid: React.FC<CustomDataGridProps> = ({
@@ -28,6 +34,7 @@ const CustomDataGrid: React.FC<CustomDataGridProps> = ({
   gridheight,
   columnVisibilityModel,
   onColumnVisibilityModelChange,
+  getRowHeight,
 }) => {
   
   const defaultSx = {
@@ -163,6 +170,7 @@ const CustomDataGrid: React.FC<CustomDataGridProps> = ({
           columns={columns}
           loading={loading}
           rowHeight={rowHeight}
+          getRowHeight={getRowHeight}
           columnHeaderHeight={52}
           getRowClassName={(params) => (getRowClassName?.(params) ?? '')}
           sx={{ ...defaultSx, ...sx }}

@@ -1,16 +1,39 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { Chart } from "react-chartjs-2";
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, } from "chart.js";
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, LineController, Title, Tooltip, Legend, } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import SalesManagerTargetTable from "./SalesManagerTargetTable";
+import { baseUrl } from "../../../../../const/BaseUrl";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ChartDataLabels);
+ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, LineController, Title, Tooltip, Legend, ChartDataLabels);
 
 interface ChartProps {
   data: any[];
 }
 
+const normalizeId = (value: unknown) => String(value ?? "").trim().toUpperCase();
+const parseNumber = (value: unknown) => {
+  const cleaned = String(value ?? "0").replace(/,/g, "").trim();
+  const num = Number.parseFloat(cleaned);
+  return Number.isNaN(num) ? 0 : num;
+};
+
 export const SalesManagerChart: React.FC<ChartProps> = ({ data }) => {
+  const [targets, setTargets] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchTargets = async () => {
+      try {
+        const res = await axios.get(`${baseUrl}/api/Sales/SalesManagersTargets`);
+        setTargets(Array.isArray(res.data) ? res.data : []);
+      } catch (err) {
+        console.error("Error fetching sales manager targets:", err);
+      }
+    };
+    fetchTargets();
+  }, []);
+
   if (!data || data.length === 0) {
     return <p>No sales manager data available.</p>;
   }
@@ -26,7 +49,7 @@ export const SalesManagerChart: React.FC<ChartProps> = ({ data }) => {
       totals[mgr] = {
         VA_NPI: 0,
         Others: 0,
-        salesresponsibilityid: item.salesresponsibilityid || 999999, // Default to a high number for 'Unknown' or missing IDs
+        salesManagerId: item.salesManagerId || item.salesresponsibilityid || "ZZZ9999",
       };
     }
 
@@ -41,14 +64,21 @@ export const SalesManagerChart: React.FC<ChartProps> = ({ data }) => {
     }
   });
 
-  // Sort managers by salesresponsibilityid
+  // Sort managers by salesManagerId (ascending)
   const sortedManagers = Object.keys(totals)
     .map(managerName => ({
       name: managerName,
-      id: totals[managerName].salesresponsibilityid
+      id: totals[managerName].salesManagerId
     }))
-    .sort((a, b) => String(a.id).localeCompare(String(b.id)));
+    .sort((a, b) => normalizeId(a.id).localeCompare(normalizeId(b.id), undefined, { numeric: true, sensitivity: "base" }));
   const labels = sortedManagers.map(manager => manager.name);
+  const targetMap: Record<string, number> = {};
+  targets.forEach((t: any) => {
+    const id = normalizeId(t.salesrespid);
+    if (!id) return;
+    const targetLakhs = parseNumber(t.totaltargetvalue);
+    targetMap[id] = targetLakhs * 100000;
+  });
 
   const chartData = {
     labels,
@@ -63,41 +93,63 @@ export const SalesManagerChart: React.FC<ChartProps> = ({ data }) => {
         data: labels.map((l) => totals[l].VA_NPI),
         backgroundColor: "#73de96", // Light Blue
       },
+      {
+        type: "line" as const,
+        label: "Total Target",
+        data: sortedManagers.map((m) => targetMap[normalizeId(m.id)] || 0),
+        borderColor: "orange",
+        backgroundColor: "orange",
+        borderWidth: 2,
+        pointRadius: 3,
+        datalabels: {
+          display: true,
+          color: "red",
+          anchor: "end" as const,
+          align: "top" as const,
+          offset: 6,
+          clamp: true,
+          clip: false,
+          font: { size: 10, weight: "bold" as const },
+          formatter: (value: number) =>
+            value ? `${(value / 100000)}L` : "",
+        },
+      },
     ],
   };
-  const maxTotal = Math.max(
-    ...labels.map(l => totals[l].Others + totals[l].VA_NPI)
-  );
-
-  // Round to nearest nice number (like 10L, 20L, 50L)
-  //const yAxisMax = Math.ceil(maxTotal / 1000000) * 1000000; // 👈 rounds to nearest 10L
-  //const yAxisMaxWithPadding = yAxisMax * 1.1; // +10% space
-   let yAxisMax;
-
-if (maxTotal < 200000) { // < 2L
-  yAxisMax = Math.ceil(maxTotal / 50000) * 50000; // 0.5L steps
-} else if (maxTotal < 1000000) { // < 10L
-  yAxisMax = Math.ceil(maxTotal / 200000) * 200000; // 2L steps
-} else {
-  yAxisMax = Math.ceil(maxTotal / 1000000) * 1000000;
-}
-
-const yAxisMaxWithPadding = yAxisMax * 1.1;
+  const yAxisMaxWithPadding = 25000000; // 240L
   const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
+    font: {
+      family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    },
+    layout: {
+      padding: {
+        top: 30,
+        right: 10,
+        left: 6,
+        bottom: 10,
+      },
+    },
     plugins: {
       datalabels: {
-        display: (ctx: any) => ctx.dataset.data[ctx.dataIndex] > 0,
+        display: (ctx: any) =>
+          ctx.dataset.type !== "line" && ctx.dataset.data[ctx.dataIndex] > 0,
         color: "#000",
-        font: { size: 10 },
+        font: { size: 10, weight: "bold" as const },
+        anchor: "end" as const,
+        align: "top" as const,
+        offset: 2,
+        clamp: true,
+        clip: false,
         formatter: (value: number) =>
           value ? `${(value / 100000).toFixed(1)}L` : "",
       },
-      legend: { position: "bottom" },
+      legend: { position: "bottom" as const },
       title: {
         display: true,
         text: "Sales Manager vs Billing Amount",
-          padding:"20px",
+          padding: 20,
         font: { size: 16, weight: "bold" as const },
         color: "rgb(0,102,204)",
       },
@@ -110,25 +162,34 @@ const yAxisMaxWithPadding = yAxisMax * 1.1;
           minRotation: 45,
         },
       },
-      y: {
-        stacked: true,   // ✅ KEY CHANGE
-        beginAtZero: true,
-        max: yAxisMaxWithPadding,
-        // ticks: {
-        //   stepSize: yAxisMax / 5, // 👈 clean intervals
-        //   callback: (v: number) => `${v / 100000} L`,
-        // },
-        ticks: {
-  stepSize: yAxisMax / (maxTotal < 200000 ? 4 : 5),
-  callback: (v: number) => `${(v / 100000)} L`,
+     y: {
+  stacked: true,
+  beginAtZero: true,
+  min: 0,
+  max: yAxisMaxWithPadding,
+  ticks: {
+    stepSize: 1000000, // ✅ 10L
+   callback: (v: string | number) => `${Math.round(Number(v) / 100000)} L`,
+  },
 },
-      },
     },
   };
 
   return (
-    <div style={{ height: "100%", width: "100%", padding: "3px", position: "relative", overflow: "hidden", }}>
-      <Chart type="bar" data={chartData} options={chartOptions} plugins={[ChartDataLabels]} />
+    <div
+      style={{
+        height: "100%",
+        width: "100%",
+        padding: "3px",
+        position: "relative",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div style={{ height: "400px", width: "100%", flexShrink: 0 }}>
+        <Chart type="bar" data={chartData} options={chartOptions} plugins={[ChartDataLabels]} />
+      </div>
       <SalesManagerTargetTable managers={sortedManagers} />
     </div>
   );

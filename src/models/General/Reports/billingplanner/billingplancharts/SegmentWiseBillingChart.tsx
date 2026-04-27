@@ -252,12 +252,22 @@ const SegmentWiseBillingChart: React.FC<SegmentWiseBillingChartProps> = ({
   const chartOptions: ChartOptions<"bar"> = {
     responsive: true,
     maintainAspectRatio: false,
+    font: {
+      family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    },
+    layout: {
+      padding: {
+        top: 30,
+        bottom: 10,
+      },
+    },
     plugins: {
       title: {
         display: true,
         text: "Segment Wise Billing (in Lakhs)",
         color: "#0066CC",
         font: { size: 16, weight: "bold" as const },
+        padding: 20,
       },
       legend: {
         display: true,

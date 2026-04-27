@@ -20,4 +20,20 @@ export const dataGridSx = {
     color: "#d517f2c2 !important",
     fontWeight: 450,
   },
+  "& .MuiDataGrid-row.row-detail .MuiDataGrid-cell": {
+    backgroundColor: "#f1d27d !important",
+    color: "#1f2937 !important",
+    fontWeight: 500,
+  },
+    "& .row-detail": {
+    //backgroundColor: "red",
+
+    "& .MuiDataGrid-cell": {
+      borderRight: "none !important",
+    },
+
+    "& .MuiDataGrid-cell:first-of-type": {
+      borderLeft: "none !important",
+    },
+  },
 };

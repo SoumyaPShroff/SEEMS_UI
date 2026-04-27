@@ -88,13 +88,23 @@ const SalesManagerTargetTable: React.FC<Props> = ({ managers }) => {
   const formatLakhs = (val: number) => `${(Number(val) || 0)} L`;
 
   return (
-    <div style={{ marginTop: "15px", overflowX: "auto" }}>
+    <div
+      style={{
+        marginTop: "8px",
+        overflowX: "auto",
+        maxHeight: "200px",
+        overflowY: "auto",
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      }}
+    >
       <table
         style={{
-          width: "100%",
+          width: "98%",
+          margin: "0 auto",
           borderCollapse: "collapse",
-          fontSize: "13px",
+          fontSize: "11px",
           textAlign: "center",
+          fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
         }}
       >
         <thead style={{ backgroundColor: "#f2f2f2" }}>
@@ -135,12 +145,14 @@ const SalesManagerTargetTable: React.FC<Props> = ({ managers }) => {
 // ✅ Small reusable styles
 const thStyle: React.CSSProperties = {
   border: "1px solid #ccc",
-  padding: "6px",
+  padding: "4px 6px",
   fontWeight: "bold",
+  fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
 };
 
 const tdStyle: React.CSSProperties = {
   border: "1px solid #ccc",
-  padding: "6px",
+  padding: "3px 6px",
+  fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
 };
 export default SalesManagerTargetTable;

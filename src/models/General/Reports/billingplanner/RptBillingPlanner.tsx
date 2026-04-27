@@ -166,7 +166,8 @@ const ChartsRowWide = styled.div`
   gap: 15px;
   margin-bottom: 40px;
   margin-left: 20px;
-  align-items: stretch;
+  align-items: flex-start;
+  width: calc(100% - 20px);
 `;
 
 const ChartCard = styled.div<{ $flex?: number; $height?: number }>`
@@ -179,10 +180,12 @@ const ChartCard = styled.div<{ $flex?: number; $height?: number }>`
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   height: ${({ $height }) => ($height ? `${$height}px` : "auto")};
   display: flex;
+  flex-direction: column;
+  overflow: hidden;
 `;
 
 const ChartCardPadded = styled(ChartCard)`
-  padding: 0;
+  padding: 10px;
 `;
 
 const FilterBar = styled.div`
@@ -304,33 +307,44 @@ const ChartsSection: React.FC<{
   data: BillingData[];
   totalDesignVA: number;
   wipSumData: number;
-}> = ({ data, totalDesignVA, wipSumData }) => (
-  <>
-    <ChartsRow>
-      <ChartCard $flex={4} $height={300}>
-        <ProjectionVsTargetChart data={data} />
-      </ChartCard>
-      <ChartCard $flex={3} $height={300}>
-        <SegmentWiseBillingChart data={data} />
-      </ChartCard>
+}> = ({ data, totalDesignVA, wipSumData }) => {
+  const projectManagerChartData = useMemo(
+    () =>
+      data.filter((row) => {
+        const costCenter = String((row as any).costCenter ?? (row as any).costcenter ?? "").trim();
+        return costCenter !== "45240";
+      }),
+    [data]
+  );
+
+  return (
+    <>
+      <ChartsRow>
+        <ChartCard $flex={4} $height={300}>
+          <ProjectionVsTargetChart data={data} />
+        </ChartCard>
+        <ChartCard $flex={3} $height={300}>
+          <SegmentWiseBillingChart data={data} />
+        </ChartCard>
     </ChartsRow>
     <ChartsRowWide>
-      <ChartCard>
-        <ProjectManagerChart data={data} />
+      <ChartCard $flex={1} $height={560}>
+        <ProjectManagerChart data={projectManagerChartData} />
       </ChartCard>
-      <ChartCard>
+      <ChartCard $flex={1} $height={560}>
         <SalesManagerChart data={data} />
       </ChartCard>
-      <ChartCardPadded>
+      <ChartCardPadded $flex={1} $height={560}>
         <DesignVsWipChart
           totalDesignVA={totalDesignVA}
           totalWip={wipSumData}
-          targetAbs={53900000}
-        />
-      </ChartCardPadded>
-    </ChartsRowWide>
-  </>
-);
+            targetAbs={50000000}
+          />
+        </ChartCardPadded>
+      </ChartsRowWide>
+    </>
+  );
+};
 
 const FiltersSection: React.FC<{
   searchText: string;
@@ -533,6 +547,7 @@ const RptBillingPlanner: React.FC = () => {
     ).padStart(2, "0")}`;
     return { startdate: start, enddate: end };
   }, [month, year]);
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
   const defaultVisibleColumns: GridColumnVisibilityModel = {
     jobNumber: true,
@@ -596,6 +611,27 @@ const RptBillingPlanner: React.FC = () => {
       )
     );
   }, [data, searchText]);
+  const rowsWithExpansion = useMemo(() => {
+  const newRows: any[] = [];
+
+  filteredData.forEach((row: BillingData) => {
+    newRows.push(row);
+
+    if (expandedRows.has(row.id)) {
+      const jobScopeValue = (row as any).jobScopes || "-";
+      const enquiryNoValue = (row as any).enquiryno || "-";
+      const poNumberValue = (row as any).poNumber || "-";
+      newRows.push({
+        id: `${row.id}-detail`,
+        isDetail: true,
+        parentId: row.id,
+        jobNumber: `TaskType : ${jobScopeValue} | EnquiryNo : ${enquiryNoValue} | PONumber : ${poNumberValue}`,
+      });
+    }
+  });
+
+  return newRows;
+}, [filteredData, expandedRows]);
 
   // ✅ Compute summary grouped by main categories (for pending invoices)
   const buildPendingSummary = (pendingData: BillingData[]) => {
@@ -684,7 +720,11 @@ const RptBillingPlanner: React.FC = () => {
       setSummary(buildSummaryFromData(data));
 
       const wipSum = data.reduce(
-        (acc, item) => acc + ((item as any).wipAmount || 0),
+        (acc, item) => {
+          const costCenter = String((item as any).costCenter ?? (item as any).costcenter ?? "").trim();
+          if (costCenter === "45240") return acc;
+          return acc + ((item as any).wipAmount || 0);
+        },
         0
       );
       setWipSumData(wipSum);
@@ -707,7 +747,49 @@ const RptBillingPlanner: React.FC = () => {
   }, [columnVisibilityModel]);
 
   const columns: GridColDef[] = useMemo(() => [
-    { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 400, },
+      {
+  field: "expand",
+  headerName: "",
+  width: 60,
+  renderCell: (params) => {
+    if (params.row.isDetail) return null;
+    const isExpanded = expandedRows.has(params.row.id);
+
+    return (
+      <Button
+        size="small"
+        sx={{ color: "#1a1a1a", fontWeight: 600, minWidth: "24px" }}
+        onClick={() => {
+          const newSet = new Set(expandedRows);
+          if (isExpanded) {
+            newSet.delete(params.row.id);
+          } else {
+            newSet.add(params.row.id);
+          }
+          setExpandedRows(newSet);
+        }}
+      >
+        {isExpanded ? "-" : "+"}
+      </Button>
+    );
+  },
+},
+    {
+      field: "jobNumber",
+      headerName: "Job Number",
+      flex: 1,
+      minWidth: 400,
+      colSpan: (params) => (params?.row?.isDetail ? 100 : 1),
+      renderCell: (params) => {
+        if (!params?.row?.isDetail) return params.value;
+        return (
+          <Box sx={{ fontSize: 13,fontWeight: 200, color: "black" }}>
+            {params.value}
+          </Box>
+        );
+      },
+    },
+  
     { field: "customer", headerName: "Customer", flex: 1, minWidth: 300 },
     { field: "startDate", headerName: "Start Date", flex: 1, minWidth: 110 },
     { field: "plannedEndDate", headerName: "Planned End Date", flex: 1, minWidth: 150 },
@@ -746,7 +828,7 @@ const RptBillingPlanner: React.FC = () => {
     { field: "projectmanagerid", headerName: "projectmanagerid", flex: 1, minWidth: 100 },
     { field: "realisedDate", headerName: "Realised Date", flex: 1, minWidth: 140 },
     { field: "ndaValidity", headerName: "NDA Validity", flex: 1, minWidth: 140 },
-  ], []);
+  ], [expandedRows]);
 
   const getRowClassName = (params: any): string => {
     const jobNo: string = params.row.jobNumber || "";
@@ -756,6 +838,7 @@ const RptBillingPlanner: React.FC = () => {
     const flagDate = new Date(dtStr);
     const key = `${jobNo}_${flagDate.getMonth() + 1}_${flagDate.getFullYear()}`;
 
+     if (params.row.isDetail) return "row-detail";
     // 🟥 Case 1 — PO not received
     if (poRcvd === "NO" || poRcvd === "") {
       //new logic
@@ -918,7 +1001,8 @@ const RptBillingPlanner: React.FC = () => {
 
         {hasResults && (
           <BillingGridSection
-            rows={filteredData}
+          //  rows={filteredData}
+          rows={rowsWithExpansion}
             columns={columns}
             columnVisibilityModel={columnVisibilityModel}
             onColumnVisibilityModelChange={handleColumnVisibilityModelChange}

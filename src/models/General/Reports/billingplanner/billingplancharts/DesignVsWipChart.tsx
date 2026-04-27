@@ -47,7 +47,7 @@ const DesignVsWipChart: React.FC<Props> = ({ totalDesignVA, totalWip, targetAbs 
         datalabels: {
           display: true,
           align: "top" as const,
-          formatter: () => `${(targetAbs / 10000000).toFixed(2)} Cr`,
+          formatter: () => `${Number((targetAbs / 10000000).toFixed(2))} Cr`,
           color: "brown",
           font: { weight: "bold" as const },
         },
@@ -57,6 +57,16 @@ const DesignVsWipChart: React.FC<Props> = ({ totalDesignVA, totalWip, targetAbs 
 
   const options: ChartOptions<"bar" | "line"> = {
     responsive: true,
+    maintainAspectRatio: false,
+    font: {
+      family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    },
+    layout: {
+      padding: {
+        top: 30,
+        bottom: 10,
+      },
+    },
     plugins: {
       legend: { display: false },
       title: {
@@ -64,7 +74,7 @@ const DesignVsWipChart: React.FC<Props> = ({ totalDesignVA, totalWip, targetAbs 
         text: "Design Target + VA Vs Achievement",
         color: "rgb(0,102,204)",
         font: { size: 16, weight: "bold" as const },
-        padding: 30,
+        padding: 20,
       },
       datalabels: { display: true },
     },
@@ -84,7 +94,9 @@ const DesignVsWipChart: React.FC<Props> = ({ totalDesignVA, totalWip, targetAbs 
   };
   return (
     <div style={{ width: "100%", height: "100%" }}>
-      <Chart type="bar" data={data} options={options} plugins={[ChartDataLabels]} />
+      <div style={{ width: "100%", height: "400px", maxHeight: "100%", margin: "0 auto" }}>
+        <Chart type="bar" data={data} options={options} plugins={[ChartDataLabels]} />
+      </div>
     </div>
   );
 };

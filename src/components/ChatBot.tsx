@@ -10,7 +10,7 @@ export default function Chatbot() {
 
     setChat([...chat, 
       { role: "user", text: message },
-      { role: "bot", text: res.data }
+      { role: "bot", text: typeof res.data === "string" ? res.data : JSON.stringify(res.data) }
     ]);
 
     setMessage("");
