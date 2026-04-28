@@ -139,7 +139,8 @@ export const SalesManagerChart: React.FC<ChartProps> = ({ data }) => {
         font: { size: 10, weight: "bold" as const },
         anchor: "end" as const,
         align: "top" as const,
-        offset: 10,
+        // Keep a small vertical gap between Design and VA/DTP labels.
+        offset: (ctx: any) => (ctx.datasetIndex === 0 ? 10 : 20),
         clamp: true,
         clip: false,
         formatter: (value: number) =>
