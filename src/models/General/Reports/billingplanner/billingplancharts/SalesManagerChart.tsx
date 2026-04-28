@@ -89,7 +89,7 @@ export const SalesManagerChart: React.FC<ChartProps> = ({ data }) => {
         backgroundColor: "#6dabe8", // Dark Blue
       },
       {
-        label: "VA/NPI/DTP",
+        label: "VA/DTP",
         data: labels.map((l) => totals[l].VA_NPI),
         backgroundColor: "#73de96", // Light Blue
       },
@@ -139,7 +139,7 @@ export const SalesManagerChart: React.FC<ChartProps> = ({ data }) => {
         font: { size: 10, weight: "bold" as const },
         anchor: "end" as const,
         align: "top" as const,
-        offset: 2,
+        offset: 10,
         clamp: true,
         clip: false,
         formatter: (value: number) =>

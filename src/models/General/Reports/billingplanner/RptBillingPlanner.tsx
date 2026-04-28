@@ -722,7 +722,9 @@ const RptBillingPlanner: React.FC = () => {
       const wipSum = data.reduce(
         (acc, item) => {
           const costCenter = String((item as any).costCenter ?? (item as any).costcenter ?? "").trim();
+          const jobNumber = String((item as any).jobNumber ?? (item as any).jobnumber ?? "").trim();
           if (costCenter === "45240") return acc;
+          if (jobNumber.includes("_Analysis")) return acc;
           return acc + ((item as any).wipAmount || 0);
         },
         0

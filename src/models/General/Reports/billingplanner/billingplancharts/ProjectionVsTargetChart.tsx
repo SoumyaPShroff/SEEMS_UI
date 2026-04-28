@@ -45,7 +45,7 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
     "Onsite Domestic": "rgba(255, 165, 0, 0.8)",      // Orange
     Analysis: "rgba(255, 215, 0, 0.8)",               // Gold
     VA: "rgba(154, 205, 50, 0.8)",                    // YellowGreen
-    NPI: "rgba(32, 178, 170, 0.8)",                   // LightSeaGreen
+  //  NPI: "rgba(32, 178, 170, 0.8)",                   // LightSeaGreen
   };
 
   useEffect(() => {
@@ -65,12 +65,17 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
 
     // ✅ Target values in LAKHS
     const targetLakhs: Record<string, number> = {
-      "At Office Export": 60,
+      // "At Office Export": 60,
+      // "At Office Domestic": 60,
+      // "Onsite Domestic": 62,
+      // Analysis: 52,
+      // VA: 150,
+     // NPI: 155,
+       "At Office Export": 70,
       "At Office Domestic": 60,
-      "Onsite Domestic": 62,
-      Analysis: 52,
-      VA: 150,
-      NPI: 155,
+        "Onsite Domestic": 60,
+       Analysis: 60,
+        "VA/DTP": 250,
     };
 
     const categories = Object.keys(targetLakhs);
