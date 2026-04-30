@@ -303,48 +303,79 @@ const SummarySection: React.FC<{
   );
 };
 
+// const ChartsSection: React.FC<{
+//   data: BillingData[];
+//   totalDesignVA: number;
+//   wipSumData: number;
+// }> = ({ data, totalDesignVA, wipSumData }) => {
+//   const projectManagerChartData = useMemo(
+//     () =>
+//       data.filter((row) => {
+//         const costCenter = String((row as any).costCenter ?? (row as any).costcenter ?? "").trim();
+//         return costCenter !== "45240";
+//       }),
+//     [data]
+//   );
+
+//   return (
+//     <>
+//       <ChartsRow>
+//         <ChartCard $flex={4} $height={300}>
+//           <ProjectionVsTargetChart data={data} />
+//         </ChartCard>
+//         <ChartCard $flex={3} $height={300}>
+//           <SegmentWiseBillingChart data={data} />
+//         </ChartCard>
+//     </ChartsRow>
+//     <ChartsRowWide>
+//       <ChartCard $flex={1} $height={560}>
+//         <ProjectManagerChart data={projectManagerChartData} />
+//       </ChartCard>
+//       <ChartCard $flex={1} $height={560}>
+//         <SalesManagerChart data={data} />
+//       </ChartCard>
+//       <ChartCardPadded $flex={1} $height={560}>
+//         <DesignVsWipChart
+//           totalDesignVA={totalDesignVA}
+//           totalWip={wipSumData}
+//             targetAbs={50000000}
+//           />
+//         </ChartCardPadded>
+//       </ChartsRowWide>
+//     </>
+//   );
+// };
 const ChartsSection: React.FC<{
   data: BillingData[];
   totalDesignVA: number;
   wipSumData: number;
-}> = ({ data, totalDesignVA, wipSumData }) => {
-  const projectManagerChartData = useMemo(
-    () =>
-      data.filter((row) => {
-        const costCenter = String((row as any).costCenter ?? (row as any).costcenter ?? "").trim();
-        return costCenter !== "45240";
-      }),
-    [data]
-  );
-
-  return (
-    <>
-      <ChartsRow>
-        <ChartCard $flex={4} $height={300}>
-          <ProjectionVsTargetChart data={data} />
-        </ChartCard>
-        <ChartCard $flex={3} $height={300}>
-          <SegmentWiseBillingChart data={data} />
-        </ChartCard>
+}> = ({ data, totalDesignVA, wipSumData }) => (
+  <>
+    <ChartsRow>
+      <ChartCard $flex={1} $height={560}>
+        <ProjectionVsTargetChart data={data} />
+      </ChartCard>
+      <ChartCard $flex={1} $height={560}>
+        <SegmentWiseBillingChart data={data} />
+      </ChartCard>
     </ChartsRow>
     <ChartsRowWide>
-      <ChartCard $flex={1} $height={560}>
-        <ProjectManagerChart data={projectManagerChartData} />
+      <ChartCard>
+        <ProjectManagerChart data={data} />
       </ChartCard>
-      <ChartCard $flex={1} $height={560}>
+      <ChartCard>
         <SalesManagerChart data={data} />
       </ChartCard>
-      <ChartCardPadded $flex={1} $height={560}>
+      <ChartCardPadded>
         <DesignVsWipChart
           totalDesignVA={totalDesignVA}
           totalWip={wipSumData}
-            targetAbs={50000000}
-          />
-        </ChartCardPadded>
-      </ChartsRowWide>
-    </>
-  );
-};
+          targetAbs={50000000}
+        />
+      </ChartCardPadded>
+    </ChartsRowWide>
+  </>
+);
 
 const FiltersSection: React.FC<{
   searchText: string;
@@ -719,14 +750,19 @@ const RptBillingPlanner: React.FC = () => {
     if (data && data.length > 0) {
       setSummary(buildSummaryFromData(data));
 
-      const wipSum = data.reduce(
-        (acc, item) => {
-          const costCenter = String((item as any).costCenter ?? (item as any).costcenter ?? "").trim();
-          const jobNumber = String((item as any).jobNumber ?? (item as any).jobnumber ?? "").trim();
-          if (costCenter === "45240") return acc;
-          if (jobNumber.includes("_Analysis")) return acc;
-          return acc + ((item as any).wipAmount || 0);
-        },
+      //reverted sam costcenter and analysis jobs filter out from wipamount calcuation
+      // const wipSum = data.reduce(
+      //   (acc, item) => {
+      //     const costCenter = String((item as any).costCenter ?? (item as any).costcenter ?? "").trim();
+      //     const jobNumber = String((item as any).jobNumber ?? (item as any).jobnumber ?? "").trim();
+      //     if (costCenter === "45240") return acc;
+      //     if (jobNumber.includes("_Analysis")) return acc;
+      //     return acc + ((item as any).wipAmount || 0);
+      //   },
+      //   0
+      // );
+     const wipSum = data.reduce(
+        (acc, item) => acc + ((item as any).wipAmount || 0),
         0
       );
       setWipSumData(wipSum);
