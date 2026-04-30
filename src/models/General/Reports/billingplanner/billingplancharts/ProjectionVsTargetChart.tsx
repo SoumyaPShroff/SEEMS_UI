@@ -44,7 +44,7 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
     "At Office Domestic": "rgba(238, 130, 238, 0.8)", // Violet
     "Onsite Domestic": "rgba(255, 165, 0, 0.8)",      // Orange
     Analysis: "rgba(255, 215, 0, 0.8)",               // Gold
-    VA: "rgba(154, 205, 50, 0.8)",                    // YellowGreen
+    "VA/DTP": "rgba(154, 205, 50, 0.8)",                    // YellowGreen
   //  NPI: "rgba(32, 178, 170, 0.8)",                   // LightSeaGreen
   };
 
@@ -59,7 +59,11 @@ export const ProjectionVsTargetChart = ({ data }: { data: any[] }) => {
     data.forEach((r) => {
       const bucket = bucketFor(r.jobNumber, r.enqType, r.type);
       if (!bucket) return;
-      const key = normCat(bucket);
+      const normalizedBucket = normCat(bucket);
+      const key =
+        normalizedBucket === "va" || normalizedBucket === "npi"
+          ? normCat("VA/DTP")
+          : normalizedBucket;
       poSum[key] = (poSum[key] || 0) + parseFloat(r.poAmount || "0");
     });
 
