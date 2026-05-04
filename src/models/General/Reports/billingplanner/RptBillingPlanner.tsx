@@ -352,10 +352,10 @@ const ChartsSection: React.FC<{
 }> = ({ data, totalDesignVA, wipSumData }) => (
   <>
     <ChartsRow>
-      <ChartCard $flex={1}>
+      <ChartCard $flex={1} $height={400}>
         <ProjectionVsTargetChart data={data} />
       </ChartCard>
-      <ChartCard $flex={1}>
+      <ChartCard $flex={1} $height={400}>
         <SegmentWiseBillingChart data={data} />
       </ChartCard>
     </ChartsRow>
