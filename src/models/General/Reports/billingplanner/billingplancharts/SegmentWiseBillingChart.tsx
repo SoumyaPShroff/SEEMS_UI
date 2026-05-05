@@ -76,7 +76,7 @@ const SegmentWiseBillingChart: React.FC<SegmentWiseBillingChartProps> = ({ data 
   const targetLakhsMap: Record<string, number> = {
     Design: 190,
     VA: 250,
-    Analysis: 61,
+    Analysis: 60,
   };
   const targetLakhs = labels.map((l) => targetLakhsMap[l] ?? 0);
 
