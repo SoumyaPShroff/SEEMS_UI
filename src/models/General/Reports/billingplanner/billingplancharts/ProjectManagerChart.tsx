@@ -24,6 +24,8 @@ interface ProjectManagerBillingRow {
   reportingToPerson?: string | null;
   reportToPerson?: string | null;
   poAmount?: string | number | null;
+  costCenter?: string | number | null;
+  costcenter?: string | number | null;
   managerId?: string | number | null;
   managerid?: string | number | null;
 }
@@ -75,6 +77,9 @@ export const ProjectManagerChart: React.FC<ChartProps> = ({ data }) => {
     const totals: Record<string, ProjectManagerAggregate> = {};
 
     (data as ProjectManagerBillingRow[]).forEach((item) => {
+      const costCenter = String(item.costCenter ?? item.costcenter ?? "").trim();
+      if (costCenter === "45240") return;
+
       const id = normalizeId(item.projectmanagerid);
       if (!id) return;
 

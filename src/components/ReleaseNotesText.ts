@@ -5,15 +5,22 @@ export interface ReleaseNote {
 }
 
 const ReleaseNotesText: ReleaseNote[] = [
-   {
-
-    version: "v1.3.0",
-    date: "2026-03-16",
+  {
+    version: "v1.4.0",
+    date: "2026-05-04",
     changes: [
-      "Billing Planner - costcenter delegation implemented",
-      "Planned Hours - costcenter delegation implemented",
+      "Billing Planner - 1.Targets added for the graphs.Merged VA and NPI as VA/DTP.2.Segment wise graph completely modified.3. plus symbol provided beside jobnumber column to view additional details of job",
     ],
   },
+  //  {
+
+  //   version: "v1.3.0",
+  //   date: "2026-03-16",
+  //   changes: [
+  //     "Billing Planner - costcenter delegation implemented",
+  //     "Planned Hours - costcenter delegation implemented",
+  //   ],
+  // },
   // {
   //   version: "v1.2.0",
   //   date: "2026-03-13",
