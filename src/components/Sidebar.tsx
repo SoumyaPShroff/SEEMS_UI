@@ -185,7 +185,8 @@ const SidebarWrap = styled.div`
 ====================================================== */
 
 const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, setCollapsed, headerRight }) => {
-  const [userName, setUserName] = useState("");
+  //const [userName, setUserName] = useState("");
+  const [userName, setUserName] = useState(sessionStorage.getItem("SessionUserName") || ""); //prevents session user out of scope and retains the session user instead of default "User"
   const [hasNewReleases, setHasNewReleases] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showReleaseNotes, setShowReleaseNotes] = useState(false);
@@ -193,7 +194,8 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, 
   const navigate = useNavigate();
   const location = useLocation();
   const menu = useSideBarData();
-  const isMobile = window.innerWidth < 768;
+  //const isMobile = window.innerWidth < 768;
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);//Because rerenders may behave inconsistently.
   const releasePopoverRef = useRef<HTMLDivElement | null>(null);
   const headerRightPopoverRef = useRef<HTMLDivElement | null>(null);
 
@@ -221,20 +223,100 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, 
     navigate("/Login", { replace: true });
   };
 
+  //just to capture console for any debug
+  useEffect(() => {
+
+  console.log("======= DEBUG =======");
+
+  console.log(
+    "Prop sessionUserID:",
+    sessionUserID
+  );
+
+  console.log(
+    "Stored SessionUserID:",
+    sessionStorage.getItem("SessionUserID")
+  );
+
+  console.log(
+    "Stored SessionUserName:",
+    sessionStorage.getItem("SessionUserName")
+  );
+
+  console.log(
+    "Current userName state:",
+    userName
+  );
+
+}, [sessionUserID, userName]);
+
+useEffect(() => {
+
+  const handleResize = () => {
+    setIsMobile(window.innerWidth < 768);
+  };
+
+  window.addEventListener(
+    "resize",
+    handleResize
+  );
+
+  return () =>
+    window.removeEventListener(
+      "resize",
+      handleResize
+    );
+
+}, []);
+
   /* ---------- Fetch Username ---------- */
   useEffect(() => {
+      // Restore immediately from sessionStorage
+  const storedName =
+    sessionStorage.getItem("SessionUserName");
+
+  if (storedName) {
+    setUserName(storedName);
+  }
     const fetchUserName = async () => {
       try {
         const res = await axios.get<string>(
           `${baseUrl}/UserName/${sessionUserID}`
         );
-        setUserName(res.data || "");
+       // setUserName(res.data || "");
+       if (res.data?.trim()) {
+
+        setUserName(res.data);
+
+        // Keep storage updated
+        sessionStorage.setItem(
+          "SessionUserName",
+          res.data
+        );
+      }
       } catch (err) {
         console.error(err);
+         // fallback to storage
+      const backupName =
+        sessionStorage.getItem(
+          "SessionUserName"
+        );
+      // fallback to storage
+      if (backupName) {
+        setUserName(backupName);
       }
+    }
     };
 
-    if (sessionUserID) fetchUserName();
+    //if (sessionUserID) fetchUserName();
+    const currentUserId = sessionUserID || sessionStorage.getItem("SessionUserID");
+
+    if (currentUserId) {
+      fetchUserName();
+    } else {
+      setUserName("User");
+    }
+  
   }, [sessionUserID]);
 
   /* ---------- Find Active Item for Header Star ---------- */
