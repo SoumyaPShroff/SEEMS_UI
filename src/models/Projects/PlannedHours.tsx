@@ -106,7 +106,7 @@ const GRID_COLUMNS: EditableGridColumn<PlannedHoursRow>[] = [
     editorType: "textcontrol",
     inputType: "number",
     cellClassName: (params) =>
-      Number(params.value) > Number(params.row.balanceHrs)
+      false
         ? "invalid-cell editable-grid-cell"
         : "editable-grid-cell",
   },
@@ -234,33 +234,33 @@ export default function PlannedHours() {
     void loadData();
   }, [filters.month, filters.year, filters.managerCostCenter]);
 
-  const handleRowsChange = useCallback((nextRows: PlannedHoursRow[]) => {
-    const sanitizedRows = nextRows.map((row) => ({
-      ...row,
-      remarks: (row.remarks ?? "").replace(REMARKS_ALLOWED_CHARS_REGEX, ""),
-    }));
+  // const handleRowsChange = useCallback((nextRows: PlannedHoursRow[]) => {
+  //   const sanitizedRows = nextRows.map((row) => ({
+  //     ...row,
+  //     remarks: (row.remarks ?? "").replace(REMARKS_ALLOWED_CHARS_REGEX, ""),
+  //   }));
 
-    const nextInvalidRow = nextRows.find(
-      (row) => toNumber(row.monthlyHrs) > toNumber(row.balanceHrs)
-    );
+  //   const nextInvalidRow = nextRows.find(
+  //     (row) => toNumber(row.monthlyHrs) > toNumber(row.balanceHrs)
+  //   );
 
-    if (!nextInvalidRow) {
-      lastInvalidToastKeyRef.current = "";
-      setRows(sanitizedRows);
-      return;
-    }
+  //   if (!nextInvalidRow) {
+  //     lastInvalidToastKeyRef.current = "";
+  //     setRows(sanitizedRows);
+  //     return;
+  //   }
 
-    const toastKey = `${nextInvalidRow.jobNumber}|${toNumber(nextInvalidRow.monthlyHrs)}|${toNumber(nextInvalidRow.balanceHrs)}`;
-    if (lastInvalidToastKeyRef.current !== toastKey) {
-      toast.error(
-        `Planned hours (${toNumber(nextInvalidRow.monthlyHrs)}) cannot exceed balance hours (${toNumber(nextInvalidRow.balanceHrs)}) for ${nextInvalidRow.jobNumber}.`,
-        { toastId: toastKey }
-      );
-      lastInvalidToastKeyRef.current = toastKey;
-    }
+  //   const toastKey = `${nextInvalidRow.jobNumber}|${toNumber(nextInvalidRow.monthlyHrs)}|${toNumber(nextInvalidRow.balanceHrs)}`;
+  //   if (lastInvalidToastKeyRef.current !== toastKey) {
+  //     toast.error(
+  //       `Planned hours (${toNumber(nextInvalidRow.monthlyHrs)}) cannot exceed balance hours (${toNumber(nextInvalidRow.balanceHrs)}) for ${nextInvalidRow.jobNumber}.`,
+  //       { toastId: toastKey }
+  //     );
+  //     lastInvalidToastKeyRef.current = toastKey;
+  //   }
 
-    setRows(sanitizedRows);
-  }, []);
+  //   setRows(sanitizedRows);
+  // }, []);
 
   const handleValidateCellEdit = useCallback(
     ({ row, field, value }: { row: PlannedHoursRow; field: string; value: unknown }) => {
@@ -312,7 +312,7 @@ export default function PlannedHours() {
       actions={
         <SaveButton
           onClick={handleUpdate}
-          disabled={isSaving || rows.length === 0 || hasInvalidPlannedHours || hasCellValidationError}
+          // disabled={isSaving || rows.length === 0 || hasInvalidPlannedHours || hasCellValidationError}
         >
           <FaSave style={{ marginRight: "8px" }} />
           {isSaving ? "Updating..." : "Update"}
@@ -352,7 +352,7 @@ export default function PlannedHours() {
           <EditableGrid
             rows={rows}
             columns={GRID_COLUMNS}
-            onRowsChange={(nextRows) => handleRowsChange(nextRows as PlannedHoursRow[])}
+           // onRowsChange={(nextRows) => handleRowsChange(nextRows as PlannedHoursRow[])}
             getRowId={(row) => row.id || row.jobNumber}
             onValidateCellEdit={handleValidateCellEdit}
 

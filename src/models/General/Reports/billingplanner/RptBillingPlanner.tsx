@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Box, Button, CircularProgress } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import { useBillingData } from './billplanhooks/useBillingData';
 import { ProjectionVsTargetChart } from "./billingplancharts/ProjectionVsTargetChart";
 import { dataGridSx } from "./BillPlanDataGridStyles";
@@ -225,6 +226,12 @@ const PendingSection = styled.div`
   text-align: left;
   align-items: center;
   margin-top: 30px;
+`;
+
+const GridTopRightLink = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 20px 8px 20px;
 `;
 
 const SummarySection: React.FC<{
@@ -555,6 +562,7 @@ const YEARS = Array.from({ length: 12 }, (_, i) => {
 });
 
 const RptBillingPlanner: React.FC = () => {
+  const navigate = useNavigate();
   const { data, loading, fetchBillingData } = useBillingData();
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
   const { selectedManager, selectedValue, managerOptions,
@@ -570,6 +578,7 @@ const RptBillingPlanner: React.FC = () => {
   const [pendingSummary, setPendingSummary] = useState<SummaryResult | null>(null);
   const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
   const [year, setYear] = useState<number>(new Date().getFullYear());
+  const [hasCompleteRights, setHasCompleteRights] = useState(false);
   const { startdate, enddate } = useMemo(() => {
     const start = `${year}-${String(month).padStart(2, "0")}-01`;
     const endDateObj = new Date(year, month, 0);
@@ -579,6 +588,24 @@ const RptBillingPlanner: React.FC = () => {
     return { startdate: start, enddate: end };
   }, [month, year]);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    const checkCompleteRights = async () => {
+      try {
+        const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
+        const userRole = userRoleRes.data;
+        const roleCheck = await axios.get<boolean>(
+          `${baseUrl}/UserRoleInternalRights/${userRole}/billingplanner`
+        );
+        setHasCompleteRights(roleCheck.data === true);
+      } catch (error) {
+        console.error("Error checking billing planner rights:", error);
+        setHasCompleteRights(false);
+      }
+    };
+
+    checkCompleteRights();
+  }, [loginId]);
 
   const defaultVisibleColumns: GridColumnVisibilityModel = {
     jobNumber: true,
@@ -1007,6 +1034,20 @@ const RptBillingPlanner: React.FC = () => {
           Generate
         </Button>
       </DateBar>
+      {hasCompleteRights && (
+        <GridTopRightLink>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate("/Home/PreviousBillingDataReport");
+            }}
+            style={{ color: "#66b3ff", fontWeight: 700, textDecoration: "underline" }}
+          >
+            Previous Billing Data
+          </a>
+        </GridTopRightLink>
+      )}
 
       {/* ✅ Loading Spinner */}
       {loadingData && (
@@ -1038,6 +1079,7 @@ const RptBillingPlanner: React.FC = () => {
         )}
 
         {hasResults && (
+          <>
           <BillingGridSection
           //  rows={filteredData}
           rows={rowsWithExpansion}
@@ -1047,6 +1089,7 @@ const RptBillingPlanner: React.FC = () => {
             getRowClassName={getRowClassName}
             loading={loading}
           />
+          </>
         )}
 
         {hasPendingInvoices && (

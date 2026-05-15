@@ -9,6 +9,7 @@ import ForgotPassword from './ForgotPassword';
 import Blank from './models/Blank';
 import Support from "./models/Support";
 import RptBillingPlanner from './models/General/Reports/billingplanner/RptBillingPlanner';
+import PreviousBillingDataReport from './models/General/Reports/billingplanner/PreviousBillingDataReport';
 import SalesDashboard from './models/Sales/SalesDashboard';
 import ViewAllEnquiries from './models/Sales/ViewAllEnquiries';
 import AddEnquiry from "./models/Sales/AddEnquiry";
@@ -66,6 +67,7 @@ const App: React.FC = () => {
           <Route index element={<HomeDashboard/>} />
           {/* <Route index element={<Home />} /> */}
           <Route path="RptBillingPlanner" element={<RptBillingPlanner />} />
+          <Route path="PreviousBillingDataReport" element={<PreviousBillingDataReport />} />
           <Route path="SalesDashboard" element={<SalesDashboard />} />
           <Route path="ViewAllEnquiries" element={<ViewAllEnquiries />} />
           <Route path="AddEnquiry" element={<AddEnquiry />} />
