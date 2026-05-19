@@ -22,18 +22,19 @@ interface PreviousBillingDataRow extends PreviousBillingDataDto {
 const PreviousBillingDataReport = () => {
   const [rows, setRows] = useState<PreviousBillingDataRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const loginId = sessionStorage.getItem("SessionUserID") || "guest";
 
   const columns: GridColDef<PreviousBillingDataRow>[] = useMemo(
     () => [
       { field: "jobnumber", headerName: "Job Number",  flex: 1 , minWidth: 300 },
-      { field: "hourlyrate", headerName: "Hourly Rate" , flex: 1 , minWidth: 100  },
-      { field: "bilPrevDayHrs", headerName: "Bil PrevDay Hrs", flex: 1, minWidth: 180 },
-      { field: "wipamount", headerName: "wipamount", flex: 1 },
-      { field: "costcenter", headerName: "costcenter", flex: 1 },
+      { field: "hourlyrate", headerName: "Hourly Rate" , flex: 1   },
+      { field: "bilPrevDayHrs", headerName: "Bil PrevDay Hrs", flex: 1 , minWidth: 180 },
+      { field: "wipamount", headerName: "WipAmount", flex: 1 },
+      { field: "costcenter", headerName: "Costcenter", flex: 1 },
           { field: "name", headerName: "Name", flex: 1 },
       {
         field: "considered_working_day",
-        headerName: "Considered Working Day",
+        headerName: "Working Day",
         flex: 1,
       },
     ],
@@ -43,8 +44,33 @@ const PreviousBillingDataReport = () => {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get<PreviousBillingDataDto[]>(`${baseUrl}/api/Job/PreviousBillingData`);
-      const mapped = (response.data || []).map((item, index) => ({
+      const [userRoleRes, employeeRes, response] = await Promise.all([
+        axios.get(`${baseUrl}/UserDesignation/${loginId}`),
+        axios.get(`${baseUrl}/EmployeeDetails/${loginId}`),
+        axios.get<PreviousBillingDataDto[]>(`${baseUrl}/api/Job/PreviousBillingData`),
+      ]);
+
+      const userRole = userRoleRes.data;
+      const roleCheck = await axios.get<boolean>(
+        `${baseUrl}/UserRoleInternalRights/${userRole}/billingplanner`
+      );
+      const hasCompleteRights = roleCheck.data === true;
+      const employee = Array.isArray(employeeRes.data) ? employeeRes.data[0] : employeeRes.data;
+      const loggedInCostCenter = String(
+        employee?.costcenter ?? employee?.costCenter ?? employee?.Costcenter ?? employee?.CostCenter ?? ""
+      ).trim();
+
+      const allRows = response.data || [];
+      const filtered = hasCompleteRights
+        ? allRows
+        : allRows.filter((item: any) => {
+            const rowCostCenter = String(
+              item?.costcenter ?? item?.costCenter ?? item?.Costcenter ?? item?.CostCenter ?? ""
+            ).trim();
+            return loggedInCostCenter !== "" && rowCostCenter === loggedInCostCenter;
+          });
+
+      const mapped = filtered.map((item, index) => ({
         id: index + 1,
         ...item,
       }));
@@ -55,7 +81,7 @@ const PreviousBillingDataReport = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loginId]);
 
   useEffect(() => {
     fetchData();

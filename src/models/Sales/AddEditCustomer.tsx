@@ -30,7 +30,7 @@ const emptyForm: CustomerForm = {
 };
 
 const fallbackCustomerTypes: Option[] = [
-  { value: "Govt", label: "Domestic" },
+  { value: "Govt", label: "Govt" },
   { value: "MNC", label: "MNC" },
   { value: "Export", label: "Export" },
 ];

@@ -43,7 +43,7 @@ interface LookupData {
    Locations: Location[];
    Contacts: Contact[];
    States: State[];
-   PCBTools: string[];
+   AllTools: string[];
 }
 
 interface EnquiryForm {
@@ -160,7 +160,7 @@ const OffshoreEnquiry: React.FC = () => {
       SalesManagers: [],
       designMngrs: [],
       salesnpiusers: [],
-      PCBTools: [],
+      AllTools: [],
       tool: [],
       Locations: [],
       Contacts: [],
@@ -193,12 +193,12 @@ const OffshoreEnquiry: React.FC = () => {
                fetch(`${baseUrl}/SalesManagers`),
                fetch(`${baseUrl}/DesignManagers`),
                fetch(`${baseUrl}/SalesNpiUsers`),
-               fetch(`${baseUrl}/api/Job/PCBTools`),
+               fetch(`${baseUrl}/api/Job/AllTools`),
                fetch(`${baseUrl}/api/Sales/customerlocations`),
                fetch(`${baseUrl}/api/Sales/customercontacts`),
                fetch(`${baseUrl}/api/Sales/States`),
             ]);
-            const [customers, AllActiveEmployees, AnalysisManagers, SalesManagers, designMngrs, salesnpiusers, PCBTools, Locations, Contacts, States] =
+            const [customers, AllActiveEmployees, AnalysisManagers, SalesManagers, designMngrs, salesnpiusers, AllTools, Locations, Contacts, States] =
                await Promise.all([
                   custRes.json(),
                   empRes.json(),
@@ -218,7 +218,7 @@ const OffshoreEnquiry: React.FC = () => {
                SalesManagers,
                designMngrs,
                salesnpiusers,
-               PCBTools,
+               AllTools,
                Locations,
                Contacts,
                States,
@@ -1088,7 +1088,7 @@ const OffshoreEnquiry: React.FC = () => {
                            >
                               {/* ROW 1 */}
                               <Box>
-                                 <Label text="Board Ref" bold />
+                                 <Label text="Project Reference" bold />
                                  <TextControl
                                     name="jobnames"
                                     value={form.jobnames || ""}
@@ -1099,10 +1099,10 @@ const OffshoreEnquiry: React.FC = () => {
                               <Box sx={{ mt: 2.7 }}>
                                  <SelectControl
                                     name="tool"
-                                    label="PCB Tool"
+                                    label="Tool"
                                     value={form.tool || ""}
                                     onChange={handleChange}
-                                    options={lookups.PCBTools.map((tool: string) => ({
+                                    options={lookups.AllTools.map((tool: string) => ({
                                        value: tool,
                                        label: tool,
                                     }))}

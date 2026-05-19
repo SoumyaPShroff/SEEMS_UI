@@ -132,7 +132,7 @@ const OnsiteEnquiry: React.FC = () => {
     Contacts: [],
     States: [],
     SalesManagers: [],
-    StageTools: [],
+    AllTools: [],
     HOPCTasks: [],
     HOPCManagers: [],
     AllActiveEmployees: [],
@@ -144,14 +144,14 @@ const OnsiteEnquiry: React.FC = () => {
       fetch(`${baseUrl}/api/Sales/States`).then(r => r.json()),
       fetch(`${baseUrl}/SalesManagers`).then(r => r.json()),
       fetch(`${baseUrl}/HOPCManagerList`).then(r => r.json()),
-      fetch(`${baseUrl}/StageTools`).then(r => r.json()),
+      fetch(`${baseUrl}/AllTools`).then(r => r.json()),
       fetch(`${baseUrl}/HOPCTasks`).then(r => r.json()),
       fetch(`${baseUrl}/api/Sales/customerlocations`).then(r => r.json()),
       fetch(`${baseUrl}/api/Sales/customercontacts`).then(r => r.json()),
       fetch(`${baseUrl}/AllActiveEmployees`).then(r => r.json()),
 
-    ]).then(([customers, States, SalesManagers, HOPCManagers, StageTools, HOPCTasks, Locations, Contacts, AllActiveEmployees]) => {
-      setLookups({ customers, States, SalesManagers, HOPCManagers, StageTools, HOPCTasks, Locations, Contacts, AllActiveEmployees });
+    ]).then(([customers, States, SalesManagers, HOPCManagers, AllTools, HOPCTasks, Locations, Contacts, AllActiveEmployees]) => {
+      setLookups({ customers, States, SalesManagers, HOPCManagers, AllTools, HOPCTasks, Locations, Contacts, AllActiveEmployees });
     });
   }, []);
 
@@ -693,9 +693,9 @@ const OnsiteEnquiry: React.FC = () => {
                   <Typography sx={{ fontSize: 13, fontWeight: 700, color: "#214b95", mb: 1.1 }}>ENQUIRY DETAILS</Typography>
                   <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" }, columnGap: 1.5, rowGap: 1.5, alignItems: "start" }}>
                     <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" }, columnGap: 1.5, rowGap: 1.8 }}>
-                      <Box sx={{ width: "100%" }}>
+                      {/* <Box sx={{ width: "100%" }}>
                         <TextField
-                          label="Board Ref"
+                          label="Project Reference"
                           name="jobnames"
                           value={form.jobnames || ""}
                           onChange={handleChange}
@@ -704,7 +704,7 @@ const OnsiteEnquiry: React.FC = () => {
                           InputLabelProps={{ shrink: true }}
                           sx={{ "& .MuiInputLabel-root": { fontWeight: 700 } }}
                         />
-                      </Box>
+                      </Box> */}
                       <Box sx={{ width: "100%" }}>
                         <SelectControl
                           name="toolId"
@@ -712,7 +712,7 @@ const OnsiteEnquiry: React.FC = () => {
                           value={form.toolId || ""}
                           onChange={(e) => {
                             handleChange(e);
-                            const selectedOption = lookups.StageTools.find(
+                            const selectedOption = lookups.AllTools.find(
                               (t: any) => t.idno.toString() === e.target.value
                             );
                             setForm((prev) => ({
@@ -720,14 +720,14 @@ const OnsiteEnquiry: React.FC = () => {
                               tool: selectedOption?.tools || ""
                             }));
                           }}
-                          options={lookups.StageTools.map((t: any) => ({
+                          options={lookups.AllTools.map((t: any) => ({
                             value: t.idno.toString(),
                             label: t.tools,
                           }))}
                           required
                         />
                       </Box>
-                      <Box sx={{ width: "100%" }}>
+                      {/* <Box sx={{ width: "100%" }}>
                         <SelectControl
                           name="taskId"
                           label="Task"
@@ -739,7 +739,7 @@ const OnsiteEnquiry: React.FC = () => {
                           }))}
                           required
                         />
-                      </Box>
+                      </Box> */}
                       <Box sx={{ width: "100%" }}>
                         <SelectControl
                           name="tm"

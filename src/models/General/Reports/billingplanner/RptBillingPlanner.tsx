@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Box, Button, CircularProgress } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useBillingData } from './billplanhooks/useBillingData';
@@ -579,6 +579,8 @@ const RptBillingPlanner: React.FC = () => {
   const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [hasCompleteRights, setHasCompleteRights] = useState(false);
+  const [isSellingFunctional, setIsSellingFunctional] = useState(false);
+  const hasAppliedFunctionalDefaultRef = useRef(false);
   const { startdate, enddate } = useMemo(() => {
     const start = `${year}-${String(month).padStart(2, "0")}-01`;
     const endDateObj = new Date(year, month, 0);
@@ -605,6 +607,23 @@ const RptBillingPlanner: React.FC = () => {
     };
 
     checkCompleteRights();
+  }, [loginId]);
+
+  useEffect(() => {
+    const loadEmployeeFunctional = async () => {
+      try {
+        const { data } = await axios.get(`${baseUrl}/EmployeeDetails/${loginId}`);
+        const employee = Array.isArray(data) ? data[0] : data;
+        console.log("employee", employee);  
+        const functional = String(employee?.functional ?? "").trim();
+        setIsSellingFunctional(functional === "Selling");
+      } catch (error) {
+        console.error("Error loading employee functional details:", error);
+        setIsSellingFunctional(false);
+      }
+    };
+
+    loadEmployeeFunctional();
   }, [loginId]);
 
   const defaultVisibleColumns: GridColumnVisibilityModel = {
@@ -654,6 +673,38 @@ const RptBillingPlanner: React.FC = () => {
   };
 
   const [columnVisibilityModel, setColumnVisibilityModel] = useState(defaultVisibleColumns);
+
+  useEffect(() => {
+    if (!isSellingFunctional || hasAppliedFunctionalDefaultRef.current) return;
+    const sellingDefaults = Object.keys(defaultVisibleColumns).reduce<GridColumnVisibilityModel>(
+      (acc, key) => {
+        acc[key] = false;
+        return acc;
+      },
+      {}
+    );
+
+    setColumnVisibilityModel({
+      ...sellingDefaults,
+      jobNumber: true,
+      customer: true,
+      enqType: true,
+      enquiryno: true,
+      govt_tender: true,
+      estimatedHours: true,
+      poNumber: true,
+      hourlyRate: true,
+      poRcvd: true,
+      poAmount: true,
+      billingType: true,
+      flagRaisedOn: true,
+      costCenter: true,
+      projectManager: true,
+      salesManager: true,
+    });
+    hasAppliedFunctionalDefaultRef.current = true;
+  }, [isSellingFunctional]);
+
   const handleColumnVisibilityModelChange = useCallback(
     (model: GridColumnVisibilityModel) => {
       setColumnVisibilityModel((prev) => ({ ...prev, ...model }));
@@ -1034,20 +1085,18 @@ const RptBillingPlanner: React.FC = () => {
           Generate
         </Button>
       </DateBar>
-      {hasCompleteRights && (
-        <GridTopRightLink>
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate("/Home/PreviousBillingDataReport");
-            }}
-            style={{ color: "#66b3ff", fontWeight: 700, textDecoration: "underline" }}
-          >
-            Previous Billing Data
-          </a>
-        </GridTopRightLink>
-      )}
+      <GridTopRightLink>
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            navigate("/Home/PreviousBillingDataReport");
+          }}
+          style={{ color: "#66b3ff", fontWeight: 700, textDecoration: "underline" }}
+        >
+          Previous Billing Data
+        </a>
+      </GridTopRightLink>
 
       {/* ✅ Loading Spinner */}
       {loadingData && (

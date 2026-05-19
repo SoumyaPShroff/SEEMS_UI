@@ -15,6 +15,7 @@ const EnquiryStatus = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const enquiryNo = searchParams.get("enquiryno");
+  const fromStatus = searchParams.get("fromStatus");
   const [statusOptions, setStatusOptions] = useState<string[]>([]);
   const [status, setStatus] = useState("");
   const [billingDate, setBillingDate] = useState("");
@@ -30,6 +31,7 @@ const EnquiryStatus = () => {
     "Open",
     "Tentative",
     "Confirmed",
+    "Realised",        // added to allow user to move to direct Realisation from Open
    // "Realised",   'since Realised is now a reason for statusremarks in payload, it should not be in the default list'
     "Hold",
     "Cancelled",
@@ -170,7 +172,8 @@ const EnquiryStatus = () => {
     }
 
     toast.success("Enquiry status updated.");
-    navigate("/Home/ViewAllEnquiries");
+    const returnStatus = (fromStatus || "").trim() || status;
+    navigate(`/Home/ViewAllEnquiries?status=${encodeURIComponent(returnStatus)}`);
   };
 
   return (

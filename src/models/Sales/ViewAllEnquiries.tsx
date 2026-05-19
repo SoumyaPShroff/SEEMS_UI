@@ -1,23 +1,44 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Box, Typography, CircularProgress, Button, Paper } from "@mui/material";
 import type { GridColDef } from '@mui/x-data-grid';
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { baseUrl } from "../../const/BaseUrl";
 import { exporttoexcel } from "../../components/utils/exporttoexcel";
 import ExportButton from "../../components/resusablecontrols/ExportButton";
 import CustomDataGrid2 from "../../components/resusablecontrols/CustomDataGrid2";
 import SelectControl from "../../components/resusablecontrols/SelectControl";
 
+const allowedStatuses = [
+  "Open",
+  "Confirmed",
+  "Tentative",
+  "Hold",
+  "Realised",
+  "Cancelled",
+  "Rejected By Customer",
+  "Rejected By Sienna",
+  "All",
+];
+
 const ViewAllEnquiries = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [status, setStatus] = useState("Open");
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const latestRequestRef = useRef(0);
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
   const loginUserName = sessionStorage.getItem("SessionUserName") || "guestName";
   const [hasSpecialRole, sethasSpecialRole] = useState(false);
+  useEffect(() => {
+    const statusFromQuery = (searchParams.get("status") || "").trim();
+    if (statusFromQuery && allowedStatuses.includes(statusFromQuery)) {
+      setStatus(statusFromQuery);
+      navigate("/Home/ViewAllEnquiries", { replace: true });
+    }
+  }, [searchParams, navigate]);
 
   //check for access to edit - own enquiry of sesion user
   const canEditRow = (row: any) => {
@@ -116,7 +137,9 @@ const ViewAllEnquiries = () => {
               e.preventDefault();
               if (!isDisabled) {
                 const enqNo = params.row.enquiryno;
-                navigate(`/Home/EnquiryStatus?enquiryno=${encodeURIComponent(enqNo)}`);
+                navigate(
+                  `/Home/EnquiryStatus?enquiryno=${encodeURIComponent(enqNo)}&fromStatus=${encodeURIComponent(status)}`
+                );
               }
             }}
           >
@@ -169,6 +192,7 @@ const ViewAllEnquiries = () => {
   ];
 
   const loadData = async () => {
+    const requestId = ++latestRequestRef.current;
     try {
       setLoading(true);
 
@@ -208,11 +232,15 @@ const ViewAllEnquiries = () => {
         id: row.Enquiryno || index + 1,
         ...row,
       }));
-      setRows(dataWithIds);
+      if (requestId === latestRequestRef.current) {
+        setRows(dataWithIds);
+      }
     } catch (error) {
       console.error("Error loading enquiries:", error);
     } finally {
-      setLoading(false);
+      if (requestId === latestRequestRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -311,6 +339,7 @@ const ViewAllEnquiries = () => {
                 { value: "Open", label: "Open" },
                 { value: "Confirmed", label: "Confirmed" },
                 { value: "Tentative", label: "Tentative" },
+                { value: "Hold", label: "Hold" },
                 { value: "Realised", label: "Realised" },
                 { value: "Cancelled", label: "Cancelled" },
                 { value: "Rejected By Customer", label: "Rejected By Customer" },
@@ -380,18 +409,30 @@ const ViewAllEnquiries = () => {
             title="View All Enquiries"
             loading={loading}
             gridHeight={800}
-            searchableFields={[
-              "enquiryno",
-              "customer",
-              "createdon",
-              "endDate",
+            // searchableFields={[
+            //   "enquiryno",
+            //   "customer",
+            //   "createdon",
+            //   "endDate",
+            //   "salesResponsibility",
+            //   "status",
+            //   "completeResponsibility",
+            //   "enquiryType",
+            //   "boardRef",
+            //   "referenceBy",
+            // ]}
+           searchableFields={[
+            "enquiryno",
+            //   "customer",
+            //   "createdon",
+            //   "endDate",
               "salesResponsibility",
-              "status",
-              "completeResponsibility",
-              "enquiryType",
-              "boardRef",
-              "referenceBy",
-            ]}
+            //   "status",
+            //   "completeResponsibility",
+            //   "enquiryType",
+            //   "boardRef",
+            //   "referenceBy",
+             ]}
             placeholder="Search enquiries..."
           />
         </Box>
