@@ -530,9 +530,9 @@ const OnsiteEnquiry: React.FC = () => {
       fd.append("uploadedfilename", file.name);
     }
     // ✅ NOW LOG SAFELY
-    console.log("✅ FINAL FORMDATA PAYLOAD ↓↓↓");
+   // console.log("✅ FINAL FORMDATA PAYLOAD ↓↓↓");
     for (let pair of fd.entries()) {
-      console.log(pair[0], ":", pair[1]);
+    //  console.log(pair[0], ":", pair[1]);
     }
 
     const url = isEditMode ? `${baseUrl}/api/Sales/EditEnquiryData` : `${baseUrl}/api/Sales/AddEnquiryData`;

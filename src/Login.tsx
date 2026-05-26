@@ -96,6 +96,7 @@ const LoginPage: React.FC<ILogin> = ({ setUserId }) => {
           setUserId(result.loginId);
           sessionStorage.setItem('SessionUserID', result.loginId);
           setSessionUserID(result.loginId);
+          console.log('BaseUrl' , baseUrl);
           try {
             const favouritesRes = await getFavourites(result.loginId);
             writeFavouritesCache(result.loginId, favouritesRes.data || []);

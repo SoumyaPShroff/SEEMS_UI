@@ -164,7 +164,7 @@ async function savePlannedHours(rows: PlannedHoursRow[], filters: Filters) {
       remarks: (row.remarks ?? "").replace(REMARKS_ALLOWED_CHARS_REGEX, ""),
     }));
 
-  console.log("PAYLOAD", payload);
+ // console.log("PAYLOAD", payload);
 
   await axios.post(`${baseUrl}/api/Job/UpdatePlannedHours`, payload);
 }

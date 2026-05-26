@@ -35,6 +35,10 @@ import InvoiceRegister from './models/Sales/InvoiceRegister';
 import PageAccessManagement from './components/PageAccessManagement';
 import AddEditSEEMSRequest from './models/General/AddEditSEEMSRequest';
 import ViewSEEMSRequests from './models/General/ViewSEEMSRequests';
+import AddEditCustContLocReg from './models/Sales/AddEditCustContLocReg';
+import EstimationDocUpload from './models/Sales/EstimationDocUpload';
+import POJobAllocation from './models/Sales/POJobAllocation';
+
 
 const App: React.FC = () => {
   const [userId, setUserId] = useState(sessionStorage.getItem('SessionUserID'));
@@ -92,6 +96,9 @@ const App: React.FC = () => {
           <Route path="PageAccessManagement" element={<PageAccessManagement />} />
           <Route path="AddEditSEEMSRequest" element={<AddEditSEEMSRequest />} />
           <Route path="ViewSEEMSRequests" element={<ViewSEEMSRequests />} />
+          <Route path="AddEditCustContLocReg" element={<AddEditCustContLocReg />} />
+          <Route path="EstimationDocUpload" element={<EstimationDocUpload />} />
+          <Route path="POJobAllocation" element={<POJobAllocation />} />
         </Route>
         {/* Password + Blank */}
         <Route path="/ResetPassword" element={<ResetPassword />} />

@@ -51,7 +51,7 @@ const ViewAllEnquiries = () => {
     { field: "enquiryno", headerName: "Enquiry No", flex: 1, minWidth: 150 },
     { field: "customer", headerName: "Customer", flex: 1, minWidth: 250 },
     { field: "createdon", headerName: "Createdon", flex: 1, minWidth: 150 },
-    { field: "endDate", headerName: "EndDate", flex: 1, minWidth: 150 },
+    { field: "endDate", headerName: "EndDate", flex: 1, minWidth: 130 },
     { field: "salesResponsibility", headerName: "Sales Resp", flex: 1, minWidth: 150 },
 
     // 🟢 Add link columns like in your screenshot
@@ -59,7 +59,7 @@ const ViewAllEnquiries = () => {
       field: "editEnquiry",
       headerName: "Edit Enquiry",
       flex: 1,
-      minWidth: 140,
+      minWidth: 120,
       sortable: false,
       renderCell: (params) => {
         const enabled = canEditRow(params.row);
@@ -87,7 +87,7 @@ const ViewAllEnquiries = () => {
       field: "addQuote",
       headerName: "Add Quote",
       flex: 1,
-      minWidth: 140,
+      minWidth: 120,
       sortable: false,
       renderCell: (params) => {
         const enabled = canEditRow(params.row);
@@ -115,7 +115,7 @@ const ViewAllEnquiries = () => {
       field: "status",
       headerName: "Status",
       flex: 1,
-      minWidth: 160,
+      minWidth: 110,
       sortable: false,
       renderCell: (params) => {
         const statusValue = params.value?.toString() || "";
@@ -176,7 +176,7 @@ const ViewAllEnquiries = () => {
             onClick={(e) => {
               e.preventDefault();
               if (!isClickable) return; // ✅ Block click when disabled
-              // handleAddEstimate(params.row);
+               handleAddEstimate(params.row);
             }}
           >
             Add Estimate
@@ -277,9 +277,20 @@ const ViewAllEnquiries = () => {
     }
   };
 
-    const handleQuote = (row: any) => {
+  const handleQuote = (row: any) => {
     const enqNo = row.enquiryno;
     navigate(`/Home/AddQuotation/${enqNo}`);
+  };
+
+  const handleAddEstimate = (row: any) => {
+    const enqNo = row.enquiryno || row.Enquiryno;
+
+    if (!enqNo) {
+      toast.error("Enquiry number not found.");
+      return;
+    }
+
+    navigate(`/Home/EstimationDocUpload?enquiryno=${encodeURIComponent(enqNo)}`);
   };
 
   return (
@@ -288,7 +299,7 @@ const ViewAllEnquiries = () => {
         p: { xs: 1, md: 1.5 },
         mt: 15,
         width: "100%",
-        maxWidth: 1280,
+        maxWidth: 1350,
         mx: "auto",
         background: "radial-gradient(circle at top right, #ecf4ff 0%, #f7fbff 42%, #eef6ff 100%)",
         borderRadius: 2,
@@ -399,7 +410,7 @@ const ViewAllEnquiries = () => {
             border: "1px solid #d5e3f8",
             background: "linear-gradient(180deg, #f8fbff 0%, #f2f8ff 100%)",
             boxShadow: "0 14px 28px rgba(39, 95, 169, 0.08)",
-            maxWidth: 1240,
+            maxWidth: 1400,
             mx: "auto",
           }}
         >

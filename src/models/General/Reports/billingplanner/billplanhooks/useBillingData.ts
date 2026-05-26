@@ -20,8 +20,10 @@ export const useBillingData = () => {
       const res = await axios.get<any[]>(`${baseUrl}/api/Job/BillingPlanner`, { params });
       const rows = res.data.map((item: any, i: number) => ({ id: i + 1, ...item }));
       setData(rows);
+      return rows;
     } catch (err) {
       console.error("Error fetching billing data:", err);
+      return [];
     } finally {
       setLoading(false);
     }

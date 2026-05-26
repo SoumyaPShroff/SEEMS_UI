@@ -82,7 +82,7 @@ const currencyOptions = [
 ];
 
 const AddQuotation: React.FC = () => {
-    console.log("🔥 AddQuotation component mounted");
+   // console.log("🔥 AddQuotation component mounted");
     const { enquiryNo, quoteNo } = useParams();
     // Header fields
     const [customer, setCustomer] = useState("");
