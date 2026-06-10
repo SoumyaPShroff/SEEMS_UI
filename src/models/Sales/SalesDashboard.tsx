@@ -39,12 +39,12 @@ const SalesDashboard: React.FC = () => {
     const checkAccess = async () => {
       try {
         // Step 1: Get user role
-        const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
+        const userRoleRes = await axios.get(`${baseUrl}/api/Home/UserDesignation/${loginId}`);
         const userRole = userRoleRes.data;
 
         // Step 2: Verify internal rights
         const roleCheck = await axios.get<boolean>(
-          `${baseUrl}/UserRoleInternalRights/${userRole}/salesmgmtdashboard`
+          `${baseUrl}/api/Home/UserRoleInternalRights/${userRole}/salesmgmtdashboard`
         );
 
         // Step 3: If not authorized, redirect

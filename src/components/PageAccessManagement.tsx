@@ -112,10 +112,10 @@ const fetchAssignedByDesignation = async (desigId: string) => {
   if (!id) return [];
 
   try {
-    const byPath = await axios.get(`${baseUrl}/SideBarAccessMenus/${encodeURIComponent(id)}`);
+    const byPath = await axios.get(`${baseUrl}/api/Home/SideBarAccessMenus/${encodeURIComponent(id)}`);
     return byPath.data;
   } catch {
-    const byQuery = await axios.get(`${baseUrl}/SideBarAccessMenus`, {
+    const byQuery = await axios.get(`${baseUrl}/api/Home/SideBarAccessMenus`, {
       params: { designationId: id, designationid: id },
     });
     return byQuery.data;
@@ -192,8 +192,8 @@ const PageAccessManagement = () => {
       setLoading(true);
       try {
         const [usersRes, menusRes] = await Promise.all([
-          axios.get(`${baseUrl}/AllActiveEmployees`),
-          axios.get(`${baseUrl}/SEEMSAllMenuPages`),
+          axios.get(`${baseUrl}/api/Home/AllActiveEmployees`),
+          axios.get(`${baseUrl}/api/Home/SEEMSAllMenuPages`),
         ]);
 
         const userRows = Array.isArray(usersRes.data) ? usersRes.data : [];
@@ -266,7 +266,7 @@ const PageAccessManagement = () => {
     if (!title) return null;
 
     try {
-      const res = await axios.get(`${baseUrl}/RoleDesignID/${encodeURIComponent(title)}`);
+      const res = await axios.get(`${baseUrl}/api/Home/RoleDesignID/${encodeURIComponent(title)}`);
       const resolved = String(res.data ?? "");
       return resolved || null;
     } catch {
@@ -317,7 +317,7 @@ const PageAccessManagement = () => {
 
     try {
       await axios.post(
-        `${baseUrl}/UpdateUserPageAccessRights`,
+        `${baseUrl}/api/Home/UpdateUserPageAccessRights`,
         payload
       );
       

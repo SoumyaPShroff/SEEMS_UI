@@ -64,8 +64,8 @@ const Home: React.FC<HomeProps> = ({ userId, setUserId }) => {
 
     try {
       const [userNameRes, designationNameRes] = await Promise.all([
-        axios.get<string>(`${baseUrl}/UserName/${encodeURIComponent(newUserId)}`),
-        axios.get<string>(`${baseUrl}/UserDesignation/${encodeURIComponent(newUserId)}`),
+        axios.get<string>(`${baseUrl}/api/Home/UserName/${encodeURIComponent(newUserId)}`),
+        axios.get<string>(`${baseUrl}/api/Home/UserDesignation/${encodeURIComponent(newUserId)}`),
       ]);
 
       sessionStorage.setItem("SessionUserName", String(userNameRes.data ?? ""));
@@ -73,7 +73,7 @@ const Home: React.FC<HomeProps> = ({ userId, setUserId }) => {
       const designationName = String(designationNameRes.data ?? "").trim();
       if (designationName) {
         const designationIdRes = await axios.get<string>(
-          `${baseUrl}/RoleDesignID/${encodeURIComponent(designationName)}`
+          `${baseUrl}/api/Home/RoleDesignID/${encodeURIComponent(designationName)}`
         );
         sessionStorage.setItem("SessionDesigID", String(designationIdRes.data ?? ""));
       } else {
@@ -118,7 +118,7 @@ const Home: React.FC<HomeProps> = ({ userId, setUserId }) => {
     const resolveAdminAccess = async () => {
       try {
         const roleRes = await axios.get(
-          `${baseUrl}/UserDesignation/${encodeURIComponent(accessCheckUserId)}`
+          `${baseUrl}/api/Home/UserDesignation/${encodeURIComponent(accessCheckUserId)}`
         );
         const roleName = String(roleRes.data ?? "");
         if (!roleName) {
@@ -127,7 +127,7 @@ const Home: React.FC<HomeProps> = ({ userId, setUserId }) => {
         }
 
         const accessRes = await axios.get(
-           `${baseUrl}/UserRoleInternalRights/${roleName}/${encodeURIComponent("adminuser")}`);
+           `${baseUrl}/api/Home/UserRoleInternalRights/${roleName}/${encodeURIComponent("adminuser")}`);
         const raw = accessRes.data;
         const adminValue =
           typeof raw === "object" && raw != null
@@ -159,7 +159,7 @@ const Home: React.FC<HomeProps> = ({ userId, setUserId }) => {
       }
 
       try {
-        const res = await axios.get(`${baseUrl}/AllActiveEmployees`);
+        const res = await axios.get(`${baseUrl}/api/Home/AllActiveEmployees`);
         const rows = Array.isArray(res.data) ? res.data : [];
         const options: Option[] = rows
           .map((u: any) => {

@@ -281,7 +281,7 @@ useEffect(() => {
     const fetchUserName = async () => {
       try {
         const res = await axios.get<string>(
-          `${baseUrl}/UserName/${sessionUserID}`
+          `${baseUrl}/api/Home/UserName/${sessionUserID}`
         );
        // setUserName(res.data || "");
        if (res.data?.trim()) {

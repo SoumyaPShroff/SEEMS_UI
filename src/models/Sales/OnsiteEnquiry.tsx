@@ -142,13 +142,13 @@ const OnsiteEnquiry: React.FC = () => {
     Promise.all([
       fetch(`${baseUrl}/api/Sales/customers`).then(r => r.json()),
       fetch(`${baseUrl}/api/Sales/States`).then(r => r.json()),
-      fetch(`${baseUrl}/SalesManagers`).then(r => r.json()),
-      fetch(`${baseUrl}/HOPCManagerList`).then(r => r.json()),
-      fetch(`${baseUrl}/AllTools`).then(r => r.json()),
-      fetch(`${baseUrl}/HOPCTasks`).then(r => r.json()),
+      fetch(`${baseUrl}/api/Home/SalesManagers`).then(r => r.json()),
+      fetch(`${baseUrl}/api/Home/HOPCManagerList`).then(r => r.json()),
+      fetch(`${baseUrl}/api/Home/AllTools`).then(r => r.json()),
+      fetch(`${baseUrl}/api/Home/HOPCTasks`).then(r => r.json()),
       fetch(`${baseUrl}/api/Sales/customerlocations`).then(r => r.json()),
       fetch(`${baseUrl}/api/Sales/customercontacts`).then(r => r.json()),
-      fetch(`${baseUrl}/AllActiveEmployees`).then(r => r.json()),
+      fetch(`${baseUrl}/api/Home/AllActiveEmployees`).then(r => r.json()),
 
     ]).then(([customers, States, SalesManagers, HOPCManagers, AllTools, HOPCTasks, Locations, Contacts, AllActiveEmployees]) => {
       setLookups({ customers, States, SalesManagers, HOPCManagers, AllTools, HOPCTasks, Locations, Contacts, AllActiveEmployees });
@@ -516,7 +516,7 @@ const OnsiteEnquiry: React.FC = () => {
     const uniqueOtherResp = [...new Set(otherResp.map(id => id.trim()).filter(Boolean))];
 
     // 3️⃣ Call API with comma-separated LoginIDs
-    const { data: emailList } = await axios.get(`${baseUrl}/EmailId/${uniqueOtherResp.join(",")}`);
+    const { data: emailList } = await axios.get(`${baseUrl}/api/Home/EmailId/${uniqueOtherResp.join(",")}`);
 
     // 4️⃣ Normalize result (API may return single string or array)
     const ccList = Array.isArray(emailList) ? emailList : [emailList];
@@ -531,10 +531,6 @@ const OnsiteEnquiry: React.FC = () => {
     }
     // ✅ NOW LOG SAFELY
    // console.log("✅ FINAL FORMDATA PAYLOAD ↓↓↓");
-    for (let pair of fd.entries()) {
-    //  console.log(pair[0], ":", pair[1]);
-    }
-
     const url = isEditMode ? `${baseUrl}/api/Sales/EditEnquiryData` : `${baseUrl}/api/Sales/AddEnquiryData`;
 
     if (isEditMode) {

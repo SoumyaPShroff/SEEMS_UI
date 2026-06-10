@@ -17,22 +17,22 @@ export const useManagers = (loginId: string, pageName: string) => {
     try {
 
       // Step 1: Get user jobtitle
-      const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
+      const userRoleRes = await axios.get(`${baseUrl}/api/Home/UserDesignation/${loginId}`);
       const userRole = userRoleRes.data;
       const isManagerTitle = String(userRole ?? "").toLowerCase().includes("manager");
 
       // Step 2: Check if user has special role for this page and role
-      const roleCheck = await axios.get<boolean>(`${baseUrl}/UserRoleInternalRights/${userRole}/${pageName}`)
+      const roleCheck = await axios.get<boolean>(`${baseUrl}/api/Home/UserRoleInternalRights/${userRole}/${pageName}`)
       const hasSpecialRole = roleCheck.data === true;
 
       if (!hasSpecialRole) {
         let managerCostCenterId = loginId;
         let hasDelegate = false;
         //promise consts  return Promises which then run them together,so once all api's runs at same time
-        const delegatePromise = axios.get(`${baseUrl}/CostcenterDelegates/${loginId}`);
+        const delegatePromise = axios.get(`${baseUrl}/api/Home/CostcenterDelegates/${loginId}`);
         //A Promise represents a value that will be available in the future.
         const employeePromise = !isManagerTitle
-          ? axios.get<{ reporttopersonid?: string | number }>(`${baseUrl}/EmployeeDetails/${loginId}`)
+          ? axios.get<{ reporttopersonid?: string | number }>(`${baseUrl}/api/Home/EmployeeDetails/${loginId}`)
           : Promise.resolve(null);
           //handle asynchronous operations
           // Promise.allSettled used because if one API fails, the other still succeeds.
@@ -63,10 +63,10 @@ export const useManagers = (loginId: string, pageName: string) => {
         if (hasDelegate) {
           const [hopcRes, costCenterRes] = await Promise.all([
             axios.get<CostCenterInfo[]>(
-              `${baseUrl}/HOPCManagerList?sessionUserId=${encodeURIComponent(loginId)}`
+              `${baseUrl}/api/Home/HOPCManagerList?sessionUserId=${encodeURIComponent(loginId)}`
             ),
             axios.get<CostCenterInfo[]>(
-              `${baseUrl}/ManagerCostcenterInfo/${encodeURIComponent(managerCostCenterId)}`
+              `${baseUrl}/api/Home/ManagerCostcenterInfo/${encodeURIComponent(managerCostCenterId)}`
             )
           ]);
           const hopcData = hopcRes.data || [];
@@ -83,7 +83,7 @@ export const useManagers = (loginId: string, pageName: string) => {
         } else {
           // fill mutliple cost centers for same user (eg. managers with multiple cost centers)
           const costCenterRes = await axios.get<CostCenterInfo[]>(
-            `${baseUrl}/ManagerCostcenterInfo/${encodeURIComponent(managerCostCenterId)}`
+            `${baseUrl}/api/Home/ManagerCostcenterInfo/${encodeURIComponent(managerCostCenterId)}`
           );
 
           if (costCenterRes.data && costCenterRes.data.length > 0) {
@@ -100,7 +100,7 @@ export const useManagers = (loginId: string, pageName: string) => {
         }
       } else {
         //fill All
-        const res = await axios.get<CostCenterInfo[]>(`${baseUrl}/HOPCManagerList`);
+        const res = await axios.get<CostCenterInfo[]>(`${baseUrl}/api/Home/HOPCManagerList`);
         const data = res.data || [];
         const allOption = { hopc1id: "All", hopc1name: "All", costcenter: "All" };
         setManagers([allOption, ...(data || [])]);

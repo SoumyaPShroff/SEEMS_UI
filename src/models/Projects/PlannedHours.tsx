@@ -105,7 +105,7 @@ const GRID_COLUMNS: EditableGridColumn<PlannedHoursRow>[] = [
     editable: true,
     editorType: "textcontrol",
     inputType: "number",
-    cellClassName: (params) =>
+    cellClassName: () =>
       false
         ? "invalid-cell editable-grid-cell"
         : "editable-grid-cell",
@@ -193,7 +193,6 @@ export default function PlannedHours() {
     () => rows.find((row) => toNumber(row.monthlyHrs) > toNumber(row.balanceHrs)),
     [rows]
   );
-  const hasInvalidPlannedHours = Boolean(invalidRow);
 
   useEffect(() => {
     if (!selectedManager) return;
@@ -262,6 +261,15 @@ export default function PlannedHours() {
   //   setRows(sanitizedRows);
   // }, []);
 
+  const handleRowsChange = useCallback((nextRows: PlannedHoursRow[]) => {
+    const sanitizedRows = nextRows.map((row) => ({
+      ...row,
+      remarks: (row.remarks ?? "").replace(REMARKS_ALLOWED_CHARS_REGEX, ""),
+    }));
+
+    setRows(sanitizedRows);
+  }, []);
+
   const handleValidateCellEdit = useCallback(
     ({ row, field, value }: { row: PlannedHoursRow; field: string; value: unknown }) => {
       if (field !== "monthlyHrs") return null;
@@ -312,7 +320,7 @@ export default function PlannedHours() {
       actions={
         <SaveButton
           onClick={handleUpdate}
-          // disabled={isSaving || rows.length === 0 || hasInvalidPlannedHours || hasCellValidationError}
+          disabled={isSaving || rows.length === 0 || hasCellValidationError}
         >
           <FaSave style={{ marginRight: "8px" }} />
           {isSaving ? "Updating..." : "Update"}
@@ -349,10 +357,10 @@ export default function PlannedHours() {
             No records found for the selected manager and period.
           </EmptyState>
         ) : (
-          <EditableGrid
+        <EditableGrid
             rows={rows}
             columns={GRID_COLUMNS}
-           // onRowsChange={(nextRows) => handleRowsChange(nextRows as PlannedHoursRow[])}
+            onRowsChange={handleRowsChange}
             getRowId={(row) => row.id || row.jobNumber}
             onValidateCellEdit={handleValidateCellEdit}
 

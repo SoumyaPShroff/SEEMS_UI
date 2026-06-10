@@ -102,8 +102,7 @@ const ResetPassword: React.FC = () => {
 
     setLoading(true);
     try {
-      //  const response = await axios.post(`${baseUrl}/ResetPassword?ploginid=${loginId}&pNewpassword=${newPassword}`
-      const response = await axios.post(`${baseUrl}/ResetPassword/${loginId}/${newPassword}`
+      const response = await axios.post(`${baseUrl}/api/Home/ResetPassword/${loginId}/${newPassword}`
       );
 
       if (response.status === 200) {

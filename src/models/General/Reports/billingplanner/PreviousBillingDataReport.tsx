@@ -13,6 +13,9 @@ interface PreviousBillingDataDto {
   Hourlyrate: string;
   BilPreDayHrs: string;
   considered_working_day: string;
+  wipamount?: string | number;
+  costcenter?: string;
+  name?: string;
 }
 
 interface PreviousBillingDataRow extends PreviousBillingDataDto {
@@ -40,19 +43,20 @@ const PreviousBillingDataReport = () => {
     ],
     []
   );
+  
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const [userRoleRes, employeeRes, response] = await Promise.all([
-        axios.get(`${baseUrl}/UserDesignation/${loginId}`),
-        axios.get(`${baseUrl}/EmployeeDetails/${loginId}`),
+        axios.get(`${baseUrl}/api/Home/UserDesignation/${loginId}`),
+        axios.get(`${baseUrl}/api/Home/EmployeeDetails/${loginId}`),
         axios.get<PreviousBillingDataDto[]>(`${baseUrl}/api/Job/PreviousBillingData`),
       ]);
 
       const userRole = userRoleRes.data;
       const roleCheck = await axios.get<boolean>(
-        `${baseUrl}/UserRoleInternalRights/${userRole}/billingplanner`
+        `${baseUrl}/api/Home/UserRoleInternalRights/${userRole}/billingplanner`
       );
       const hasCompleteRights = roleCheck.data === true;
       const employee = Array.isArray(employeeRes.data) ? employeeRes.data[0] : employeeRes.data;
@@ -92,9 +96,37 @@ const PreviousBillingDataReport = () => {
       toast.warning("No data available to export", { position: "top-right" });
       return;
     }
-    exporttoexcel(rows, "PreviousBillingData", "PreviousBillingData.xlsx");
+
+    const totalWipAmount = rows.reduce((sum, row) => {
+      const value = Number(row.wipamount ?? 0);
+      return sum + (Number.isFinite(value) ? value : 0);
+    }, 0);
+
+    const exportRows = [
+      ...rows,
+      {
+        id: rows.length + 1,
+        jobnumber: "Total",
+        hourlyrate: "",
+        bilPrevDayHrs: "",
+        wipamount: totalWipAmount,
+        costcenter: "",
+        name: "",
+        considered_working_day: "",
+      },
+    ];
+
+    exporttoexcel({
+      data: exportRows,
+      sheetName: "PreviousBillingData",
+      fileName: "PreviousBillingData.xlsx",
+      columns: columns.map(({ field, headerName }) => ({
+        field,
+        headerName,
+      })),
+    });
     toast.success("Previous Billing Data exported", { position: "top-right" });
-  }, [rows]);
+  }, [columns, rows]);
 
   return (
     <Box sx={{ padding: "20px", mt: "85px", ml: "10px" }}>

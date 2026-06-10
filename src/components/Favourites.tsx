@@ -29,10 +29,10 @@ export const writeFavouritesCache = (userId: string, favourites: FavouriteDto[])
 };
 
 export const getFavourites = (userId: string) =>
-  axios.get<FavouriteDto[]>(`${baseUrl}/UserFavourites/${userId}`);
+  axios.get<FavouriteDto[]>(`${baseUrl}/api/Home/UserFavourites/${userId}`);
 
 export const addFavourite = (userId: string, pageId: number) =>
-  axios.post(`${baseUrl}/AddFavourites`, { userId, pageId });
+  axios.post(`${baseUrl}/api/Home/AddFavourites`, { userId, pageId });
 
 export const removeFavourite = (userId: string, pageId: number) =>
-  axios.delete(`${baseUrl}/RemoveFavourites/${userId}/${pageId}`);
+  axios.delete(`${baseUrl}/api/Home/RemoveFavourites/${userId}/${pageId}`);

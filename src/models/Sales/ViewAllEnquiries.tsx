@@ -197,12 +197,12 @@ const ViewAllEnquiries = () => {
       setLoading(true);
 
       // Step 1: Get user role
-      const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
+      const userRoleRes = await axios.get(`${baseUrl}/api/Home/UserDesignation/${loginId}`);
       const userRole = userRoleRes.data;
 
       // Step 2: Get whether user has complete access
       const roleCheck = await axios.get<boolean>(
-        `${baseUrl}/UserRoleInternalRights/${userRole}/viewallenquiries`
+        `${baseUrl}/api/Home/UserRoleInternalRights/${userRole}/viewallenquiries`
       );
       //const hasSpecialRole = roleCheck.data === true;
       const roleFlag = roleCheck.data === true;

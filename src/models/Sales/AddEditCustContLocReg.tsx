@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import {
   Box,
   Grid,
@@ -49,25 +49,96 @@ const coSearchTerms = [
   "General",
 ];
 
+type Option = {
+  value: string | number;
+  label: string;
+};
+
+type CustomerForm = {
+  salesRespId: string;
+  customerType: string;
+  companyName: string;
+  customerAbb: string;
+  gstNo: string;
+  panNo: string;
+  currency: string;
+  industry: string;
+  salesOffice: string;
+  salesOrganization: string;
+  distributionChannel: string;
+  division: string;
+  customerAccountGroup: string;
+  titleText: string;
+  coSearchTerm1: string;
+  reconciliationAccountGL: string;
+  languageKey: string;
+  paymentTerms: string;
+  shippingConditions: string;
+  incoterms: string;
+  exchangeRateType: string;
+  taxClassification: string;
+  sapCode: string;
+  billCompany: string;
+  billAddress1: string;
+  billAddress2: string;
+  billCity: string;
+  billState: string;
+  billCountry: string;
+  billPincode: string;
+  billPhone: string;
+  billEmail: string;
+  shipCompany: string;
+  shipAddress1: string;
+  shipAddress2: string;
+  shipCity: string;
+  shipState: string;
+  shipCountry: string;
+  shipPincode: string;
+  shipPhone: string;
+  shipEmail: string;
+};
+
+type ContactRow = {
+  contactId: string;
+  locationId: string;
+  role: string;
+  name: string;
+  mobile: string;
+  alternateMobile: string;
+  email: string;
+};
+
+type AddressFields = {
+  address1: string;
+  address2: string;
+  city: string;
+  state: string;
+  country: string;
+  pincode: string;
+};
+
+type SavedRecordResponse = {
+  itemno?: string | number;
+  itemNo?: string | number;
+  location_id?: string | number;
+  locationId?: string | number;
+};
+
 export default function AddEditCustContLocReg() {
   const [tab, setTab] = useState(0);
   const [formMode, setFormMode] = useState<"new" | "edit" | "delete">("new");
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
   const [billLocationId, setBillLocationId] = useState("");
   const [shipLocationId, setShipLocationId] = useState("");
-  const [customerOptions, setCustomerOptions] = useState<
-    Array<{ value: string | number; label: string }>
-  >([]);
+  const [customerOptions, setCustomerOptions] = useState<Option[]>([]);
   const [loadingCustomers, setLoadingCustomers] = useState(false);
   const [loadingRecord, setLoadingRecord] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [salesRespOptions, setSalesRespOptions] = useState<
-    Array<{ value: string | number; label: string }>
-  >([]);
+  const [salesRespOptions, setSalesRespOptions] = useState<Option[]>([]);
 
   const [sameAddress, setSameAddress] = useState(false);
 
-  const [contacts, setContacts] = useState([
+  const [contacts, setContacts] = useState<ContactRow[]>([
     {
       contactId: "",
       locationId: "",
@@ -79,7 +150,7 @@ export default function AddEditCustContLocReg() {
     },
   ]);
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<CustomerForm>({
     salesRespId: "",
     customerType: "",
     companyName: "",
@@ -125,7 +196,7 @@ export default function AddEditCustContLocReg() {
     shipEmail: "",
   });
 
-  const pickValue = (row: any, keys: string[]) => {
+  const pickValue = (row: Record<string, unknown> | null | undefined, keys: string[]) => {
     for (const key of keys) {
       const value = row?.[key];
       if (value !== undefined && value !== null && String(value).trim() !== "") {
@@ -135,12 +206,12 @@ export default function AddEditCustContLocReg() {
     return "";
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: value } as CustomerForm));
   };
 
-  const handleContactChange = (index, field, value) => {
+  const handleContactChange = (index: number, field: keyof ContactRow, value: string) => {
     const updated = [...contacts];
     updated[index][field] = value;
     setContacts(updated);
@@ -161,12 +232,12 @@ export default function AddEditCustContLocReg() {
     ]);
   };
 
-  const removeContact = (index) => {
+  const removeContact = (index: number) => {
     const updated = contacts.filter((_, i) => i !== index);
     setContacts(updated);
   };
 
-  const copyBillToShip = (checked) => {
+  const copyBillToShip = (checked: boolean) => {
     setSameAddress(checked);
 
     if (checked) {
@@ -232,7 +303,6 @@ export default function AddEditCustContLocReg() {
   }));
 
   const isDeleteMode = formMode === "delete";
-  const isEditMode = formMode === "edit";
   const modeLabel =
     formMode === "new" ? "New Entry" : formMode === "edit" ? "Edit Mode" : "Delete Mode";
   const primaryActionLabel =
@@ -271,7 +341,7 @@ export default function AddEditCustContLocReg() {
     }
   };
 
-  const hydrateCustomer = (raw: any) => {
+  const hydrateCustomer = (raw: Record<string, unknown> | null | undefined) => {
     if (!raw) return;
     setForm({
       salesRespId: String(raw.sales_resp_id ?? raw.salesRespId ?? ""),
@@ -344,17 +414,17 @@ export default function AddEditCustContLocReg() {
   const buildAddressText = (address1: string, address2: string, city: string, state: string, country: string, pincode: string) =>
     [address1, address2, city, state, country, pincode].map((part) => String(part ?? "").trim()).filter(Boolean).join("\n");
 
-  const hydrateLocations = (rows: any[]) => {
-    const normalized = rows.map((row: any) => ({
+  const hydrateLocations = (rows: Record<string, unknown>[]) => {
+    const normalized = rows.map((row) => ({
       locationId: String(row.location_id ?? row.locationId ?? "").trim(),
       location: String(row.location ?? "").trim(),
       address: String(row.address ?? "").trim(),
       phoneno1: String(row.phoneno1 ?? "").trim(),
       phoneno2: String(row.phoneno2 ?? "").trim(),
-    })).filter((row: any) => row.locationId || row.location);
+    })).filter((row) => row.locationId || row.location);
 
-    const billRow = normalized.find((row: any) => /bill/i.test(row.location)) ?? normalized[0];
-    const shipRow = normalized.find((row: any) => /ship/i.test(row.location)) ?? normalized[1] ?? normalized[0];
+    const billRow = normalized.find((row) => /bill/i.test(row.location)) ?? normalized[0];
+    const shipRow = normalized.find((row) => /ship/i.test(row.location)) ?? normalized[1] ?? normalized[0];
 
     if (billRow) {
       const billAddress = splitAddressFields(billRow.address);
@@ -393,9 +463,9 @@ export default function AddEditCustContLocReg() {
     setSameAddress(Boolean(billRow && shipRow && billRow.locationId === shipRow.locationId));
   };
 
-  const hydrateContacts = (rows: any[]) => {
+  const hydrateContacts = (rows: Record<string, unknown>[]) => {
     const normalized = rows
-      .map((row: any) => ({
+      .map((row) => ({
         contactId: String(row.contact_id ?? row.contactId ?? "").trim(),
         locationId: String(row.location_id ?? row.locationId ?? "").trim(),
         role: String(row.ContactTitle ?? row.contactTitle ?? row.contact_title ?? "Technical"),
@@ -404,7 +474,7 @@ export default function AddEditCustContLocReg() {
         alternateMobile: String(row.mobile2 ?? row.mobile_2 ?? row.mobileno2 ?? ""),
         email: String(row.email11 ?? row.email ?? row.email1 ?? ""),
       }))
-      .filter((row: any) => row.contactId || row.name || row.email || row.mobile);
+      .filter((row) => row.contactId || row.name || row.email || row.mobile);
 
     if (normalized.length > 0) {
       setContacts(normalized);
@@ -426,7 +496,7 @@ export default function AddEditCustContLocReg() {
 
   const fetchSalesResponsibilityOptions = async () => {
     try {
-      const res = await axios.get(`${baseUrl}/SalesManagers`);
+      const res = await axios.get(`${baseUrl}/api/Home/SalesManagers`);
       const rows = Array.isArray(res.data) ? res.data : [];
       const mapped = rows
         .map((row: any, index: number) => ({
@@ -601,7 +671,7 @@ export default function AddEditCustContLocReg() {
     }
   };
 
-  const handleCustomerSelect = async (e: any) => {
+  const handleCustomerSelect = async (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const customerId = String(e?.target?.value ?? "");
     setSelectedCustomerId(customerId);
   };
@@ -627,14 +697,7 @@ export default function AddEditCustContLocReg() {
     customerId: string,
     locationId: string,
     locationName: string,
-    addressLines: {
-      address1: string;
-      address2: string;
-      city: string;
-      state: string;
-      country: string;
-      pincode: string;
-    },
+    addressLines: AddressFields,
     phone: string
   ) => ({
     itemno: customerId,
@@ -654,7 +717,7 @@ export default function AddEditCustContLocReg() {
     addedby: sessionStorage.getItem("SessionUserName") || "guest",
   });
 
-  const buildContactPayload = (customerId: string, locationId: string, contact: any) => ({
+  const buildContactPayload = (customerId: string, locationId: string, contact: ContactRow) => ({
     customer_id: Number(customerId),
     location_id: Number(locationId),
     ContactTitle: contact.role,
@@ -664,7 +727,7 @@ export default function AddEditCustContLocReg() {
     mobile2: contact.alternateMobile.trim(),
   });
 
-  const isContactRowPopulated = (contact: any) =>
+  const isContactRowPopulated = (contact: ContactRow) =>
     [contact.contactId, contact.locationId, contact.name, contact.mobile, contact.alternateMobile, contact.email].some(
       (value) => String(value ?? "").trim() !== ""
     );
@@ -699,14 +762,14 @@ export default function AddEditCustContLocReg() {
     return "";
   };
 
-  const saveCustomerRecord = async (customerId?: string) => {
+  const saveCustomerRecord = async (customerId?: string): Promise<SavedRecordResponse> => {
     const payload = buildCustomerPayload(customerId);
     if (formMode === "edit" && customerId) {
-      const res = await axios.put(`${baseUrl}/api/Sales/EditCustomer/${encodeURIComponent(customerId)}`, payload);
+      const res = await axios.put<SavedRecordResponse>(`${baseUrl}/api/Sales/EditCustomer/${encodeURIComponent(customerId)}`, payload);
       return res.data;
     }
 
-    const res = await axios.post(`${baseUrl}/api/Sales/AddCustomer`, payload);
+    const res = await axios.post<SavedRecordResponse>(`${baseUrl}/api/Sales/AddCustomer`, payload);
     return res.data;
   };
 
@@ -714,30 +777,23 @@ export default function AddEditCustContLocReg() {
     customerId: string,
     locationId: string,
     locationName: string,
-    addressLines: {
-      address1: string;
-      address2: string;
-      city: string;
-      state: string;
-      country: string;
-      pincode: string;
-    },
+    addressLines: AddressFields,
     phone: string
-  ) => {
+  ): Promise<SavedRecordResponse> => {
     const payload = buildLocationPayload(customerId, locationId, locationName, addressLines, phone);
     if (locationId) {
-      const res = await axios.put(
+      const res = await axios.put<SavedRecordResponse>(
         `${baseUrl}/api/Sales/EditCustLocation/${encodeURIComponent(locationId)}?customerId=${encodeURIComponent(customerId)}`,
         payload
       );
       return res.data;
     }
 
-    const res = await axios.post(`${baseUrl}/api/Sales/AddCustLocation`, payload);
+    const res = await axios.post<SavedRecordResponse>(`${baseUrl}/api/Sales/AddCustLocation`, payload);
     return res.data;
   };
 
-  const saveContactRecord = async (customerId: string, contact: any, locationId: string) => {
+  const saveContactRecord = async (customerId: string, contact: ContactRow, locationId: string) => {
     const payload = buildContactPayload(customerId, locationId, contact);
     if (contact.contactId) {
       const res = await axios.put(
@@ -793,7 +849,7 @@ export default function AddEditCustContLocReg() {
       );
 
       const effectiveBillLocationId = String(
-        savedBillLocation?.location_id ?? savedBillLocation?.locationId ?? billLocationId ?? ""
+          savedBillLocation?.location_id ?? savedBillLocation?.locationId ?? billLocationId ?? ""
       ).trim();
 
       let effectiveShipLocationId = shipLocationId;
@@ -816,7 +872,7 @@ export default function AddEditCustContLocReg() {
         );
         effectiveShipLocationId = String(
           savedShipLocation?.location_id ?? savedShipLocation?.locationId ?? shipLocationId ?? ""
-        ).trim();
+      ).trim();
       }
 
       const contactRows = contacts.filter(isContactRowPopulated);
@@ -864,8 +920,8 @@ export default function AddEditCustContLocReg() {
   };
 
   const renderTextField = (
-    label,
-    name,
+    label: string,
+    name: keyof CustomerForm,
     required = false,
     multiline = false,
     rows = 1,
@@ -878,7 +934,7 @@ export default function AddEditCustContLocReg() {
       </Typography>
       <TextControl
         name={name}
-        value={(form[name] as string | null) ?? ""}
+        value={form[name] ?? ""}
         onChange={handleChange}
         fullWidth
         multiline={multiline}
@@ -988,7 +1044,7 @@ export default function AddEditCustContLocReg() {
           >
             <CardContent>
               <Grid container spacing={2} alignItems="flex-end">
-                <Grid item xs={12} md={8}>
+                <Grid size={{ xs: 12, md: 8 }}>
                   <Typography sx={fieldLabelStyle}>
                     Existing Customer Reference
                   </Typography>
@@ -1006,7 +1062,7 @@ export default function AddEditCustContLocReg() {
                     disabled={loadingCustomers}
                   />
                 </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Button
                     variant="contained"
                     fullWidth
@@ -1032,9 +1088,9 @@ export default function AddEditCustContLocReg() {
           </Card>
         )}
 
-        <Tabs
+          <Tabs
           value={tab}
-          onChange={(e, newValue) => setTab(newValue)}
+          onChange={(_, newValue) => setTab(newValue)}
           variant="scrollable"
           scrollButtons="auto"
           sx={{
@@ -1223,7 +1279,7 @@ export default function AddEditCustContLocReg() {
 
         {tab === 1 && (
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Card sx={sectionCardStyle}>
                 <Box sx={sectionHeaderStyle}>
                   <LocationOn />
@@ -1234,7 +1290,7 @@ export default function AddEditCustContLocReg() {
 
                 <CardContent>
                   <Grid container spacing={2}>
-                    <Grid item xs={12}>
+                    <Grid size={{ xs: 12 }}>
                       {renderTextField(
                         "Company Name",
                         "billCompany",
@@ -1242,7 +1298,7 @@ export default function AddEditCustContLocReg() {
                       )}
                     </Grid>
 
-                    <Grid item xs={12}>
+                    <Grid size={{ xs: 12 }}>
                       {renderTextField(
                         "Address Line 1",
                         "billAddress1",
@@ -1252,7 +1308,7 @@ export default function AddEditCustContLocReg() {
                       )}
                     </Grid>
 
-                    <Grid item xs={12}>
+                    <Grid size={{ xs: 12 }}>
                       {renderTextField(
                         "Address Line 2",
                         "billAddress2",
@@ -1262,27 +1318,27 @@ export default function AddEditCustContLocReg() {
                       )}
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       {renderTextField("City", "billCity", true)}
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       {renderTextField("State", "billState", true)}
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       {renderTextField("Country", "billCountry", true)}
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       {renderTextField("Pincode", "billPincode", true)}
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       {renderTextField("Phone", "billPhone")}
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       {renderTextField("Email ID", "billEmail")}
                     </Grid>
                   </Grid>
@@ -1290,7 +1346,7 @@ export default function AddEditCustContLocReg() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Card sx={sectionCardStyle}>
                 <Box sx={sectionHeaderStyle}>
                   <LocationOn />
@@ -1315,7 +1371,7 @@ export default function AddEditCustContLocReg() {
                   />
 
                   <Grid container spacing={2}>
-                    <Grid item xs={12}>
+                    <Grid size={{ xs: 12 }}>
                       {renderTextField(
                         "Company Name",
                         "shipCompany",
@@ -1323,7 +1379,7 @@ export default function AddEditCustContLocReg() {
                       )}
                     </Grid>
 
-                    <Grid item xs={12}>
+                    <Grid size={{ xs: 12 }}>
                       {renderTextField(
                         "Address Line 1",
                         "shipAddress1",
@@ -1333,7 +1389,7 @@ export default function AddEditCustContLocReg() {
                       )}
                     </Grid>
 
-                    <Grid item xs={12}>
+                    <Grid size={{ xs: 12 }}>
                       {renderTextField(
                         "Address Line 2",
                         "shipAddress2",
@@ -1343,27 +1399,27 @@ export default function AddEditCustContLocReg() {
                       )}
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       {renderTextField("City", "shipCity", true)}
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       {renderTextField("State", "shipState", true)}
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       {renderTextField("Country", "shipCountry", true)}
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       {renderTextField("Pincode", "shipPincode", true)}
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       {renderTextField("Phone", "shipPhone")}
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       {renderTextField("Email", "shipEmail")}
                     </Grid>
                   </Grid>
@@ -1417,7 +1473,7 @@ export default function AddEditCustContLocReg() {
                   </Box>
 
                   <Grid container spacing={2}>
-                    <Grid item xs={12} md={3}>
+                    <Grid size={{ xs: 12, md: 3 }}>
                       <SelectControl
                         name="role"
                         label="Role"
@@ -1435,7 +1491,7 @@ export default function AddEditCustContLocReg() {
                       />
                     </Grid>
 
-                    <Grid item xs={12} md={3}>
+                    <Grid size={{ xs: 12, md: 3 }}>
                       <Box>
                         <Typography sx={fieldLabelStyle}>
                           Contact Name
@@ -1457,7 +1513,7 @@ export default function AddEditCustContLocReg() {
                       </Box>
                     </Grid>
 
-                    <Grid item xs={12} md={2}>
+                    <Grid size={{ xs: 12, md: 2 }}>
                       <Box>
                         <Typography sx={fieldLabelStyle}>Phone</Typography>
                         <TextControl
@@ -1476,7 +1532,7 @@ export default function AddEditCustContLocReg() {
                       </Box>
                     </Grid>
 
-                    <Grid item xs={12} md={2}>
+                    <Grid size={{ xs: 12, md: 2 }}>
                       <Box>
                         <Typography sx={fieldLabelStyle}>Alternate Phone No</Typography>
                         <TextControl
@@ -1495,7 +1551,7 @@ export default function AddEditCustContLocReg() {
                       </Box>
                     </Grid>
 
-                    <Grid item xs={12} md={2}>
+                    <Grid size={{ xs: 12, md: 2 }}>
                       <Box>
                         <Typography sx={fieldLabelStyle}>Email ID</Typography>
                         <TextControl
@@ -1540,7 +1596,7 @@ export default function AddEditCustContLocReg() {
 
             <CardContent>
               <Grid container spacing={2}>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   {renderTextField(
                     "Sales Organization",
                     "salesOrganization",
@@ -1548,18 +1604,18 @@ export default function AddEditCustContLocReg() {
                   )}
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   {renderTextField(
                     "Distribution Channel",
                     "distributionChannel"
                   )}
                 </Grid>
                 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   {renderTextField("Division", "division")}
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Box sx={{ display: "flex", width: "100%",  minHeight: 52}}>
                      <SelectControl
                       name="paymentTerms"
@@ -1580,32 +1636,32 @@ export default function AddEditCustContLocReg() {
                   </Box>
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   {renderTextField(
                     "Shipping Conditions",
                     "shippingConditions"
                   )}
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   {renderTextField("Incoterms", "incoterms", true)}
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   {renderTextField(
                     "Exchange Rate Type",
                     "exchangeRateType"
                   )}
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   {renderTextField(
                     "Tax Classification",
                     "taxClassification"
                   )}
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   {renderTextField("SAP Customer Code", "sapCode")}
                 </Grid>
               </Grid>

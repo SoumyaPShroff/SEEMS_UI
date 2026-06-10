@@ -43,12 +43,12 @@ const ViewCustomers = () => {
 
 
   const loadRoleFlag = useCallback(async (): Promise<boolean> => {
-    const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
+    const userRoleRes = await axios.get(`${baseUrl}/api/Home/UserDesignation/${loginId}`);
     const userRole = userRoleRes.data;
 
     //   for (const key of ACCESS_PAGE_KEYS) {
     try {
-      const roleCheck = await axios.get(`${baseUrl}/UserRoleInternalRights/${userRole}/viewcustomers`);
+      const roleCheck = await axios.get(`${baseUrl}/api/Home/UserRoleInternalRights/${userRole}/viewcustomers`);
       if (parseRoleFlag(roleCheck.data)) return true;
     } catch {
       // Try next key variant.

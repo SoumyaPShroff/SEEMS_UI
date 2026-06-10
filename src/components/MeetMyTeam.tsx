@@ -50,7 +50,7 @@ const MeetMyTeam: React.FC<MeetMyTeamProps> = ({ members = [] }) => {
     const loginId = sessionStorage.getItem("SessionUserID") || "guest";
     const fetchMembers = async () => {
       try {
-        const res = await fetch(`${baseUrl}/EmployeeDetails/${loginId}`);
+        const res = await fetch(`${baseUrl}/api/Home/EmployeeDetails/${loginId}`);
         const data = await res.json();
         const source = Array.isArray(data) ? data[0] : data;
         const apiMembers: TeamMemberApi[] = source?.teamMembers ?? source?.teamMember ?? [];

@@ -55,9 +55,9 @@ const createInitialForm = (): RequestForm => ({
   filename: "",
 });
 
-const REQUEST_ENDPOINT = `${baseUrl}/SEEMSRequestData`;
-const ADD_REQUEST_ENDPOINT = `${baseUrl}/AddSEEMSRequest`;
-const EDIT_REQUEST_ENDPOINT = `${baseUrl}/EditSEEMSRequest`;
+const REQUEST_ENDPOINT = `${baseUrl}/api/Home/SEEMSRequestData`;
+const ADD_REQUEST_ENDPOINT = `${baseUrl}/api/Home/AddSEEMSRequest`;
+const EDIT_REQUEST_ENDPOINT = `${baseUrl}/api/Home/EditSEEMSRequest`;
 
 const asString = (value: unknown): string => (value == null ? "" : String(value).trim());
 
@@ -128,7 +128,7 @@ const fetchEmailFromId = async (id: string): Promise<string> => {
     return "";
   }
 
-  const { data } = await axios.get(`${baseUrl}/EmailId/${trimmedId}`);
+  const { data } = await axios.get(`${baseUrl}/api/Home/EmailId/${trimmedId}`);
   const list = Array.isArray(data) ? data : [data];
   return String(list[0] ?? "").trim();
 };

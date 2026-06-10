@@ -124,7 +124,7 @@ const EnquiryStatus = () => {
     const fetchEmailListFromIds = async (ids: string[]) => {
       const uniqueIds = [...new Set(ids.map((id) => id.trim()).filter(Boolean))];
       if (uniqueIds.length === 0) return [];
-      const { data } = await axios.get(`${baseUrl}/EmailId/${uniqueIds.join(",")}`);
+      const { data } = await axios.get(`${baseUrl}/api/Home/EmailId/${uniqueIds.join(",")}`);
       const list = Array.isArray(data) ? data : [data];
       return list.map((x) => String(x ?? "").trim()).filter(Boolean);
     };

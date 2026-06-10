@@ -78,8 +78,7 @@ const LoginPage: React.FC<ILogin> = ({ setUserId }) => {
     // }
 
     try {
-    //  const response = await fetch(`${baseUrl}/VerifyLoginUser/${loginId}/${password}`); // insecure - avoid GET for sensitive data - not exposing the password in URL
-      const response = await fetch(`${baseUrl}/VerifyLoginUser`, {
+      const response = await fetch(`${baseUrl}/api/Home/VerifyLoginUser`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -103,10 +102,10 @@ const LoginPage: React.FC<ILogin> = ({ setUserId }) => {
           } catch (favouritesError) {
             console.error("Failed to cache user favourites", favouritesError);
           }
-          const responseName = await axios.get<string>(`${baseUrl}/UserName/${loginId}`);
+          const responseName = await axios.get<string>(`${baseUrl}/api/Home/UserName/${loginId}`);
           sessionStorage.setItem('SessionUserName', responseName.data);
-          const resDesgnName = await axios.get<string>(`${baseUrl}/UserDesignation/${loginId}`);
-          const resDesgnID = await axios.get<string>(`${baseUrl}/RoleDesignID/${resDesgnName.data}`);
+          const resDesgnName = await axios.get<string>(`${baseUrl}/api/Home/UserDesignation/${loginId}`);
+          const resDesgnID = await axios.get<string>(`${baseUrl}/api/Home/RoleDesignID/${resDesgnName.data}`);
           sessionStorage.setItem('SessionDesigID', resDesgnID.data);
           navigate('/Home');
         } else {

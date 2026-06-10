@@ -37,12 +37,12 @@ export default function ViewEnquiryReport() {
         try {
 
             // // Step 1: Get user role
-            // const userRoleRes = await axios.get(`${baseUrl}/UserDesignation/${loginId}`);
+            // const userRoleRes = await axios.get(`${baseUrl}/api/Home/UserDesignation/${loginId}`);
             // const userRole = userRoleRes.data;
 
             // // Step 2: Get whether user has complete access
             // const roleCheck = await axios.get<boolean>(
-            //     `${baseUrl}/UserRoleInternalRights/${userRole}/ViewEnquiryReport`
+            //     `${baseUrl}/api/Home/UserRoleInternalRights/${userRole}/ViewEnquiryReport`
             // );
             // const roleFlag = roleCheck.data === true;
             // sethasSpecialRole(roleFlag); // ✅ store in state

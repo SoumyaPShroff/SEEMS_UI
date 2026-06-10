@@ -188,11 +188,11 @@ const OffshoreEnquiry: React.FC = () => {
          try {
             const [custRes, empRes, analysisRes, salesisRes, designRes, npiRes, PCBToolsRes, LocationsRes, ContactsRes, StatesRes] = await Promise.all([
                fetch(`${baseUrl}/api/Sales/customers`),
-               fetch(`${baseUrl}/AllActiveEmployees`),
-               fetch(`${baseUrl}/AnalysisManagers`),
-               fetch(`${baseUrl}/SalesManagers`),
-               fetch(`${baseUrl}/DesignManagers`),
-               fetch(`${baseUrl}/SalesNpiUsers`),
+               fetch(`${baseUrl}/api/Home/AllActiveEmployees`),
+               fetch(`${baseUrl}/api/Home/AnalysisManagers`),
+               fetch(`${baseUrl}/api/Home/SalesManagers`),
+               fetch(`${baseUrl}/api/Home/DesignManagers`),
+               fetch(`${baseUrl}/api/Home/SalesNpiUsers`),
                fetch(`${baseUrl}/api/Job/AllTools`),
                fetch(`${baseUrl}/api/Sales/customerlocations`),
                fetch(`${baseUrl}/api/Sales/customercontacts`),
@@ -908,7 +908,7 @@ const OffshoreEnquiry: React.FC = () => {
          const uniqueOtherResp = [...new Set(otherResp.map(id => id.trim()).filter(Boolean))];
 
          // 3️⃣ Call API with comma-separated LoginIDs
-         const { data: emailList } = await axios.get(`${baseUrl}/EmailId/${uniqueOtherResp.join(",")}`);
+         const { data: emailList } = await axios.get(`${baseUrl}/api/Home/EmailId/${uniqueOtherResp.join(",")}`);
 
          // 4️⃣ Normalize result (API may return single string or array)
          const ccList = Array.isArray(emailList) ? emailList : [emailList];

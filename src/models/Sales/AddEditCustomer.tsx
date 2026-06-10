@@ -84,7 +84,7 @@ const AddEditCustomer = () => {
 
   const fetchSalesResponsibility = async () => {
     try {
-      const res = await axios.get(`${baseUrl}/SalesManagers`);
+      const res = await axios.get(`${baseUrl}/api/Home/SalesManagers`);
       const source = Array.isArray(res.data) ? res.data : [];
       const mapped = source
         .map((x: any, idx: number) => ({

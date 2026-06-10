@@ -47,7 +47,7 @@ interface ApiRequestRecord {
 
 const TABS: ViewTab[] = ["OPEN", "CLOSED", "IN-PROCESS", "COMPLETED", "REJECTED", "APPROVED"];
 
-const REQUEST_ENDPOINTS = [`${baseUrl}/SEEMSRequestData`];
+const REQUEST_ENDPOINTS = [`${baseUrl}/api/Home/SEEMSRequestData`];
 
 const columns: GridColDef<RequestItem>[] = [
   { field: "reqid", headerName: "Request ID", minWidth: 150, flex: 1 },

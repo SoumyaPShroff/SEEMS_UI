@@ -37,7 +37,7 @@ export const FavouritesProvider: React.FC<{ children: React.ReactNode; sessionUs
     }
     try {
       setLoading(true);
-      const res = await axios.get<FavouriteDto[]>(`${baseUrl}/UserFavourites/${sessionUserID}`);
+      const res = await axios.get<FavouriteDto[]>(`${baseUrl}/api/Home/UserFavourites/${sessionUserID}`);
       const favs = res.data || [];
       setFavouriteLinks(favs);
       setFavourites(favs.map(f => f.pageid));

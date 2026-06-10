@@ -94,7 +94,7 @@ const buildDesc = (main: string, sub: string) => {
 };
 
 const fetchAllMenuPagesById = async () => {
-  const res = await axios.get(`${baseUrl}/SEEMSAllMenuPages`);
+  const res = await axios.get(`${baseUrl}/api/Home/SEEMSAllMenuPages`);
   const rows = (Array.isArray(res.data) ? res.data : []) as AllMenuPageRow[];
 
   const byId = new Map<number, { route: string | null; title: string; main: string; sub: string }>();
@@ -118,7 +118,7 @@ export const fetchDefaultActionCards = async (): Promise<DashboardActionCard[]> 
   const designationId = sessionStorage.getItem("SessionDesigID");
   if (!designationId) return [];
 
-  const res = await axios.get(`${baseUrl}/SideBarAccessMenus/${encodeURIComponent(designationId)}`);
+  const res = await axios.get(`${baseUrl}/api/Home/SideBarAccessMenus/${encodeURIComponent(designationId)}`);
   const rows = (Array.isArray(res.data) ? res.data : []) as DefaultPageRow[];
 
   const meetMyTeamRow = rows.find((row) => {

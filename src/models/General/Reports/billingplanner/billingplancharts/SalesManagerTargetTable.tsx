@@ -43,7 +43,7 @@ const SalesManagerTargetTable: React.FC<Props> = ({ managers }) => {
         // Fetch names for each unique salesrespid
         const namesPromises = uniqueSalesRespIds.map(async (id) => {
           try {
-            const response = await axios.get<string>(`${baseUrl}/UserName/${id}`);
+            const response = await axios.get<string>(`${baseUrl}/api/Home/UserName/${id}`);
             return { id, name: response.data }; // API returns plain string
           } catch (error) {
             console.error(`Error fetching name for salesrespid ${id}:`, error);

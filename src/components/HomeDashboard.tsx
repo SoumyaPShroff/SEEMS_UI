@@ -277,7 +277,7 @@ const HomeDashboard = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`${baseUrl}/EmployeeDetails/${loginId}`);
+        const res = await fetch(`${baseUrl}/api/Home/EmployeeDetails/${loginId}`);
         const data = await res.json();
         setProfile(normalizeProfile(data));
       } catch (error) {

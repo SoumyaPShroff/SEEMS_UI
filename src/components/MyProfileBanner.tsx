@@ -58,7 +58,7 @@ const MyProfileBanner = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`${baseUrl}/EmployeeDetails/${loginId}`);
+        const res = await fetch(`${baseUrl}/api/Home/EmployeeDetails/${loginId}`);
       //  const data: EmployeeProfile[] = await res.json();
        // setProfile(data[0] ?? null);
        const data: EmployeeProfile = await res.json();
