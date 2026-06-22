@@ -1,10 +1,11 @@
 import { useEffect, useState, type MouseEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaRobot, FaStar, FaTrash } from "react-icons/fa";
+import { FaRobot, FaSearch, FaStar, FaTrash } from "react-icons/fa";
 import styled, { keyframes } from "styled-components";
 import { fetchDefaultActionCards, type DashboardActionCard } from "../const/DashboardActionCards";
 import { baseUrl } from "../const/BaseUrl";
 import { useFavourites } from "./FavouritesContext";
+import { useRoleAccess } from "./utils/useRoleAccess";
 
 interface TeamMemberApi {
   teamMemID: string;
@@ -251,6 +252,15 @@ const HomeDashboard = () => {
   const navigate = useNavigate();
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
   const designationId = sessionStorage.getItem("SessionDesigID") || "";
+  const { hasAccess: hasAdminAccess } = useRoleAccess(loginId, "adminuser");
+  const queryBuilderCard: DashboardActionCard = {
+    key: "query-builder",
+    title: "Query Builder",
+    desc: "Build and run custom table queries",
+    icon: <FaSearch />,
+    route: "/Home/QueryBuilder",
+    gradient: "linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)",
+  };
 
   const normalizeProfile = (raw: unknown): EmployeeProfile | null => {
     if (!raw) return null;
@@ -300,7 +310,11 @@ const HomeDashboard = () => {
 
         const cards = await fetchDefaultActionCards();
         if (!cancelled) {
-          setDefaultCards(cards);
+          const nextCards = hasAdminAccess ? [queryBuilderCard, ...cards] : cards;
+          const mergedCards = nextCards.filter(
+            (card, index, self) => self.findIndex((item) => item.route === card.route) === index
+          );
+          setDefaultCards(mergedCards);
         }
       } catch (error) {
         console.error("Failed to fetch default page cards", error);
@@ -316,7 +330,7 @@ const HomeDashboard = () => {
     return () => {
       cancelled = true;
     };
-  }, [designationId]);
+  }, [designationId, hasAdminAccess]);
 
   const handleRemoveFavourite = async (event: MouseEvent<HTMLButtonElement>, pageId: number) => {
     event.stopPropagation();

@@ -919,15 +919,21 @@ export default function AddEditCustContLocReg() {
     backgroundColor: "#fff",
   };
 
+  const fieldShellStyle = {
+    width: "100%",
+    display: "flex",
+    flexDirection: "column" as const,
+    alignSelf: "stretch",
+  };
+
   const renderTextField = (
     label: string,
     name: keyof CustomerForm,
     required = false,
     multiline = false,
-    rows = 1,
-    maxWidth?: number | string
+    rows = 1
   ) => (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={fieldShellStyle}>
       <Typography sx={fieldLabelStyle}>
         {label}
         {required ? <span style={{ color: "#d32f2f" }}> *</span> : null}
@@ -939,10 +945,7 @@ export default function AddEditCustContLocReg() {
         fullWidth
         multiline={multiline}
         rows={rows}
-        style={{
-          ...inputStyle,
-          maxWidth: maxWidth ?? "100%",
-        }}
+        style={inputStyle}
       />
     </Box>
   );
@@ -1120,15 +1123,23 @@ export default function AddEditCustContLocReg() {
               <Box
                 sx={{
                   display: "grid",
-                  gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" },
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "repeat(2, minmax(0, 1fr))",
+                    md: "repeat(3, minmax(0, 1fr))",
+                  },
                   gap: 2,
-                  alignItems: "start",
+                  alignItems: "stretch",
                 }}
               >
-                <Box sx={{ display: "flex", width: "100%", alignItems: "flex-start" }}>
+                <Box sx={fieldShellStyle}>
+                  <Typography sx={fieldLabelStyle}>
+                    Customer Type
+                    <span style={{ color: "#d32f2f" }}> *</span>
+                  </Typography>
                   <SelectControl
                     name="customerType"
-                    label="Customer Type"
+                    label=""
                     value={form.customerType}
                     onChange={handleChange}
                     required
@@ -1137,16 +1148,19 @@ export default function AddEditCustContLocReg() {
                     height={40}
                     fontSize="0.9rem"
                     labelFontWeight={600}
-                    shrinkLabel
-                    sx={{ maxWidth: 320, width: "100%" }}
+                    shrinkLabel={false}
                     disabled={isDeleteMode}
                   />
                 </Box>
 
-                <Box sx={{ display: "flex", width: "100%", alignItems: "flex-start" }}>
+                <Box sx={fieldShellStyle}>
+                  <Typography sx={fieldLabelStyle}>
+                    Sales Responsibility
+                    <span style={{ color: "#d32f2f" }}> *</span>
+                  </Typography>
                   <SelectControl
                     name="salesRespId"
-                    label="Sales Responsibility"
+                    label=""
                     value={form.salesRespId}
                     onChange={handleChange}
                     required
@@ -1155,39 +1169,37 @@ export default function AddEditCustContLocReg() {
                     height={40}
                     fontSize="0.9rem"
                     labelFontWeight={600}
-                    shrinkLabel
-                    sx={{ maxWidth: 320, width: "100%" }}
+                    shrinkLabel={false}
                     disabled={isDeleteMode}
                   />
                 </Box>
 
-                <Box sx={{ display: "flex", width: "100%", alignItems: "flex-start" }}>
-                  {renderTextField("Company Name", "companyName", true)}
+                <Box sx={fieldShellStyle}>
+                  <Typography sx={fieldLabelStyle}>
+                    Company Name
+                    <span style={{ color: "#d32f2f" }}> *</span>
+                  </Typography>
+                  <TextControl
+                    name="companyName"
+                    value={form.companyName}
+                    onChange={handleChange}
+                    fullWidth
+                    style={inputStyle}
+                    disabled={isDeleteMode}
+                  />
                 </Box>
+                {renderTextField("Customer Abbreviation", "customerAbb", true)}
+                {renderTextField("GST Number", "gstNo", true)}
+                {renderTextField("PAN Number", "panNo", true)}
 
-                <Box sx={{ display: "flex", width: "100%", alignItems: "flex-start" }}>
-                  {renderTextField(
-                    "Customer Abbreviation",
-                    "customerAbb",
-                    true,
-                    false,
-                    1,
-                    220
-                  )}
-                </Box>
-
-                <Box sx={{ display: "flex", width: "100%", alignItems: "flex-start" }}>
-                  {renderTextField("GST Number", "gstNo", true, false, 1, 240)}
-                </Box>
-
-                <Box sx={{ display: "flex", width: "100%", alignItems: "flex-start" }}>
-                  {renderTextField("PAN Number", "panNo", true, false, 1, 220)}
-                </Box>
-
-                <Box sx={{ display: "flex", width: "100%", alignItems: "flex-start" }}>
+                <Box sx={fieldShellStyle}>
+                  <Typography sx={fieldLabelStyle}>
+                    Currency
+                    <span style={{ color: "#d32f2f" }}> *</span>
+                  </Typography>
                   <SelectControl
                     name="currency"
-                    label="Currency"
+                    label=""
                     value={form.currency}
                     onChange={handleChange}
                     required
@@ -1196,81 +1208,58 @@ export default function AddEditCustContLocReg() {
                     height={40}
                     fontSize="0.9rem"
                     labelFontWeight={600}
-                    shrinkLabel
-                    sx={{ maxWidth: 180, width: "100%" }}
+                    shrinkLabel={false}
                     disabled={isDeleteMode}
                   />
                 </Box>
 
-                <Box sx={{ display: "flex", width: "100%", alignItems: "flex-start" }}>
-                  {renderTextField("Industry", "industry", false, false, 1, 240)}
-                </Box>
+                {renderTextField("Industry", "industry")}
+                {renderTextField("Sales Office", "salesOffice")}
 
-                <Box sx={{ display: "flex", width: "100%", alignItems: "flex-start" }}>
-                  {renderTextField("Sales Office", "salesOffice", false, false, 1, 240)}
-                </Box>
+                <SelectControl
+                  name="customerAccountGroup"
+                  label="Customer Account Group"
+                  value={form.customerAccountGroup}
+                  onChange={handleChange}
+                  options={customerAccountGroupOptions}
+                  width="100%"
+                  height={40}
+                  fontSize="0.9rem"
+                  labelFontWeight={600}
+                  shrinkLabel
+                  disabled={isDeleteMode}
+                />
 
-                <Box sx={{ display: "flex", width: "100%", alignItems: "flex-start" }}>
-                  <SelectControl
-                    name="customerAccountGroup"
-                    label="Customer Account Group"
-                    value={form.customerAccountGroup}
-                    onChange={handleChange}
-                    options={customerAccountGroupOptions}
-                    width="100%"
-                    height={40}
-                    fontSize="0.9rem"
-                    labelFontWeight={600}
-                    shrinkLabel
-                    sx={{ maxWidth: 260, width: "100%" }}
-                    disabled={isDeleteMode}
-                  />
-                </Box>
+                <SelectControl
+                  name="titleText"
+                  label="Title Text"
+                  value={form.titleText}
+                  onChange={handleChange}
+                  options={titleTextOptions}
+                  width="100%"
+                  height={40}
+                  fontSize="0.9rem"
+                  labelFontWeight={600}
+                  shrinkLabel
+                  disabled={isDeleteMode}
+                />
 
-                <Box sx={{ display: "flex", width: "100%", alignItems: "flex-start" }}>
-                  <SelectControl
-                    name="titleText"
-                    label="Title Text"
-                    value={form.titleText}
-                    onChange={handleChange}
-                    options={titleTextOptions}
-                    width="100%"
-                    height={40}
-                    fontSize="0.9rem"
-                    labelFontWeight={600}
-                    shrinkLabel
-                    sx={{ maxWidth: 180, width: "100%" }}
-                    disabled={isDeleteMode}
-                  />
-                </Box>
+                <SelectControl
+                  name="coSearchTerm1"
+                  label="Co-Search Term 1"
+                  value={form.coSearchTerm1}
+                  onChange={handleChange}
+                  options={coSearchTermOptions}
+                  width="100%"
+                  height={40}
+                  fontSize="0.9rem"
+                  labelFontWeight={600}
+                  shrinkLabel
+                  disabled={isDeleteMode}
+                />
 
-                <Box sx={{ display: "flex", width: "100%", alignItems: "flex-start" }}>
-                  <SelectControl
-                    name="coSearchTerm1"
-                    label="Co-Search Term 1"
-                    value={form.coSearchTerm1}
-                    onChange={handleChange}
-                    options={coSearchTermOptions}
-                    width="100%"
-                    height={40}
-                    fontSize="0.9rem"
-                    labelFontWeight={600}
-                    shrinkLabel
-                    sx={{ maxWidth: 220, width: "100%" }}
-                    disabled={isDeleteMode}
-                  />
-                </Box>
-
-                <Box sx={{ display: "flex", width: "100%", gridColumn: { xs: "auto", md: "1 / -1" }, alignItems: "flex-start" }}>
-                  {renderTextField(
-                    "Reconciliation Account in General Ledger",
-                    "reconciliationAccountGL"
-                    ,
-                    false,
-                    false,
-                    1,
-                    360
-                  )}
+                <Box sx={{ gridColumn: { xs: "auto", md: "1 / -1" } }}>
+                  {renderTextField("Reconciliation Account in General Ledger", "reconciliationAccountGL")}
                 </Box>
               </Box>
             </CardContent>
@@ -1289,7 +1278,7 @@ export default function AddEditCustContLocReg() {
                 </Box>
 
                 <CardContent>
-                  <Grid container spacing={2}>
+                  <Grid container spacing={2} alignItems="stretch">
                     <Grid size={{ xs: 12 }}>
                       {renderTextField(
                         "Company Name",
@@ -1370,7 +1359,7 @@ export default function AddEditCustContLocReg() {
                     sx={{ mb: 2 }}
                   />
 
-                  <Grid container spacing={2}>
+                  <Grid container spacing={2} alignItems="stretch">
                     <Grid size={{ xs: 12 }}>
                       {renderTextField(
                         "Company Name",
@@ -1454,11 +1443,12 @@ export default function AddEditCustContLocReg() {
                     sx={{
                       display: "flex",
                       justifyContent: "space-between",
-                      alignItems: "center",
+                      alignItems: "flex-start",
                       mb: 2,
+                      minHeight: 32,
                     }}
                   >
-                    <Typography fontWeight={600}>
+                    <Typography fontWeight={600} sx={{ mt: 0.25 }}>
                       Contact #{index + 1}
                     </Typography>
 
@@ -1472,27 +1462,32 @@ export default function AddEditCustContLocReg() {
                     )}
                   </Box>
 
-                  <Grid container spacing={2}>
+                  <Grid container spacing={2} alignItems="flex-start">
                     <Grid size={{ xs: 12, md: 3 }}>
-                      <SelectControl
-                        name="role"
-                        label="Role"
-                        value={contact.role}
-                        onChange={(e) =>
-                          handleContactChange(index, "role", e.target.value)
-                        }
-                        options={contactRoleOptions}
-                        width="100%"
-                        height={40}
-                        fontSize="0.9rem"
-                        labelFontWeight={600}
-                        shrinkLabel
-                        disabled={isDeleteMode}
-                      />
+                      <Box sx={fieldShellStyle}>
+                        <Typography sx={fieldLabelStyle}>
+                          Role
+                        </Typography>
+                        <SelectControl
+                          name="role"
+                          label=""
+                          value={contact.role}
+                          onChange={(e) =>
+                            handleContactChange(index, "role", e.target.value)
+                          }
+                          options={contactRoleOptions}
+                          width="100%"
+                          height={40}
+                          fontSize="0.9rem"
+                          labelFontWeight={600}
+                          shrinkLabel={false}
+                          disabled={isDeleteMode}
+                        />
+                      </Box>
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 3 }}>
-                      <Box>
+                      <Box sx={fieldShellStyle}>
                         <Typography sx={fieldLabelStyle}>
                           Contact Name
                           <span style={{ color: "#d32f2f" }}> *</span>
@@ -1514,7 +1509,7 @@ export default function AddEditCustContLocReg() {
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 2 }}>
-                      <Box>
+                      <Box sx={fieldShellStyle}>
                         <Typography sx={fieldLabelStyle}>Phone</Typography>
                         <TextControl
                           value={contact.mobile}
@@ -1533,7 +1528,7 @@ export default function AddEditCustContLocReg() {
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 2 }}>
-                      <Box>
+                      <Box sx={fieldShellStyle}>
                         <Typography sx={fieldLabelStyle}>Alternate Phone No</Typography>
                         <TextControl
                           value={contact.alternateMobile}
@@ -1552,7 +1547,7 @@ export default function AddEditCustContLocReg() {
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 2 }}>
-                      <Box>
+                      <Box sx={fieldShellStyle}>
                         <Typography sx={fieldLabelStyle}>Email ID</Typography>
                         <TextControl
                           value={contact.email}
@@ -1595,7 +1590,7 @@ export default function AddEditCustContLocReg() {
             </Box>
 
             <CardContent>
-              <Grid container spacing={2}>
+              <Grid container spacing={2} alignItems="stretch">
                 <Grid size={{ xs: 12, md: 4 }}>
                   {renderTextField(
                     "Sales Organization",
@@ -1616,7 +1611,7 @@ export default function AddEditCustContLocReg() {
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 4 }}>
-                  <Box sx={{ display: "flex", width: "100%",  minHeight: 52}}>
+                  <Box sx={{ display: "flex", width: "100%", minHeight: 52 }}>
                      <SelectControl
                       name="paymentTerms"
                       label="Payment Terms"
@@ -1630,7 +1625,7 @@ export default function AddEditCustContLocReg() {
                       fontSize="0.9rem"
                       labelFontWeight={600}
                       shrinkLabel
-                      sx={{ width: 240, maxWidth: 240, mt: "auto" }}
+                      sx={{ width: "100%", mt: "auto" }}
                       disabled={isDeleteMode}
                     />
                   </Box>

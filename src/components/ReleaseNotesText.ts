@@ -6,12 +6,21 @@ export interface ReleaseNote {
 
 const ReleaseNotesText: ReleaseNote[] = [
   {
-    version: "v1.4.0",
-    date: "2026-05-04",
+    version: "v1.5.0",
+    date: "2026-06-10",
     changes: [
-      "Billing Planner - 1.Targets added for the graphs.Merged VA and NPI as VA/DTP.2.Segment wise graph completely modified.3. plus symbol provided beside jobnumber column to view additional details of job",
+      "Billing Planner - Team costcenter wise default column visibility shown(selected columns)",
+      "Previous Billing Data Report - New implementation with totals ",
+      "Export to excel - format styles added",
     ],
   },
+  //   {
+  //   version: "v1.4.0",
+  //   date: "2026-05-04",
+  //   changes: [
+  //     "Billing Planner - 1.Targets added for the graphs.Merged VA and NPI as VA/DTP.2.Segment wise graph completely modified.3. plus symbol provided beside jobnumber column to view additional details of job",
+  //   ],
+  // },
   //  {
 
   //   version: "v1.3.0",

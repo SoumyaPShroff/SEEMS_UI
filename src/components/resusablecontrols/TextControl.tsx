@@ -38,7 +38,10 @@ const TextControl: React.FC<TextControlProps> = ({
     fontSize,
     borderRadius: 4,
     border: "1px solid #ccc",
-    padding: "8px 12px",  
+    padding: "8px 12px",
+    height: multiline ? undefined : 40,
+    minHeight: multiline ? 40 : undefined,
+    boxSizing: "border-box",
     width: fullWidth ? "100%" : undefined,
     ...style,
   };

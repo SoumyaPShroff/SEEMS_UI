@@ -42,7 +42,6 @@ interface EnquiryForm {
   status: string;
   createdBy: string;
   referenceBy: string;
-  toolId: string;
   tool: string;
   quotation_request_lastdate?: string;
 
@@ -117,7 +116,6 @@ const OnsiteEnquiry: React.FC = () => {
     SI: "",
     PI: "",
     createdBy: loginUser,
-    toolId: "",
     tool: "",
 
     //added
@@ -144,7 +142,7 @@ const OnsiteEnquiry: React.FC = () => {
       fetch(`${baseUrl}/api/Sales/States`).then(r => r.json()),
       fetch(`${baseUrl}/api/Home/SalesManagers`).then(r => r.json()),
       fetch(`${baseUrl}/api/Home/HOPCManagerList`).then(r => r.json()),
-      fetch(`${baseUrl}/api/Home/AllTools`).then(r => r.json()),
+      fetch(`${baseUrl}/api/Job/AllTools`).then(r => r.json()),
       fetch(`${baseUrl}/api/Home/HOPCTasks`).then(r => r.json()),
       fetch(`${baseUrl}/api/Sales/customerlocations`).then(r => r.json()),
       fetch(`${baseUrl}/api/Sales/customercontacts`).then(r => r.json()),
@@ -176,7 +174,7 @@ const OnsiteEnquiry: React.FC = () => {
   const fetchCustomerContacts = async (customerId: string, locationId: string) => {
     try {
       const res = await fetch(
-        `${baseUrl}/api/Sales/customercontacts?customer_id=${customerId}&location_id=${locationId}`
+        `${baseUrl}/api/Sales/customercontacts?customerId=${customerId}&locationId=${locationId}`
       );
       const data = await res.json();
 
@@ -452,8 +450,6 @@ const OnsiteEnquiry: React.FC = () => {
     fd.append("statename", form.state);
 
     fd.append("tm", form.tm);
-    //fd.append("toolId", String(form.toolId));
-    fd.append("toolId", String(Number(form.toolId)));
     fd.append("tool", form.tool);
     //fd.append("taskId", form.taskId);
     fd.append("taskId", String(Number(form.taskId)));
@@ -647,7 +643,10 @@ const OnsiteEnquiry: React.FC = () => {
                         name="locationId"
                         label="Location"
                         value={form.locationId}
-                        options={lookups.Locations.map((l: any) => ({ value: l.location_id.toString(), label: l.location }))}
+                        options={lookups.Locations.map((l: any) => ({
+                          value: String(l?.location_id ?? ""),
+                          label: String(l?.location ?? ""),
+                        }))}
                         onChange={handleChange}
                         required
                       // height={34}
@@ -669,7 +668,10 @@ const OnsiteEnquiry: React.FC = () => {
                         name="contactName"
                         label="Contact Name"
                         value={form.contactName}
-                        options={lookups.Contacts.map((c: any) => ({ value: c.contact_id.toString(), label: c.contactName }))}
+                        options={lookups.Contacts.map((c: any) => ({
+                          value: String(c?.contact_id ?? ""),
+                          label: String(c?.contactName ?? ""),
+                        }))}
                         onChange={handleChange}
                         required
                       />
@@ -703,22 +705,13 @@ const OnsiteEnquiry: React.FC = () => {
                       </Box> */}
                       <Box sx={{ width: "100%" }}>
                         <SelectControl
-                          name="toolId"
-                          label="Tool Name"
-                          value={form.toolId || ""}
-                          onChange={(e) => {
-                            handleChange(e);
-                            const selectedOption = lookups.AllTools.find(
-                              (t: any) => t.idno.toString() === e.target.value
-                            );
-                            setForm((prev) => ({
-                              ...prev,
-                              tool: selectedOption?.tools || ""
-                            }));
-                          }}
-                          options={lookups.AllTools.map((t: any) => ({
-                            value: t.idno.toString(),
-                            label: t.tools,
+                          name="Tool"
+                          label="Tool"
+                          value={form.tool || ""}
+                          onChange={handleChange}
+                          options={lookups.AllTools.map((tool: string) => ({
+                            value: tool,
+                            label: tool,
                           }))}
                           required
                         />
@@ -730,8 +723,8 @@ const OnsiteEnquiry: React.FC = () => {
                           value={form.taskId || ""}
                           onChange={handleChange}
                           options={lookups.HOPCTasks.map((t: any) => ({
-                            value: t.itemnumber.toString(),
-                            label: t.tasktype,
+                            value: String(t?.itemnumber ?? ""),
+                            label: String(t?.tasktype ?? ""),
                           }))}
                           required
                         />

@@ -33,11 +33,13 @@ import AddEditCustContact from './models/Sales/AddEditCustContact';
 import EnquiryStatus from './models/Sales/EnquiryStatus';
 import InvoiceRegister from './models/Sales/InvoiceRegister';
 import PageAccessManagement from './components/PageAccessManagement';
+import QueryBuilder from './components/QueryBuilder';
 import AddEditSEEMSRequest from './models/General/AddEditSEEMSRequest';
 import ViewSEEMSRequests from './models/General/ViewSEEMSRequests';
 import AddEditCustContLocReg from './models/Sales/AddEditCustContLocReg';
 import EstimationDocUpload from './models/Sales/EstimationDocUpload';
 import POJobAllocation from './models/Sales/POJobAllocation';
+import PurchaseOrder from './models/Sales/PurchaseOrder';
 
 
 const App: React.FC = () => {
@@ -75,6 +77,7 @@ const App: React.FC = () => {
           <Route path="SalesDashboard" element={<SalesDashboard />} />
           <Route path="ViewAllEnquiries" element={<ViewAllEnquiries />} />
           <Route path="AddEnquiry" element={<AddEnquiry />} />
+          <Route path="PurchaseOrder" element={<PurchaseOrder />} />
           <Route path="support" element={<Support />} />
 
           {/* Absolute routes */}
@@ -94,11 +97,13 @@ const App: React.FC = () => {
           <Route path="EnquiryStatus" element={<EnquiryStatus />} />
           <Route path="InvoiceRegister" element={<InvoiceRegister />} />
           <Route path="PageAccessManagement" element={<PageAccessManagement />} />
+          <Route path="QueryBuilder" element={<QueryBuilder />} />
           <Route path="AddEditSEEMSRequest" element={<AddEditSEEMSRequest />} />
           <Route path="ViewSEEMSRequests" element={<ViewSEEMSRequests />} />
           <Route path="AddEditCustContLocReg" element={<AddEditCustContLocReg />} />
           <Route path="EstimationDocUpload" element={<EstimationDocUpload />} />
           <Route path="POJobAllocation" element={<POJobAllocation />} />
+        
         </Route>
         {/* Password + Blank */}
         <Route path="/ResetPassword" element={<ResetPassword />} />

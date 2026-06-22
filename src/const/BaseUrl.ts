@@ -44,6 +44,14 @@ const getDefaultApiBaseUrl = () => {
     console.log("API Base localhost URL", url)
     return url;
   }
+
+  // Test server 
+  if (host === "10.60.2.141") {
+    url = `http://${host}:90`; // add port if needed
+    console.log("API Base test URL:", url);
+    return url;
+  }
+
   url = `https://${host}`;
   console.log("API Base URL", url)
   return url;

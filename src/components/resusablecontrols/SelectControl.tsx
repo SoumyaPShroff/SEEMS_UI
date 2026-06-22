@@ -8,7 +8,7 @@ interface Option {
 
 interface SelectControlProps {
   name: string;
-  label: string;
+  label?: string;
   value: string | number | null;
   options: Option[];
   onChange: (e: any) => void;
@@ -29,7 +29,7 @@ interface SelectControlProps {
 
 const SelectControl: React.FC<SelectControlProps> = ({
   name,
-  label,
+  label = "",
   value,
   onChange,
   options,
@@ -60,6 +60,7 @@ const selectedOption =
       fullWidth={fullWidth}
       error={error}
       sx={{
+        width,
         minWidth: width,
         fontFamily: controlFontFamily,
         "& .MuiOutlinedInput-root": {
@@ -93,13 +94,15 @@ const selectedOption =
         renderInput={(params) => (
           <TextField
             {...params}
-           label={
-              <>
-                {label}
-                {required && (
-                  <span style={{ color: "red", marginLeft: 2 }}>*</span>
-                )}
-              </>
+            label={
+              label ? (
+                <>
+                  {label}
+                  {required && (
+                    <span style={{ color: "red", marginLeft: 2 }}>*</span>
+                  )}
+                </>
+              ) : undefined
             }
             size="small"
             InputLabelProps={{ shrink: shrinkLabel }}
