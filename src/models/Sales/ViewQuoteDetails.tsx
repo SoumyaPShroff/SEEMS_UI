@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import type { GridColDef } from '@mui/x-data-grid';
-import { Box, Button, TextField } from "@mui/material";
+import { Box, Button, TextField, Radio, RadioGroup, FormControlLabel, FormControl } from "@mui/material";
 import CustomDataGrid from "../../components/resusablecontrols/CustomDataGrid";
 import { baseUrl } from "../../const/BaseUrl";
 import { exporttoexcel } from "../../components/utils/exporttoexcel";
@@ -31,14 +31,15 @@ export default function ViewQuoteDetails() {
     const [searchText, setSearchText] = useState<string>("");
     const navigate = useNavigate();
     const [loading, setLoading] = useState<boolean>(false);
+    const [gstMode, setGstMode] = useState<string>("with");
 
     const columns: GridColDef[] = [
         { field: "enquiryno", headerName: "Enquiry No", minWidth : 130 },
-        { field: "quoteNo", headerName: "Quote No", minWidth: 120 },
-        { field: "customer", headerName: "Customer", minWidth: 350 },
+        { field: "quoteNo", headerName: "Quote No", minWidth: 117 },
+        { field: "customer", headerName: "Customer", minWidth: 320 },
         { field: "createdon", headerName: "CreatedOn", minWidth: 150 },
         { field: "name", headerName: "Name", minWidth: 160 },
-        { field: "totalquoteAmt", headerName: "TotalQuoteAmt", minWidth: 200 },
+        { field: "totalquoteAmt", headerName: "TotalQuoteAmt", minWidth: 190 },
         { field: "versionno", headerName: "Versionno", minWidth: 150 },
         // ⭐ NEW COLUMN
         {
@@ -52,9 +53,10 @@ export default function ViewQuoteDetails() {
                     variant="text"
                     size="small"
                     sx={{ textTransform: "none" }}
-                    onClick={() =>
-                        navigate(`/Home/ViewQuoteReport/${params.row.quoteNo}/${params.row.versionno}/${params.row.enquiryno}`,
-                        )}
+                    onClick={() => {
+                        const basePath = gstMode === "with" ? "ViewQuoteReport" : "ViewQuoteReportNoGST";
+                        navigate(`/Home/${basePath}/${params.row.quoteNo}/${params.row.versionno}/${params.row.enquiryno}`);
+                    }}
                 >
                     Generate Quote
                 </Button>
@@ -151,6 +153,12 @@ export default function ViewQuoteDetails() {
                     }}
                 />
                 <Button variant="contained" onClick={fetchData} style={{ height: 35 }}> View Data </Button>
+                <FormControl component="fieldset" sx={{ ml: 2 }}>
+                    <RadioGroup row value={gstMode} onChange={(e) => setGstMode(e.target.value)}>
+                        <FormControlLabel value="with" control={<Radio size="small" />} label="With GST" />
+                        <FormControlLabel value="without" control={<Radio size="small" />} label="Without GST" />
+                    </RadioGroup>
+                </FormControl>
                 <ExportButton label="Export to Excel" onClick={handleViewQuoteExport} />
                 <TextField
                     label="Search Quote No"

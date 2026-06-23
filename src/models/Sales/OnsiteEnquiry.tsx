@@ -36,6 +36,7 @@ interface EnquiryForm {
   onsiteDuration: string;
   profReqLastDate: string;
   taskId: string;
+  toolId: string;
   tentStartDate: string;
   SI?: string;
   PI?: string;
@@ -108,6 +109,7 @@ const OnsiteEnquiry: React.FC = () => {
     referenceBy: "",
     remarks: "",
     taskId: "",
+    toolId: "",
     noOfResources: "",
     type: "Export",
     tentStartDate: "",
@@ -149,6 +151,7 @@ const OnsiteEnquiry: React.FC = () => {
       fetch(`${baseUrl}/api/Home/AllActiveEmployees`).then(r => r.json()),
 
     ]).then(([customers, States, SalesManagers, HOPCManagers, AllTools, HOPCTasks, Locations, Contacts, AllActiveEmployees]) => {
+      console.log("✅ AllTools loaded:", AllTools);
       setLookups({ customers, States, SalesManagers, HOPCManagers, AllTools, HOPCTasks, Locations, Contacts, AllActiveEmployees });
     });
   }, []);
@@ -328,6 +331,17 @@ const OnsiteEnquiry: React.FC = () => {
       return;
     }
 
+    // ✅ TOOL CHANGE: store both the string and the numeric id
+    if (name === "tool") {
+      setForm((prev) => ({
+        ...prev,
+        tool: value,
+        // Note: toolId should be populated from a lookup or API call when backend provides tool objects
+        toolId: value, // temporary: use tool name as ID until we have proper mapping
+      }));
+      return;
+    }
+
     // ✅ ✅ TASK → SI / PI AUTO MAPPING (YOUR MAIN REQUIREMENT)
     if (name === "taskId") {
       let SI = "";
@@ -437,8 +451,19 @@ const OnsiteEnquiry: React.FC = () => {
   /* ---------------- SUBMIT ---------------- */
 
   const handleSubmit = async () => {
-    if (!form.customerId || !form.salesresponsibilityid || !form.completeresponsibilityid || !form.noOfResources || !form.expFrom || !form.expTo || !form.profReqLastDate || !form.tentStartDate || !form.hourlyReate) {
-      toast.error("Required fields missing");
+    // Require tool: allow either `tool` (name) or `toolId` (id) to be present — useful in edit mode
+    const hasTool = (form.tool || "").toString().trim() !== "";
+    const hasToolId = (form.toolId || "").toString().trim() !== "";
+
+    if (!form.customerId || !(hasTool || hasToolId) || !form.salesresponsibilityid || !form.completeresponsibilityid || !form.noOfResources || !form.expFrom || !form.expTo || !form.profReqLastDate || !form.tentStartDate || !form.hourlyReate) {
+      if (!(hasTool || hasToolId)) {
+        toast.error("Tool is required");
+      } else if (!hasToolId) {
+        // Tool name present but id missing — show a gentler message asking user to verify mapping
+        toast.error("Tool ID is required (verify tool mapping)");
+      } else {
+        toast.error("Required fields missing");
+      }
       return;
     }
     const fd = new FormData();
@@ -451,6 +476,8 @@ const OnsiteEnquiry: React.FC = () => {
 
     fd.append("tm", form.tm);
     fd.append("tool", form.tool);
+    const toolIdNumber = Number(form.toolId);
+    fd.append("toolId", Number.isFinite(toolIdNumber) ? String(toolIdNumber) : "0");
     //fd.append("taskId", form.taskId);
     fd.append("taskId", String(Number(form.taskId)));
 
@@ -526,7 +553,7 @@ const OnsiteEnquiry: React.FC = () => {
       fd.append("uploadedfilename", file.name);
     }
     // ✅ NOW LOG SAFELY
-   // console.log("✅ FINAL FORMDATA PAYLOAD ↓↓↓");
+    // console.log("✅ FINAL FORMDATA PAYLOAD ↓↓↓");
     const url = isEditMode ? `${baseUrl}/api/Sales/EditEnquiryData` : `${baseUrl}/api/Sales/AddEnquiryData`;
 
     if (isEditMode) {
@@ -535,15 +562,23 @@ const OnsiteEnquiry: React.FC = () => {
 
     try {
       const res = await fetch(url, { method: isEditMode ? "PUT" : "POST", body: fd, });
+      const data = await res.json();
       if (!res.ok) {
         const err = await res.text();
         console.error("SAVE ERROR:", err);
-        toast.error("❌ Failed to Add enquiry");
+        console.error("data:", data);
+      //  toast.error("❌ Failed to Add enquiry");
+       if (data.emailSent === false) {
+        toast.warning("⚠️ Enquiry added successfully, but email notification failed.");
+      } else {
+        toast.success("✅ Enquiry added successfully.");
+      }
         return;
       }
+ 
       toast.success(
         <div>
-          {isEditMode ? "Onsite Enquiry Updated" : "Onsite Enquiry Added"}
+          {data.emailSent === false  ? "Onsite Enquiry Added, but Email Notification Failed" : isEditMode ? "Onsite Enquiry Updated" : "Onsite Enquiry Added"}
           <Button
             style={{ marginLeft: "10px", color: "#273992", textDecoration: "underline" }}
             onClick={() => navigate("/Home/ViewAllEnquiries")}
@@ -553,10 +588,19 @@ const OnsiteEnquiry: React.FC = () => {
         </div>,
         { autoClose: false }   // 🔥 toast stays until user closes or clicks button
       );
+      // After showing the toast, redirect user to ViewAllEnquiries
+      setTimeout(() => {
+        navigate("/Home/ViewAllEnquiries");
+      }, 350);
 
     } catch (error) {
       console.error("NETWORK ERROR:", error);
-      toast.error("❌ Failed to save enquiry");
+     // toast.error("❌ Failed to save enquiry");
+      if (data.emailSent === false) {
+        toast.warning("⚠️ Enquiry added successfully, but email notification failed.");
+      } else {
+        toast.success("✅ Enquiry added successfully.");
+      }
     }
   };
 
@@ -705,14 +749,14 @@ const OnsiteEnquiry: React.FC = () => {
                       </Box> */}
                       <Box sx={{ width: "100%" }}>
                         <SelectControl
-                          name="Tool"
+                          name="tool"
                           label="Tool"
                           value={form.tool || ""}
                           onChange={handleChange}
-                          options={lookups.AllTools.map((tool: string) => ({
-                            value: tool,
-                            label: tool,
-                          }))}
+                          options={Array.isArray(lookups.AllTools) ? lookups.AllTools.map((tool: any) => {
+                            const toolName = typeof tool === 'string' ? tool : (tool.Tools || tool.toolname || '');
+                            return { value: toolName, label: toolName };
+                          }) : []}
                           required
                         />
                       </Box>
@@ -775,10 +819,11 @@ const OnsiteEnquiry: React.FC = () => {
                           type="number"
                           name="noOfResources"
                           value={form.noOfResources}
-                          onChange={handleChange}
+                          onChange={handleNumericChange}
                           required
                           size="small"
                           fullWidth
+                          InputProps={{ inputProps: { min: 1 } }}
                           InputLabelProps={{ shrink: true }}
                           sx={{ "& .MuiInputLabel-root": { fontWeight: 700 } }}
                         />

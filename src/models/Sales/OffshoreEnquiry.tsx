@@ -186,7 +186,7 @@ const OffshoreEnquiry: React.FC = () => {
    useEffect(() => {
       const fetchLookups = async () => {
          try {
-            const [custRes, empRes, analysisRes, salesisRes, designRes, npiRes, PCBToolsRes, LocationsRes, ContactsRes, StatesRes] = await Promise.all([
+            const [custRes, empRes, analysisRes, salesisRes, designRes, npiRes, PCBToolsRes, LocationsRes, StatesRes] = await Promise.all([
                fetch(`${baseUrl}/api/Sales/customers`),
                fetch(`${baseUrl}/api/Home/AllActiveEmployees`),
                fetch(`${baseUrl}/api/Home/AnalysisManagers`),
@@ -195,10 +195,9 @@ const OffshoreEnquiry: React.FC = () => {
                fetch(`${baseUrl}/api/Home/SalesNpiUsers`),
                fetch(`${baseUrl}/api/Job/AllTools`),
                fetch(`${baseUrl}/api/Sales/customerlocations`),
-               fetch(`${baseUrl}/api/Sales/customercontacts`),
                fetch(`${baseUrl}/api/Sales/States`),
             ]);
-            const [customers, AllActiveEmployees, AnalysisManagers, SalesManagers, designMngrs, salesnpiusers, AllTools, Locations, Contacts, States] =
+            const [customers, AllActiveEmployees, AnalysisManagers, SalesManagers, designMngrs, salesnpiusers, AllTools, Locations, States] =
                await Promise.all([
                   custRes.json(),
                   empRes.json(),
@@ -208,7 +207,6 @@ const OffshoreEnquiry: React.FC = () => {
                   npiRes.json(),
                   PCBToolsRes.json(),
                   LocationsRes.json(),
-                  ContactsRes.json(),
                   StatesRes.json(),
                ]);
             setLookups({
@@ -220,7 +218,7 @@ const OffshoreEnquiry: React.FC = () => {
                salesnpiusers,
                AllTools,
                Locations,
-               Contacts,
+               Contacts: [],
                States,
                tool: [],
             });
@@ -357,7 +355,7 @@ const OffshoreEnquiry: React.FC = () => {
 
    const fetchCustomerContacts = async (customerId: string, locationId: string) => {
       try {
-         const res = await fetch(`${baseUrl}/api/Sales/customercontacts?customer_id=${customerId}&location_id=${locationId}`);
+         const res = await fetch(`${baseUrl}/api/Sales/customercontacts?customerId=${customerId}&locationId=${locationId}`);
          const data = await res.json();
          setLookups((prev) => ({ ...prev, Contacts: data }));
 
@@ -734,6 +732,11 @@ const OffshoreEnquiry: React.FC = () => {
             setLoading(false);
             return;
          }
+         if (!form.tm) {
+            toast.error("Billing Type is required");
+            setLoading(false);
+            return;
+         }
 
          // 2️⃣ Validate that for each selected scope, a responsibility is chosen
          if (form.layout.length > 0 && !form.layoutbyid) {
@@ -926,11 +929,11 @@ const OffshoreEnquiry: React.FC = () => {
          const url = isEditMode ? `${baseUrl}/api/Sales/EditEnquiryData` : `${baseUrl}/api/Sales/AddEnquiryData`;
          //for Add - use POST, edit - PUT
          const res = await fetch(url, { method: isEditMode ? "PUT" : "POST", body: formData, });
-
+         const data = await res.json();
          if (res.ok) {
-            toast.success(
+             toast.success(
                <div>
-                  {isEditMode ? "Enquiry Updated" : "Enquiry Added"}
+                  {data.emailSent === false  ? "OFFSHORE Enquiry Added, but Email Notification Failed" : isEditMode ? "OFFSHORE Enquiry Updated" : "OFFSHORE Enquiry Added"}
                   <Button
                      style={{ marginLeft: "10px", color: "#fff", textDecoration: "underline" }}
                      onClick={() => navigate("/Home/ViewAllEnquiries")}
@@ -942,8 +945,13 @@ const OffshoreEnquiry: React.FC = () => {
             );
          } else {
             const err = await res.text();
-            toast.error("❌ Failed to save enquiry: " + err);
-         }
+          //  toast.error("❌ Failed to save enquiry: " + err);
+           if (data.emailSent === false) {
+                  toast.warning("⚠️ Enquiry added successfully, but email notification failed.");
+                } else {
+                  toast.success("✅ Enquiry added successfully.");
+                }
+               }
       } catch (err) {
          console.error(err);
          toast.error("❌ Unexpected error occurred");

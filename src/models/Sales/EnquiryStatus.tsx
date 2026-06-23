@@ -2,7 +2,8 @@ import  { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Box, Button, Card, CardContent, CircularProgress, Stack, Typography } from "@mui/material";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { ToastContainer , toast } from "react-toastify";
+
 import SelectControl from "../../components/resusablecontrols/SelectControl";
 import TextControl from "../../components/resusablecontrols/TextControl";
 import Label from "../../components/resusablecontrols/Label";
@@ -152,18 +153,20 @@ const EnquiryStatus = () => {
       CCMailList: JSON.stringify(ccList),
     };
 
-    const endpoints = [{ method: "put" as const, url: `${baseUrl}/api/Sales/UpdateEnquiryStatus` },];
-
+    // Call the UpdateEnquiryStatus endpoint and treat any 2xx response as success
     let updated = false;
-    for (const ep of endpoints) {
-      try {
-        await axios[ep.method](ep.url, payload);
+    try {
+      const res = await axios.put(`${baseUrl}/api/Sales/UpdateEnquiryStatus`, payload);
+      console.log("UpdateEnquiryStatus response", res.status, res.data);
+      if (res.status >= 200 && res.status < 300) {
         updated = true;
-        break;
-      } catch (error) {
-        console.warn("Failed to update enquiry status:", ep, error);
-        // try next endpoint variant
+      } else if (res.data) {
+        // In case server returns custom body with success info
+        updated = true;
       }
+    } catch (err: any) {
+      console.warn("Failed to update enquiry status:", err);
+      if (err.response) console.warn("UpdateEnquiryStatus response data:", err.response.data);
     }
 
     if (!updated) {
@@ -171,9 +174,12 @@ const EnquiryStatus = () => {
       return;
     }
 
-    toast.success("Enquiry status updated.");
     const returnStatus = (fromStatus || "").trim() || status;
-    navigate(`/Home/ViewAllEnquiries?status=${encodeURIComponent(returnStatus)}`);
+    toast.success("✅ Enquiry status updated.");
+
+    setTimeout(() => {
+      navigate(`/Home/ViewAllEnquiries?status=${encodeURIComponent(returnStatus)}`);
+    }, 1000);
   };
 
   return (
@@ -318,6 +324,7 @@ const EnquiryStatus = () => {
             )}
           </Box>
         </CardContent>
+         <ToastContainer />
       </Card>
     </Box>
   );

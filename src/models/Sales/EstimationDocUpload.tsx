@@ -14,7 +14,7 @@ import {
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import { baseUrl } from "../../const/BaseUrl";
 
 const EstimationDocUpload: React.FC = () => {
@@ -56,29 +56,58 @@ const EstimationDocUpload: React.FC = () => {
   const handleUpload = async () => {
     if (!file || !enquiryNo) return;
 
-    const formData = new FormData();
-    const sessionUserId = sessionStorage.getItem("SessionUserID") || "";
-    const formattedFileName = buildEstimationFileName(file.name);
-    const formattedFile = new File([file], formattedFileName, {
-      type: file.type,
-    });
+    try {
+      const formData = new FormData();
+      const sessionUserId = sessionStorage.getItem("SessionUserID") || "";
+      const formattedFileName = buildEstimationFileName(file.name);
+      const formattedFile = new File([file], formattedFileName, {
+        type: file.type,
+      });
 
-    formData.append("file", formattedFile, formattedFileName);
-    formData.append("enquiryno", enquiryNo);
-    formData.append("sessionUserId", sessionUserId);
+      formData.append("file", formattedFile, formattedFileName);
+      formData.append("enquiryno", enquiryNo);
+      formData.append("sessionUserId", sessionUserId);
 
-    await axios.post(
-      `${baseUrl}/api/Sales/UploadEstimationDoc`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+      const response = await axios.post(
+        `${baseUrl}/api/Sales/UploadEstimationDoc`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log("Estimation document upload successful", response.data);
+      console.log("Response:", response.data);
+      const emailFailed = response.data?.emailSent === false || response.data?.EmailSent === false;
+      const toastMessage = (
+        <div>
+          {emailFailed
+            ? "Estimation doc uploaded successfully, but email notification failed."
+            : "Estimation doc uploaded successfully."}
+          <Button
+            style={{ marginLeft: "10px", color: "#273992", textDecoration: "underline" }}
+            onClick={() => navigate("/Home/ViewAllEnquiries")}
+          >
+            Return to ViewAllEnquiries
+          </Button>
+        </div>
+      );
+
+      toast.success(toastMessage, {
+        position: "top-right",
+        autoClose: false,
+        hideProgressBar: false,
+      });
+    } catch (err: any) {
+      console.error("Estimation document upload failed", err);
+      if (axios.isAxiosError(err) && err.response) {
+        toast.error(`Failed to upload estimation document: ${err.response.status} ${err.response.statusText}`);
+      } else {
+        toast.error("Failed to upload estimation document.");
       }
-    );
-
-    toast.success("Estimation doc uploaded successfully.");
-    navigate("/Home/ViewAllEnquiries", { replace: true });
+    }
   };
 
   if (error) {
@@ -132,6 +161,7 @@ const EstimationDocUpload: React.FC = () => {
           </Box>
         </CardContent>
       </Card>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
     </Box>
   );
 };

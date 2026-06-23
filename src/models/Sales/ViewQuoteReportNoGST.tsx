@@ -16,7 +16,7 @@ interface QuoteHeader {
   rfxNo: string;
   createdByName: string;
   createdByEmail: string;
-  createdByPhone: string;
+  createdByPhone?: string;
 }
 
 interface QuoteItem {
@@ -36,7 +36,7 @@ interface QuoteReportResponse {
   name: string;
 }
 
-const ViewQuoteReport: React.FC = () => {
+const ViewQuoteReportNoGST: React.FC = () => {
   const { quoteNo, versionNo, enquiryNo } = useParams<{ quoteNo: string; versionNo: string; enquiryNo: string; }>();
   const [data, setData] = useState<QuoteReportResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,6 +64,8 @@ const ViewQuoteReport: React.FC = () => {
 
   const { header, items, grandTotal, termsAndConditions } = data;
 
+  const taxRate = 0.18; // default tax rate (18%)
+
   return (
     <div className="quote-wrapper">
       <div className="quote-report">
@@ -87,7 +89,7 @@ const ViewQuoteReport: React.FC = () => {
             <p>India</p>
             <p>Tel : 080 68190700</p>
             <p>Email : sales@siennaecad.com</p>
-            <p><b>GST NO :</b> 29AAACE4885A1ZP</p>
+            {/* GST intentionally omitted for this variant */}
           </div>
         </div>
 
@@ -116,29 +118,39 @@ const ViewQuoteReport: React.FC = () => {
             <tr>
               <th>S.No</th>
               <th>Description</th>
-              <th>Quantity</th>
+              <th>Quantity (Hrs)</th>
               <th>Unit Rate</th>
               <th>Total</th>
+              <th>Tax Rate</th>
+              <th>Tax Amount (₹)</th>
+              <th>Amount incl. Tax (₹)</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td colSpan={5} style={{ textAlign: "left" }}>Board Reference: {header.boardRef}</td>
+              <td colSpan={8} style={{ textAlign: "left" }}>Board Reference: {header.boardRef}</td>
             </tr>
-            {items.map(i => (
-              <tr key={i.slNo}>
-                <td>{i.slNo}</td>
-                <td>{i.layout}</td>
-                <td>{i.quantity} Number</td>
-                <td>{i.unitRate.toLocaleString()}</td>
-                <td>{i.lineTotal.toLocaleString()}</td>
-              </tr>
-            ))}
+            {items.map(i => {
+              const taxAmount = i.lineTotal * taxRate;
+              const amountIncl = i.lineTotal + taxAmount;
+              return (
+                <tr key={i.slNo}>
+                  <td>{i.slNo}</td>
+                  <td>{i.layout}</td>
+                  <td>{i.quantity} Hrs</td>
+                  <td>{i.unitRate.toLocaleString()}</td>
+                  <td>{i.lineTotal.toLocaleString()}</td>
+                  <td>{(taxRate * 100).toFixed(0)}%</td>
+                  <td>₹ {taxAmount.toLocaleString()}</td>
+                  <td>₹ {amountIncl.toLocaleString()}</td>
+                </tr>
+              );
+            })}
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan={4} style={{ textAlign: "right", fontWeight: "bold" }}>Total</td>
-              <td style={{ textAlign: "center", fontWeight: "bold" }}>{grandTotal.toLocaleString()}</td>
+              <td colSpan={7} style={{ textAlign: "right", fontWeight: "bold" }}>Total</td>
+              <td style={{ textAlign: "center", fontWeight: "bold" }}>₹ {grandTotal.toLocaleString()}</td>
             </tr>
           </tfoot>
         </table>
@@ -157,4 +169,4 @@ const ViewQuoteReport: React.FC = () => {
   );
 };
 
-export default ViewQuoteReport;
+export default ViewQuoteReportNoGST;

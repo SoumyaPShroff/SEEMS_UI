@@ -20,6 +20,7 @@ import OnsiteEnquiry from './models/Sales/OnsiteEnquiry';
 import AddQuotation from './models/Sales/AddQuotation';
 import ViewQuoteDetails from './models/Sales/ViewQuoteDetails';
 import ViewQuoteReport from "./models/Sales/ViewQuoteReport";
+import ViewQuoteReportNoGST from './models/Sales/ViewQuoteReportNoGST';
 import HomeDashboard from './components/HomeDashboard';
 import MeetMyTeam from './components/MeetMyTeam';
 import ComingSoon from './components/ComingSoon';
@@ -38,6 +39,7 @@ import AddEditSEEMSRequest from './models/General/AddEditSEEMSRequest';
 import ViewSEEMSRequests from './models/General/ViewSEEMSRequests';
 import AddEditCustContLocReg from './models/Sales/AddEditCustContLocReg';
 import EstimationDocUpload from './models/Sales/EstimationDocUpload';
+import EstimationDocList from './models/Sales/EstimationDocList';
 import POJobAllocation from './models/Sales/POJobAllocation';
 import PurchaseOrder from './models/Sales/PurchaseOrder';
 
@@ -88,6 +90,7 @@ const App: React.FC = () => {
           <Route path="AddQuotation/:enquiryNo" element={<AddQuotation />} />
           <Route path="ViewQuoteDetails" element={<ViewQuoteDetails />} /> 
           <Route path="ViewQuoteReport/:quoteNo/:versionNo/:enquiryNo" element={<ViewQuoteReport />} />
+          <Route path="ViewQuoteReportNoGST/:quoteNo/:versionNo/:enquiryNo" element={<ViewQuoteReportNoGST />} />
           <Route path="PlannedHours" element={<PlannedHours />} />
           <Route path="MeetMyTeam" element={<MeetMyTeam />} />
           <Route path="ViewCustomers" element={<ViewCustomers />} />
@@ -102,6 +105,7 @@ const App: React.FC = () => {
           <Route path="ViewSEEMSRequests" element={<ViewSEEMSRequests />} />
           <Route path="AddEditCustContLocReg" element={<AddEditCustContLocReg />} />
           <Route path="EstimationDocUpload" element={<EstimationDocUpload />} />
+          <Route path="EstimationDocList" element={<EstimationDocList />} />
           <Route path="POJobAllocation" element={<POJobAllocation />} />
         
         </Route>

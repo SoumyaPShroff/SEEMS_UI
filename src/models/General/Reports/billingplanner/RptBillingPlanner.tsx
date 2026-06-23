@@ -537,6 +537,23 @@ const recalculateGrandTotal = (row: TotalsRow) => {
     row.NPI;
 };
 
+const aggregateTotals = (buckets: Record<string, TotalsRow>): TotalsRow => {
+  const total = initTotalsRow();
+  Object.values(buckets).forEach((row) => {
+    total.Layout += row.Layout;
+    total.Analysis += row.Analysis;
+    total.GovtLayout += row.GovtLayout;
+    total.GovtAnalysis += row.GovtAnalysis;
+    total.Library += row.Library;
+    total.DFM += row.DFM;
+    total.VA += row.VA;
+    total.NPI += row.NPI;
+    total.ECO += row.ECO;
+  });
+  recalculateGrandTotal(total);
+  return total;
+};
+
 // ✅ Map each record into main category (row)
 const mainCategoryFor = (enqType: string, typ: string): SummaryCategoryKey => {
   if (enqType === "OFFSHORE" && typ === "Export") return "At Office Export";
@@ -668,7 +685,6 @@ const libWorkedAdjustmentRules: LibWorkedAdjustmentRule[] = [
 // ✅ Compute summary grouped by main categories
 const buildSummaryFromData = (data: BillingData[], libWorkedJobs: LibWorkedJobsSummary[] = []) => {
   const buckets: Record<string, TotalsRow> = {};
-  const total: TotalsRow = initTotalsRow();
 
   data.forEach((r) => {
     const job = r.jobNumber || "";
@@ -694,10 +710,6 @@ const buildSummaryFromData = (data: BillingData[], libWorkedJobs: LibWorkedJobsS
     // Recalculate row total
     recalculateGrandTotal(buckets[mainKey]);
 
-    // Update grand totals
-    (total[columnKey] as number) += po;
-    total.ECO += eco;
-    recalculateGrandTotal(total);
   });
 
   libWorkedJobs.forEach((summaryRow) => {
@@ -716,16 +728,14 @@ const buildSummaryFromData = (data: BillingData[], libWorkedJobs: LibWorkedJobsS
       }
       console.log(`Adjustment Rule: ${rule.field}, Amount: ${amount}, Category: ${rule.category}`, "Current buckets:", buckets[rule.category]);
       moveAmount(buckets[rule.category], rule.sourceColumns, rule.targetColumn, amount);
-      moveAmount(total, rule.sourceColumns, rule.targetColumn, amount);
     });
   });
 
   Object.values(buckets).forEach(recalculateGrandTotal);
-  recalculateGrandTotal(total);
+  const total = aggregateTotals(buckets);
 
   return { buckets, total };
 };
-
 const MONTHS = [
   { value: 1, label: "January" },
   { value: 2, label: "February" },
@@ -930,7 +940,7 @@ const RptBillingPlanner: React.FC = () => {
   // ✅ Compute summary grouped by main categories (for pending invoices)
   const buildPendingSummary = (pendingData: BillingData[]) => {
     const buckets: Record<string, TotalsRow> = {};
-    const total: TotalsRow = initTotalsRow();
+
     pendingData.forEach((r) => {
       const job = r.jobNumber || "";
       const enqType = (r as any).enquiryType || "";
@@ -950,16 +960,9 @@ const RptBillingPlanner: React.FC = () => {
         buckets[mainKey].GovtAnalysis +
         buckets[mainKey].Library +
         buckets[mainKey].DFM;
-
-      (total[columnKey] as number) += po;
-      total.GrandTotal =
-        total.Layout +
-        total.Analysis +
-        total.GovtLayout +
-        total.GovtAnalysis +
-        total.Library +
-        total.DFM;
     });
+
+    const total = aggregateTotals(buckets);
     return { buckets, total };
   };
 

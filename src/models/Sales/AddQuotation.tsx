@@ -7,7 +7,8 @@ import axios from "axios";
 import { baseUrl } from "../../const/BaseUrl";
 import { OFF_TERMS_AND_CONDITIONS } from "./const/QuoteOffTermsConditions";
 import { ON_TERMS_AND_CONDITIONS } from './const/QuoteOnTermsConditions';
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import { Link } from "react-router-dom";
 
 interface DescriptionItem {
     idNo: number;
@@ -116,6 +117,7 @@ const AddQuotation: React.FC = () => {
     const [quotes, setQuotes] = useState<any[]>([]);
     const [selectedQuoteNo, setSelectedQuoteNo] = useState<string | null>(quoteNo ?? null);
     const isEditMode = Boolean(selectedQuoteNo);
+    const [customisedDescription, setCustomisedDescription] = useState<string>("");
     const [deletedSlNos, setDeletedSlNos] = useState<number[]>([]);
     const [currentVersion, setCurrentVersion] = useState<number>(1);
 
@@ -132,14 +134,18 @@ const AddQuotation: React.FC = () => {
         axios.get<EnquiryHeaderResponse>(headerUrl)
             .then(res => {
                 const data = res.data;
+                const headerLocationId = String(data.locationid ?? "");
+                const headerBoardRef = data.boardref ?? "";
+
                 setCustomer(data.customer);
                 setContactName(data.contactName);
                 setLocation(data.location);
                 setAddress(data.address);
                 setEnquiryType(data.enquirytype);
-                setLocationId(data.locationid);
-                setBoardRef(data.boardref);  //for current quote
-                setEnquiryBoardRef(data.boardref); // store original enquiry boardRef
+                setLocationId(headerLocationId);
+                setBoardRef(headerBoardRef);  //for current quote
+                setEnquiryBoardRef(headerBoardRef); // store original enquiry boardRef
+                setItems([emptyItem(headerLocationId, headerBoardRef)]);
             })
             .catch(err => {
                 console.error("Failed to load enquiry header data", err);
@@ -363,8 +369,62 @@ const AddQuotation: React.FC = () => {
         0
     );
 
+    const buildQuoteItemsPayload = (forceNewSlNo = false) => {
+        let missingDescription = false;
+        let missingLocation = false;
+
+        const itemsPayload = items.map(i => {
+            const desc = descriptions.find(d => d.idNo === i.descriptionId);
+            if (!desc) {
+                missingDescription = true;
+                return null;
+            }
+
+            const effectiveLocationId = String(i.locationId || locationId || "").trim();
+            const locationIdValue = Number(effectiveLocationId);
+            if (!locationIdValue) {
+                missingLocation = true;
+                return null;
+            }
+
+            return {
+                slNo: forceNewSlNo ? 0 : i.slNo ?? 0,
+                layout: desc.layout,
+                quantity: Number(i.qty) || 0,
+                unit_rate: Number(i.rate) || 0,
+                currency_id:
+                    i.currency === "INR" ? 1 :
+                        i.currency === "USD" ? 2 : 3,
+                durationtype: i.duration,
+                location_id: locationIdValue,
+                updatedbyid: loginId,
+                versionNo: currentVersion,
+            };
+        });
+
+        if (itemsPayload.some(item => item === null)) {
+            return { items: null, missingDescription, missingLocation };
+        }
+
+        return { items: itemsPayload as Array<NonNullable<typeof itemsPayload[number]>>, missingDescription, missingLocation };
+    };
+
     const handleSaveQuotation = async () => {
+        console.log("handleSaveQuotation triggered", { selectedQuoteNo, items });
         try {
+            const { items: quoteItems, missingDescription, missingLocation } = buildQuoteItemsPayload();
+            if (!quoteItems || quoteItems.length === 0) {
+                console.warn("handleSaveQuotation: invalid quote items", { items, descriptions, missingDescription, missingLocation });
+                if (missingDescription) {
+                    toast.error("Please select a Description for all line items before saving.");
+                } else if (missingLocation) {
+                    toast.error("Please ensure Location is filled for all line items before saving.");
+                } else {
+                    toast.error("Please correct the line items before saving.");
+                }
+                return;
+            }
+
             const payload = {
                 enquiryno: enquiryNo,
                 quoteNo: selectedQuoteNo ?? "",   // "" => ADD, value => EDIT
@@ -372,40 +432,30 @@ const AddQuotation: React.FC = () => {
                 createdBy: loginId,
                 versionNo: 1,
                 tandc: terms,
-
-                items: items.map(i => {
-                    const desc = descriptions.find(d => d.idNo === i.descriptionId);
-                    if (!desc) {
-                        toast.error("Please select Description for all line items");
-                        return;
-                    }
-                    return {
-                        slNo: i.slNo ?? 0, // 🔴 IMPORTANT: 0 for new rows
-                        layout: desc.layout,
-                        quantity: i.qty,
-                        unit_rate: i.rate,
-                        currency_id:
-                            i.currency === "INR" ? 1 :
-                                i.currency === "USD" ? 2 : 3,
-                        durationtype: i.duration,
-                        location_id: i.locationId,
-                        updatedbyid: loginId,
-                    };
-                }),
-
+                items: quoteItems,
                 deletedSlNos
             };
 
             const url = selectedQuoteNo ? `${baseUrl}/api/Sales/EditQuotation` : `${baseUrl}/api/Sales/AddQuotation`;
 
-            await axios.post(url, payload);
+            const response = await axios.post(url, payload);
+            console.log("Quotation save response", { url, response: response.data });
 
-            toast.success(selectedQuoteNo ? "Quotation edited" : "Quotation added");
+            toast.success(selectedQuoteNo ? "Quotation edited" : "Quotation added", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+            });
             setDeletedSlNos([]);
 
-        } catch (err) {
-            console.error(err);
-            toast.error("Failed to save quotation");
+        } catch (err: any) {
+            console.error("Save quotation error:", err);
+            if (axios.isAxiosError(err) && err.response) {
+                console.error("Save quotation response data:", err.response.data);
+                toast.error(`Failed to save quotation: ${err.response.status} ${err.response.statusText}`);
+            } else {
+                toast.error("Failed to save quotation");
+            }
         }
     };
 
@@ -421,37 +471,28 @@ const AddQuotation: React.FC = () => {
     const handleSaveNewVersion = async () => {
         try {
             const newVersion = currentVersion + 1;
+            const { items: quoteItems, missingDescription, missingLocation } = buildQuoteItemsPayload(true);
+            if (!quoteItems || quoteItems.length === 0) {
+                console.warn("handleSaveNewVersion: invalid quote items", { items, descriptions, missingDescription, missingLocation });
+                if (missingDescription) {
+                    toast.error("Please select a Description for all line items before saving.");
+                } else if (missingLocation) {
+                    toast.error("Please ensure Location is filled for all line items before saving.");
+                } else {
+                    toast.error("Please correct the line items before saving.");
+                }
+                return;
+            }
 
             const payload = {
                 enquiryno: enquiryNo,
-                quoteNo: selectedQuoteNo,       // SAME quote
+                quoteNo: selectedQuoteNo ?? "",
                 board_ref: boardRef,
                 createdBy: loginId,
-                versionNo: newVersion,          // 🔴 ONLY CHANGE
+                versionNo: newVersion,
                 tandc: terms,
-
-                items: items.map(i => {
-                    const desc = descriptions.find(d => d.idNo === i.descriptionId);
-                    if (!desc) {
-                        toast.error("Please select Description for all line items");
-                        return;
-                    }
-
-                    return {
-                        slNo: 0,                     // 🔴 force new rows
-                        layout: desc.layout,
-                        quantity: i.qty,
-                        unit_rate: i.rate,
-                        currency_id:
-                            i.currency === "INR" ? 1 :
-                                i.currency === "USD" ? 2 : 3,
-                        durationtype: i.duration,
-                        location_id: i.locationId,
-                        updatedbyid: loginId,
-                    };
-                }),
-
-                deletedSlNos: []               // 🔴 ignore deletes for new version
+                items: quoteItems,
+                deletedSlNos: []
             };
 
             await axios.post(`${baseUrl}/api/Sales/AddQuotation`, payload);
@@ -460,9 +501,37 @@ const AddQuotation: React.FC = () => {
             setCurrentVersion(newVersion);
             setDeletedSlNos([]);
 
-        } catch (err) {
-            console.error(err);
-            toast.error("Failed to save new version");
+        } catch (err: any) {
+            console.error("Save new version error:", err);
+            if (axios.isAxiosError(err) && err.response) {
+                console.error("Save new version response data:", err.response.data);
+                toast.error(`Failed to save new version: ${err.response.status} ${err.response.statusText}`);
+            } else {
+                toast.error("Failed to save new version");
+            }
+        }
+    };
+
+    const handleSaveCustomDescription = async () => {
+        try {
+            const payload = {
+                Layout: customisedDescription,
+                Taxname: "GST",
+                tax_INR: 18,
+                tax_USD: 0,
+                tax_EURO: 0,
+                location:'-',
+            };
+            console.log("{payload}", payload);
+            await axios.post(`${baseUrl}/api/Sales/AddQuoteDescription`, payload);
+            toast.success("Customised description saved");
+            setCustomisedDescription("");
+
+            const { data } = await axios.get<DescriptionItem[]>(`${baseUrl}/api/Sales/QuoteBoardDescriptions`);
+            setDescriptions(data);
+        } catch (err: any) {
+            console.error("Failed to save customised description", err);
+            toast.error("Failed to save customised description");
         }
     };
 
@@ -470,9 +539,12 @@ const AddQuotation: React.FC = () => {
     // UI
     // -------------------------
     return (
-
         <Box sx={{ padding: "20px", maxWidth: 1300, mt: 15, ml: 5 }}>
+        
             <Box sx={{ mb: 2, display: "flex", gap: 2, alignItems: "center" }}>
+              <Link  to="/Home/ViewAllEnquiries">View All Enquiries</Link>
+       
+      
                 {/* Quote selector */}
                 <TextField select label="Select Quote" value={selectedQuoteNo ?? ""}
                     onChange={(e) => setSelectedQuoteNo(e.target.value)}
@@ -501,15 +573,29 @@ const AddQuotation: React.FC = () => {
                     <Typography><strong>Address:</strong> {address}</Typography>
 
                 </Box>
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{ mb: 3, gap: 2, display: "flex", flexDirection: "row", alignItems: "center" }}>
                     <TextField
                         label="Board Ref"
                         value={boardRef}
                         onChange={(e) => setBoardRef(e.target.value)}
                         size="small"
                     />
+                    <TextField
+                        label="Customised Description"
+                        value={customisedDescription}
+                        onChange={(e) => setCustomisedDescription(e.target.value)}
+                        size="small"
+                    />
+                    <Button
+                        color="primary"
+                        onClick={handleSaveCustomDescription}
+                        disabled={customisedDescription.trim().length === 0}
+                        sx={{ height: 40, alignSelf: 'center' }}
+                    >
+                        Enter and Save New Description
+                    </Button>
                 </Box>
-
+ 
                 {items.map((item, index) => (
                     <Box
                         key={index}
@@ -649,7 +735,6 @@ const AddQuotation: React.FC = () => {
                         multiline
                         rows={12}
                         fullWidth
-                        contentEditable={true}
                     />
                 </Box>
                 {/* Save */}
@@ -665,12 +750,16 @@ const AddQuotation: React.FC = () => {
                     )}
                 </Box>
                 <Box sx={{ mt: 3, textAlign: "right" }}>
-                    <Button variant="contained" color="primary" onClick={handleSaveQuotation}>
+                    <Button type="button" variant="contained" color="primary" onClick={(e) => {
+                        console.log("AddQuotation ADD button clicked", { isEditMode, selectedQuoteNo });
+                        handleSaveQuotation();
+                    }}>
                         {isEditMode ? "EDIT" : "ADD"}
                     </Button>
 
                 </Box>
             </Card>
+            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
         </Box>
     );
 };
