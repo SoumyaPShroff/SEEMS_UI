@@ -559,26 +559,26 @@ const OnsiteEnquiry: React.FC = () => {
     if (isEditMode) {
       fd.append("enquiryno", enquiryNo as string);
     }
-
+    let data: any = null;
     try {
       const res = await fetch(url, { method: isEditMode ? "PUT" : "POST", body: fd, });
-      const data = await res.json();
+      data = await res.json();
       if (!res.ok) {
         const err = await res.text();
         console.error("SAVE ERROR:", err);
         console.error("data:", data);
-      //  toast.error("❌ Failed to Add enquiry");
-       if (data.emailSent === false) {
-        toast.warning("⚠️ Enquiry added successfully, but email notification failed.");
-      } else {
-        toast.success("✅ Enquiry added successfully.");
-      }
+        //  toast.error("❌ Failed to Add enquiry");
+        if (data.emailSent === false) {
+          toast.warning("⚠️ Enquiry added successfully, but email notification failed.");
+        } else {
+          toast.success("✅ Enquiry added successfully.");
+        }
         return;
       }
- 
+
       toast.success(
         <div>
-          {data.emailSent === false  ? "Onsite Enquiry Added, but Email Notification Failed" : isEditMode ? "Onsite Enquiry Updated" : "Onsite Enquiry Added"}
+          {data?.emailSent === false ? "Onsite Enquiry Added, but Email Notification Failed" : isEditMode ? "Onsite Enquiry Updated" : "Onsite Enquiry Added"}
           <Button
             style={{ marginLeft: "10px", color: "#273992", textDecoration: "underline" }}
             onClick={() => navigate("/Home/ViewAllEnquiries")}
@@ -588,15 +588,15 @@ const OnsiteEnquiry: React.FC = () => {
         </div>,
         { autoClose: false }   // 🔥 toast stays until user closes or clicks button
       );
-      // After showing the toast, redirect user to ViewAllEnquiries
+     // After showing the toast, redirect user to ViewAllEnquiries
       setTimeout(() => {
         navigate("/Home/ViewAllEnquiries");
-      }, 350);
+      }, 500);
 
     } catch (error) {
       console.error("NETWORK ERROR:", error);
-     // toast.error("❌ Failed to save enquiry");
-      if (data.emailSent === false) {
+      // toast.error("❌ Failed to save enquiry");
+      if (data?.emailSent === false) {
         toast.warning("⚠️ Enquiry added successfully, but email notification failed.");
       } else {
         toast.success("✅ Enquiry added successfully.");

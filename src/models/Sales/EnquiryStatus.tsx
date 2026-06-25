@@ -41,7 +41,8 @@ const EnquiryStatus = () => {
   ];
 
   const normalizeStatus = (value: string) => value.trim();
-
+const [hasQuote, setHasQuote] = useState(false);
+const [checkingQuote, setCheckingQuote] = useState(true);
   const buildStatusOptions = (currentStatus: string, sourceOptions: string[]) => {
     const current = normalizeStatus(currentStatus);
     const base = sourceOptions.length > 0 ? sourceOptions : defaultStatusOptions;
@@ -75,6 +76,7 @@ const EnquiryStatus = () => {
 
   useEffect(() => {
     void loadEnquiry();
+    void checkQuoteExists();
   }, []);
 
   const loadEnquiry = async () => {
@@ -101,11 +103,42 @@ const EnquiryStatus = () => {
     }
   };
 
+  const checkQuoteExists = async () => {
+  if (!enquiryNo) return;
+
+  try {
+    setCheckingQuote(true);
+
+    const res = await axios.get(
+      `${baseUrl}/api/Sales/GetQuoteDetailsByEnqQuoteNoAsync/${enquiryNo}`
+    );
+   setHasQuote(Array.isArray(res.data) && res.data.length > 0);
+   if (!toast.isActive("quote-required")) {
+  toast.error("Please add a quote before updating enquiry status.", {
+    toastId: "quote-required",
+  });
+}
+
+  } catch (error) {
+    console.error("Failed to verify quote.", error);
+    toast.error("Failed to verify quote..");
+    setHasQuote(false);
+  } finally {
+    setCheckingQuote(false);
+  }
+};
+
   const handleSubmit = async () => {
     if (!enquiryNo) {
       toast.error("Invalid enquiry number.");
       return;
     }
+
+    if (!hasQuote) {
+    toast.error("Please add a quote before updating enquiry status.");
+    return;
+  }
+
     const normalizedStatus = String(status ?? "").trim().toLowerCase();
     if (!normalizedStatus || normalizedStatus === "select") {
       toast.error("Status is required.");
@@ -316,8 +349,12 @@ const EnquiryStatus = () => {
                 </Box>
 
                 <Stack direction="row" spacing={1} sx={{ mt: 2, justifyContent: "flex-end" }}>
-                  <Button variant="contained" size="small" onClick={handleSubmit}>
+                  {/* <Button variant="contained" size="small" onClick={handleSubmit}>
                     Submit
+                  </Button> */}
+                  <Button  variant="contained"  size="small"  
+                  onClick={handleSubmit}  disabled={!hasQuote || checkingQuote}
+                  >  {checkingQuote ? "Checking..." : "Submit"}
                   </Button>
                 </Stack>
               </>

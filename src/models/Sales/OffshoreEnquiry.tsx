@@ -931,9 +931,9 @@ const OffshoreEnquiry: React.FC = () => {
          const res = await fetch(url, { method: isEditMode ? "PUT" : "POST", body: formData, });
          const data = await res.json();
          if (res.ok) {
-             toast.success(
+            toast.success(
                <div>
-                  {data.emailSent === false  ? "OFFSHORE Enquiry Added, but Email Notification Failed" : isEditMode ? "OFFSHORE Enquiry Updated" : "OFFSHORE Enquiry Added"}
+                  {data.emailSent === false ? "OFFSHORE Enquiry Added, but Email Notification Failed" : isEditMode ? "OFFSHORE Enquiry Updated" : "OFFSHORE Enquiry Added"}
                   <Button
                      style={{ marginLeft: "10px", color: "#fff", textDecoration: "underline" }}
                      onClick={() => navigate("/Home/ViewAllEnquiries")}
@@ -945,13 +945,13 @@ const OffshoreEnquiry: React.FC = () => {
             );
          } else {
             const err = await res.text();
-          //  toast.error("❌ Failed to save enquiry: " + err);
-           if (data.emailSent === false) {
-                  toast.warning("⚠️ Enquiry added successfully, but email notification failed.");
-                } else {
-                  toast.success("✅ Enquiry added successfully.");
-                }
-               }
+            console.error(err);
+            if (data.emailSent === false) {
+               toast.warning("⚠️ Enquiry added successfully, but email notification failed.");
+            } else {
+               toast.success("✅ Enquiry added successfully.");
+            }
+         }
       } catch (err) {
          console.error(err);
          toast.error("❌ Unexpected error occurred");

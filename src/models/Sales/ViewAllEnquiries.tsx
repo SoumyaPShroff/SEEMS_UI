@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import { Box, Typography, CircularProgress, Button, Paper } from "@mui/material";
+import { Box, Typography, CircularProgress, Button, Paper,TextField  } from "@mui/material";
 import type { GridColDef } from '@mui/x-data-grid';
 import { toast } from "react-toastify";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -32,6 +32,33 @@ const ViewAllEnquiries = () => {
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
   const loginUserName = sessionStorage.getItem("SessionUserName") || "guestName";
   const [hasSpecialRole, sethasSpecialRole] = useState(false);
+ 
+const formatDate = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const getFirstDayOfMonth = () => {
+  const today = new Date();
+  return formatDate(
+    new Date(today.getFullYear(), today.getMonth(), 1)
+  );
+};
+
+const getLastDayOfMonth = () => {
+  const today = new Date();
+
+  // Day 0 of next month = last day of current month
+  return formatDate(
+    new Date(today.getFullYear(), today.getMonth() + 1, 0)
+  );
+};
+
+const [fromDate, setFromDate] = useState(getFirstDayOfMonth());
+const [toDate, setToDate] = useState(getLastDayOfMonth());
+
   useEffect(() => {
     const statusFromQuery = (searchParams.get("status") || "").trim();
     if (statusFromQuery && allowedStatuses.includes(statusFromQuery)) {
@@ -176,7 +203,7 @@ const ViewAllEnquiries = () => {
             onClick={(e) => {
               e.preventDefault();
               if (!isClickable) return; // ✅ Block click when disabled
-               handleAddEstimate(params.row);
+              handleAddEstimate(params.row);
             }}
           >
             Add Estimate
@@ -184,7 +211,7 @@ const ViewAllEnquiries = () => {
         );
       },
     },
-    { field: "esti", headerName: "Esti", flex: 1, minWidth:100 },
+    { field: "esti", headerName: "Esti", flex: 1, minWidth: 100 },
     { field: "completeResponsibility", headerName: "PM Resp", flex: 1, minWidth: 150 },
     { field: "enquiryType", headerName: "EnqType", flex: 1, minWidth: 150 },
     { field: "boardRef", headerName: "Board Ref", flex: 1, minWidth: 200 },
@@ -218,12 +245,28 @@ const ViewAllEnquiries = () => {
       }
 
       // If user does NOT have complete rights → include their ID
-      if (!roleFlag) {
-        url += `?salesResponsibilityId=${loginId}&status=${finalStatus}`;
-      } else {
-        // User has complete rights → only pass default status
-        url += `?status=${finalStatus}`;
-      }
+      // if (!roleFlag) {
+      //   url += `?salesResponsibilityId=${loginId}&status=${finalStatus}`;
+      // } else {
+      //   // User has complete rights → only pass default status
+      //   url += `?status=${finalStatus}`;
+      // }
+      const params = new URLSearchParams();
+
+      params.append("status", finalStatus);
+     if (!roleFlag) {
+     params.append("salesResponsibilityId", loginId);
+}
+
+if (fromDate) {
+  params.append("createdOnFrom", fromDate);
+}
+
+if (toDate) {
+  params.append("createdOnTo", toDate);
+}
+
+url += `?${params.toString()}`;
 
       // Step 5: Call API
       const viewres = await axios.get<any[]>(url);
@@ -246,7 +289,7 @@ const ViewAllEnquiries = () => {
 
   useEffect(() => {
     loadData();
-  }, [loginId, status]);
+ }, [loginId, status, fromDate, toDate]);
 
 
   const handleViewEnqExport = () => {
@@ -292,6 +335,7 @@ const ViewAllEnquiries = () => {
 
     navigate(`/Home/EstimationDocUpload?enquiryno=${encodeURIComponent(enqNo)}`);
   };
+ 
 
   return (
     <Box
@@ -360,7 +404,25 @@ const ViewAllEnquiries = () => {
               onChange={(e: any) => setStatus(e.target.value)}
             />
           </Box>
+
           <Box sx={{ display: "flex", gap: 1, ml: "auto", justifyContent: "flex-end" }}>
+          <TextField
+  label="From Date"
+  type="date"
+  value={fromDate}
+  onChange={(e) => setFromDate(e.target.value)}
+  InputLabelProps={{ shrink: true }}
+  size="small"
+/>
+
+<TextField
+  label="To Date"
+  type="date"
+  value={toDate}
+  onChange={(e) => setToDate(e.target.value)}
+  InputLabelProps={{ shrink: true }}
+  size="small"
+/>
             <ExportButton label="Export to Excel" onClick={handleViewEnqExport} />
             <Button
               variant="contained"
@@ -414,6 +476,7 @@ const ViewAllEnquiries = () => {
             mx: "auto",
           }}
         >
+
           <CustomDataGrid2
             rows={rows}
             columns={columns}
@@ -432,18 +495,18 @@ const ViewAllEnquiries = () => {
             //   "boardRef",
             //   "referenceBy",
             // ]}
-           searchableFields={[
-            "enquiryno",
-            //   "customer",
-            //   "createdon",
-            //   "endDate",
+            searchableFields={[
+              "enquiryno",
+              //   "customer",
+              //   "createdon",
+              //   "endDate",
               "salesResponsibility",
-            //   "status",
-            //   "completeResponsibility",
-            //   "enquiryType",
-            //   "boardRef",
-            //   "referenceBy",
-             ]}
+              //   "status",
+              //   "completeResponsibility",
+              //   "enquiryType",
+              //   "boardRef",
+              //   "referenceBy",
+            ]}
             placeholder="Search enquiries..."
           />
         </Box>

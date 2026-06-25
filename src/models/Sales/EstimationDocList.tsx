@@ -19,13 +19,13 @@ const EstimationDocList: React.FC = () => {
   const [enquiryType, setEnquiryType] = useState<string>("ONSITE");
 
   const columns = [
-    { field: "enqNo", headerName: "Enquiry No", minWidth: 200  },
-    { field: "hrs", headerName: "Hrs", minWidth: 90  },
+    { field: "enqNo", headerName: "Enquiry No", minWidth: 200 },
+    { field: "hrs", headerName: "Hrs", minWidth: 90 },
     {
       field: "fileName",
       headerName: "Download Doc",
       minWidth: 250,
- 
+
       renderCell: (params: any) => (
         <a
           href={`${baseUrl}/api/Sales/DownloadEstimationDoc/${encodeURIComponent(params.row.enqNo)}`}
@@ -38,7 +38,7 @@ const EstimationDocList: React.FC = () => {
       ),
     },
     { field: "pathofDoc", headerName: "FilePath", minWidth: 300, flex: 1 },
-  
+
   ];
 
   const fetchEstimationDocs = async () => {
@@ -47,8 +47,8 @@ const EstimationDocList: React.FC = () => {
       const url = `${baseUrl}/api/Sales/EstimationDocs?enquiryType=${encodeURIComponent(enquiryType)}&enquiryNo=${encodeURIComponent(searchText.trim())}`;
       const response = await axios.get<EstimationDocRow[]>(url);
       const mapped = response.data.map((item, index) => ({
-        id: index + 1,
         ...item,
+        id: index + 1,
       }));
       setRows(mapped);
     } catch (error) {

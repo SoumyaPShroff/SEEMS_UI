@@ -1,10 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
-// import {
-//   Box, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Grid, Tooltip,
-//   TextField, Typography, CircularProgress
-// } from "@mui/material";
 import { Box,  Button, IconButton,  Dialog,  DialogTitle,  DialogContent,  DialogActions,
-  Grid,  Tooltip,  TextField,  Typography,  CircularProgress,  Paper,  Divider} from "@mui/material";
+  Grid,  Tooltip,  TextField,  Typography,  Paper} from "@mui/material";
 import { DataGrid, type GridColDef, type GridRenderCellParams } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -49,6 +45,13 @@ interface PurchaseOrderData {
 
 }
 
+interface DuplicateCheckResponse {
+  exists: {
+    isDuplicateForDifferentCustomer: boolean;
+    message: string;
+  };
+}
+
 const PurchaseOrder: React.FC = () => {
   const [rows, setRows] = useState<PurchaseOrderData[]>([]);
   const [open, setOpen] = useState(false);
@@ -58,7 +61,7 @@ const PurchaseOrder: React.FC = () => {
   const [pendingDeleteId, setPendingDeleteId] = useState<number | string | null>(null);
   const [searchText, setSearchText] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  //const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const loadData = async () => {
     setLoading(true);
@@ -258,6 +261,15 @@ interface PoModalProps {
   onClose: () => void;
   existingPos: PurchaseOrderData[];
 }
+interface ScopeConfig {
+  layout: boolean;
+  analysis: boolean;
+  va: boolean;
+  npi: boolean;
+  library: boolean;
+  dfm: boolean;
+  isOnsite: boolean;
+}
 
 const PoModal: React.FC<PoModalProps> = ({ open, po, onSave, onClose, existingPos }) => {
   const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<PurchaseOrderData>();
@@ -281,16 +293,15 @@ const PoModal: React.FC<PoModalProps> = ({ open, po, onSave, onClose, existingPo
   const [apiSameEnquiryDuplicate, setApiSameEnquiryDuplicate] = useState(false);
   const [enquiryOptions, setEnquiryOptions] = useState<{ value: string; label: string }[]>([]);
   const [quoteOptions, setQuoteOptions] = useState<{ value: string; label: string }[]>([]);
-  const [scopeConfig, setScopeConfig] = useState<Record<string, boolean>>({
-    // Initially all disabled
-    layout: false,
-    analysis: false,
-    va: false,
-    npi: false,
-    library: false,
-    dfm: false,
-    isOnsite: false, // This field is not directly used for disabling in the current UI, but kept for consistency
-  });
+  const [scopeConfig, setScopeConfig] = useState<ScopeConfig>({
+  layout: false,
+  analysis: false,
+  va: false,
+  npi: false,
+  library: false,
+  dfm: false,
+  isOnsite: false,
+}); 
   const [enquiryType, setEnquiryType] = useState<string>(""); // New state for enquiryType
   const [enquiryCategory, setEnquiryCategory] = useState<string>("");
 
@@ -340,11 +351,13 @@ const fetchScopeConfig = async (enqNo: string) => {
     setEnquiryType(currentEnquiryType);
     setEnquiryCategory(enqData?.type || enqData?.enquiryType || "");
 
-    const scopeRes = await axios.get(
+    const scopeRes = await axios.get<ScopeConfig>(
       `${baseUrl}/api/Sales/JobScopesConfig/${enqNo}`
     );
 
-    let config = scopeRes.data;
+    //let config = scopeRes.data;
+    let config = scopeRes.data  as ScopeConfig;
+ 
     if (currentEnquiryType === "ONSITE") {
       config = {
         layout: true,
@@ -461,11 +474,12 @@ useEffect(() => {
             axios.get(`${baseUrl}/api/Sales/QuotationDetailsByEnqQuote/${enqNo}`)
           ]);
 
+         let config = scopeRes.data as ScopeConfig;
           const enqData = Array.isArray(enqRes.data) ? enqRes.data[0] : enqRes.data;
           const currentEnqType = String(enqData?.enquirytype || "").toUpperCase();
           setEnquiryType(currentEnqType);
           setEnquiryCategory(enqData?.type || enqData?.enquiryType || "");
-          let config = scopeRes.data;
+      
           if (currentEnqType === "ONSITE") {
             config = {
               layout: true,
@@ -625,7 +639,7 @@ setValue("penquiryno", po.penquiryno || "");
     // New requirement: Check if PO Number exists for a different customer (only in add mode)
 if (!po) {
   try {
-    const checkResponse = await axios.get(
+    const checkResponse = await axios.get<DuplicateCheckResponse>(
       `${baseUrl}/api/Sales/CheckSamePOExistsForDifferentCustomer/${encodeURIComponent(data.pponumber)}/${encodeURIComponent(data.penquiryno)}`
     );
 
@@ -792,6 +806,7 @@ if (!po) {
 </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
               <SelectControl
+                name="penquiryno"
                 label="Enquiry No"
                 value={watch("penquiryno")}
                 options={enquiryOptions}
@@ -803,6 +818,7 @@ if (!po) {
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
               <SelectControl
+                name="pquoteno"
                 label="Quote No"
                 value={watch("pquoteno")}
                 options={quoteOptions}
@@ -825,8 +841,9 @@ if (!po) {
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
               <SelectControl
+                name="pcurrency_id"
                 label="Currency"
-                value={watch("pcurrency_id")}
+                value={watch("pcurrency_id") ?? 1}
                 options={[
                   { value: 1, label: "INR" },
                   { value: 2, label: "USD" },
@@ -856,8 +873,9 @@ if (!po) {
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
               <SelectControl
+                name="ppaymentterm"
                 label="Payment Terms"
-                value={watch("ppaymentterm")}
+                value={watch("ppaymentterm") ?? ""}
                 options={[
                   { value: "", label: "Select" },
                   { value: "100% Advance", label: "100% Advance" },

@@ -6,7 +6,7 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+//import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import type { GridColDef } from "@mui/x-data-grid";
 import { toast } from "react-toastify";
 import { baseUrl } from "../const/BaseUrl";
@@ -58,80 +58,80 @@ const defaultFilter = (): QueryFilter => ({
   valueTo: "",
 });
 
-const escapeSqlPreview = (value: string) => value.replace(/'/g, "''");
+//const escapeSqlPreview = (value: string) => value.replace(/'/g, "''");
 
-const buildPreviewSql = (
-  tableName: string,
-  columns: string[],
-  filters: QueryFilter[],
-  sortColumn: string,
-  sortDirection: string,
-  limit: number,
-  distinct: boolean
-) => {
-  if (!tableName) return "";
+// const buildPreviewSql = (
+//   tableName: string,
+//   columns: string[],
+//   filters: QueryFilter[],
+//   sortColumn: string,
+//   sortDirection: string,
+//   limit: number,
+//   distinct: boolean
+// ) => {
+//   if (!tableName) return "";
 
-  const selectColumns = columns.length > 0 ? columns.map((c) => `\`${c}\``).join(", ") : "*";
-  const parts = [`SELECT ${distinct ? "DISTINCT " : ""}${selectColumns}`, `FROM \`${tableName}\``];
-  const clauses: string[] = [];
+//   const selectColumns = columns.length > 0 ? columns.map((c) => `\`${c}\``).join(", ") : "*";
+//   const parts = [`SELECT ${distinct ? "DISTINCT " : ""}${selectColumns}`, `FROM \`${tableName}\``];
+//   const clauses: string[] = [];
 
-  filters.forEach((filter) => {
-    if (!filter.column) return;
-    const column = `\`${filter.column}\``;
+//   filters.forEach((filter) => {
+//     if (!filter.column) return;
+//     const column = `\`${filter.column}\``;
 
-    switch (filter.operator) {
-      case "equals":
-        clauses.push(`${column} = '${escapeSqlPreview(filter.value)}'`);
-        break;
-      case "notequals":
-        clauses.push(`${column} <> '${escapeSqlPreview(filter.value)}'`);
-        break;
-      case "contains":
-        clauses.push(`${column} LIKE '%${escapeSqlPreview(filter.value)}%'`);
-        break;
-      case "startswith":
-        clauses.push(`${column} LIKE '${escapeSqlPreview(filter.value)}%'`);
-        break;
-      case "endswith":
-        clauses.push(`${column} LIKE '%${escapeSqlPreview(filter.value)}'`);
-        break;
-      case "greaterthan":
-        clauses.push(`${column} > '${escapeSqlPreview(filter.value)}'`);
-        break;
-      case "greaterorequal":
-        clauses.push(`${column} >= '${escapeSqlPreview(filter.value)}'`);
-        break;
-      case "lessthan":
-        clauses.push(`${column} < '${escapeSqlPreview(filter.value)}'`);
-        break;
-      case "lessorequal":
-        clauses.push(`${column} <= '${escapeSqlPreview(filter.value)}'`);
-        break;
-      case "between":
-        clauses.push(`${column} BETWEEN '${escapeSqlPreview(filter.value)}' AND '${escapeSqlPreview(filter.valueTo)}'`);
-        break;
-      case "isnull":
-        clauses.push(`${column} IS NULL`);
-        break;
-      case "isnotnull":
-        clauses.push(`${column} IS NOT NULL`);
-        break;
-      default:
-        break;
-    }
-  });
+//     switch (filter.operator) {
+//       case "equals":
+//         clauses.push(`${column} = '${escapeSqlPreview(filter.value)}'`);
+//         break;
+//       case "notequals":
+//         clauses.push(`${column} <> '${escapeSqlPreview(filter.value)}'`);
+//         break;
+//       case "contains":
+//         clauses.push(`${column} LIKE '%${escapeSqlPreview(filter.value)}%'`);
+//         break;
+//       case "startswith":
+//         clauses.push(`${column} LIKE '${escapeSqlPreview(filter.value)}%'`);
+//         break;
+//       case "endswith":
+//         clauses.push(`${column} LIKE '%${escapeSqlPreview(filter.value)}'`);
+//         break;
+//       case "greaterthan":
+//         clauses.push(`${column} > '${escapeSqlPreview(filter.value)}'`);
+//         break;
+//       case "greaterorequal":
+//         clauses.push(`${column} >= '${escapeSqlPreview(filter.value)}'`);
+//         break;
+//       case "lessthan":
+//         clauses.push(`${column} < '${escapeSqlPreview(filter.value)}'`);
+//         break;
+//       case "lessorequal":
+//         clauses.push(`${column} <= '${escapeSqlPreview(filter.value)}'`);
+//         break;
+//       case "between":
+//         clauses.push(`${column} BETWEEN '${escapeSqlPreview(filter.value)}' AND '${escapeSqlPreview(filter.valueTo)}'`);
+//         break;
+//       case "isnull":
+//         clauses.push(`${column} IS NULL`);
+//         break;
+//       case "isnotnull":
+//         clauses.push(`${column} IS NOT NULL`);
+//         break;
+//       default:
+//         break;
+//     }
+//   });
 
-  if (clauses.length) {
-    parts.push(`WHERE ${clauses.join(" AND ")}`);
-  }
+//   if (clauses.length) {
+//     parts.push(`WHERE ${clauses.join(" AND ")}`);
+//   }
 
-  if (sortColumn) {
-    parts.push(`ORDER BY \`${sortColumn}\` ${sortDirection}`);
-  }
+//   if (sortColumn) {
+//     parts.push(`ORDER BY \`${sortColumn}\` ${sortDirection}`);
+//   }
 
-  parts.push(`LIMIT ${limit}`);
-  return parts.join(" ");
-};
+//   parts.push(`LIMIT ${limit}`);
+//   return parts.join(" ");
+// };
 
 const QueryBuilder = () => {
   const [tables, setTables] = useState<TableItem[]>([]);
@@ -207,10 +207,10 @@ const QueryBuilder = () => {
     loadColumns();
   }, [selectedTable]);
 
-  const previewSql = useMemo(
-    () => buildPreviewSql(selectedTable, selectedColumns, filters, sortColumn, sortDirection, limit, distinct),
-    [selectedTable, selectedColumns, filters, sortColumn, sortDirection, limit, distinct]
-  );
+  // const previewSql = useMemo(
+  //   () => buildPreviewSql(selectedTable, selectedColumns, filters, sortColumn, sortDirection, limit, distinct),
+  //   [selectedTable, selectedColumns, filters, sortColumn, sortDirection, limit, distinct]
+  // );
 
   const updateFilter = (index: number, patch: Partial<QueryFilter>) => {
     setFilters((current) =>
@@ -263,11 +263,11 @@ const QueryBuilder = () => {
     setResult(null);
   };
 
-  const copySql = async () => {
-    if (!previewSql) return;
-    await navigator.clipboard.writeText(previewSql);
-    toast.success("SQL copied to clipboard.");
-  };
+  // const copySql = async () => {
+  //   if (!previewSql) return;
+  //   await navigator.clipboard.writeText(previewSql);
+  //   toast.success("SQL copied to clipboard.");
+  // };
 
   const resultColumns: GridColDef[] = useMemo(
     () =>

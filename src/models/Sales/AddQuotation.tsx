@@ -9,6 +9,7 @@ import { OFF_TERMS_AND_CONDITIONS } from "./const/QuoteOffTermsConditions";
 import { ON_TERMS_AND_CONDITIONS } from './const/QuoteOnTermsConditions';
 import { toast, ToastContainer } from "react-toastify";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface DescriptionItem {
     idNo: number;
@@ -83,7 +84,7 @@ const currencyOptions = [
 ];
 
 const AddQuotation: React.FC = () => {
-   // console.log("🔥 AddQuotation component mounted");
+    // console.log("🔥 AddQuotation component mounted");
     const { enquiryNo, quoteNo } = useParams();
     // Header fields
     const [customer, setCustomer] = useState("");
@@ -119,12 +120,44 @@ const AddQuotation: React.FC = () => {
     const isEditMode = Boolean(selectedQuoteNo);
     const [customisedDescription, setCustomisedDescription] = useState<string>("");
     const [deletedSlNos, setDeletedSlNos] = useState<number[]>([]);
-    const [currentVersion, setCurrentVersion] = useState<number>(1);
+    const [selectedVersionNo, setSelectedVersionNo] = useState<number>(1);
+    const [availableVersions, setAvailableVersions] = useState<number[]>([1]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         axios.get<DescriptionItem[]>(`${baseUrl}/api/Sales/QuoteBoardDescriptions`)
             .then(r => setDescriptions(r.data));
     }, []);
+
+    useEffect(() => {
+        if (!selectedQuoteNo) return;
+
+        const loadVersions = async () => {
+            try {
+                const { data } = await axios.get(
+                    `${baseUrl}/api/Sales/QuotationCompleteDetailsByQuote/${selectedQuoteNo}`
+                );
+
+                const rows = Array.isArray(data) ? data : [data];
+
+                const versions = rows
+                    .map((q: any) => q.versionNo)
+                    .filter((v: number) => v > 0)
+                    .sort((a: number, b: number) => a - b);
+
+                setAvailableVersions(
+                    versions.length ? versions : [1]
+                );
+                setSelectedVersionNo(1);
+            }
+            catch (err) {
+                console.error("Failed to load versions", err);
+            }
+        };
+
+        loadVersions();
+
+    }, [selectedQuoteNo]);
 
     // Load descriptions from backend
     useEffect(() => {
@@ -177,10 +210,11 @@ const AddQuotation: React.FC = () => {
         const loadQuotes = async () => {
             try {
                 const url = `${baseUrl}/api/Sales/QuotationDetailsByEnqQuote/${enquiryNo}`;
-                //  const { data } = await axios.get(url);
                 const { data } = await axios.get<QuotationApiResponse>(url);
                 const list = Array.isArray(data) ? data : [data];
-                setQuotes(list);
+                // setQuotes(list); //returns duplicate quoteNo for different versions, so filter unique quoteNo
+                const uniqueQuotes = Array.from(new Map(list.map((q: any) => [q.quoteNo, q])).values());
+                setQuotes(uniqueQuotes);
 
                 // auto select first quote if none selected
                 if (!selectedQuoteNo && list.length > 0) {
@@ -196,14 +230,20 @@ const AddQuotation: React.FC = () => {
 
     useEffect(() => {
         // Only run if we have enquiryNo, selectedQuoteNo, and descriptions loaded
-        if (!enquiryNo || !selectedQuoteNo || descriptions.length === 0) return;
+        if (!enquiryNo || !selectedQuoteNo || !selectedVersionNo || descriptions.length === 0) return;
 
         const fetchQuotation = async () => {
             try {
-                const url = `${baseUrl}/api/Sales/QuotationDetailsByEnqQuote/${enquiryNo}?quoteNo=${selectedQuoteNo}`;
-                const { data } = await axios.get<QuotationApiResponse>(url);
 
-                if (!data) return;
+                const { data } = await axios.get<QuotationApiResponse>(`${baseUrl}/api/Sales/QuotationDetailsByEnqQuote/${enquiryNo}`,
+                    {
+                        params: {
+                            quoteNo: selectedQuoteNo,
+                            versionNo: selectedVersionNo
+                        }
+                    }
+                );
+                if (!data) return;  
 
                 // Set board ref and terms
                 setBoardRef(data.board_ref ?? "");
@@ -262,16 +302,19 @@ const AddQuotation: React.FC = () => {
                     boardRef: boardRef,
                 }]);
 
+                console.log("Loading", {  enquiryNo,  selectedQuoteNo,  selectedVersionNo, items});
             } catch (err) {
                 console.error("Failed to load quotation", err);
             }
         };
 
         fetchQuotation();
-    }, [enquiryNo, selectedQuoteNo, descriptions]);
+    }, [enquiryNo, selectedQuoteNo, selectedVersionNo, descriptions]);
 
     const startNewQuote = () => {
         setSelectedQuoteNo(null);
+        setSelectedVersionNo(1);
+        setAvailableVersions([1]);
         setBoardRef(enquiryBoardRef); // reset to enquiry board ref
         setItems([emptyItem(locationId, enquiryBoardRef)]);
         setDeletedSlNos([]);
@@ -398,7 +441,8 @@ const AddQuotation: React.FC = () => {
                 durationtype: i.duration,
                 location_id: locationIdValue,
                 updatedbyid: loginId,
-                versionNo: currentVersion,
+                // versionNo: currentVersion,
+                versionNo: selectedVersionNo,
             };
         });
 
@@ -440,17 +484,19 @@ const AddQuotation: React.FC = () => {
 
             const response = await axios.post(url, payload);
             console.log("Quotation save response", { url, response: response.data });
-
+            setDeletedSlNos([]);
+          
             toast.success(selectedQuoteNo ? "Quotation edited" : "Quotation added", {
                 position: "top-right",
-                autoClose: 3000,
+                autoClose: 500,
                 hideProgressBar: false,
+                onClose: () => navigate(0),
             });
-            setDeletedSlNos([]);
+            
 
         } catch (err: any) {
             console.error("Save quotation error:", err);
-            if (axios.isAxiosError(err) && err.response) {
+            if ((err as any)?.response) {
                 console.error("Save quotation response data:", err.response.data);
                 toast.error(`Failed to save quotation: ${err.response.status} ${err.response.statusText}`);
             } else {
@@ -459,18 +505,9 @@ const AddQuotation: React.FC = () => {
         }
     };
 
-    useEffect(() => {
-        if (!selectedQuoteNo || quotes.length === 0) return;
-
-        const q = quotes.find(q => q.quoteNo === selectedQuoteNo);
-        if (q?.versionNo) {
-            setCurrentVersion(q.versionNo);
-        }
-    }, [selectedQuoteNo, quotes]);
-
     const handleSaveNewVersion = async () => {
         try {
-            const newVersion = currentVersion + 1;
+            const newVersion = selectedVersionNo + 1;
             const { items: quoteItems, missingDescription, missingLocation } = buildQuoteItemsPayload(true);
             if (!quoteItems || quoteItems.length === 0) {
                 console.warn("handleSaveNewVersion: invalid quote items", { items, descriptions, missingDescription, missingLocation });
@@ -498,14 +535,19 @@ const AddQuotation: React.FC = () => {
             await axios.post(`${baseUrl}/api/Sales/AddQuotation`, payload);
 
             toast.success(`Saved as Version ${newVersion}`);
-            setCurrentVersion(newVersion);
+            setSelectedVersionNo(newVersion);
+            setAvailableVersions(prev => [...new Set([...prev, newVersion])]);
             setDeletedSlNos([]);
 
-        } catch (err: any) {
+        }
+
+        catch (err: any) {
             console.error("Save new version error:", err);
-            if (axios.isAxiosError(err) && err.response) {
-                console.error("Save new version response data:", err.response.data);
-                toast.error(`Failed to save new version: ${err.response.status} ${err.response.statusText}`);
+
+            if (err?.response) {
+                toast.error(
+                    `Failed to save new version: ${err.response.status} ${err.response.statusText}`
+                );
             } else {
                 toast.error("Failed to save new version");
             }
@@ -520,7 +562,7 @@ const AddQuotation: React.FC = () => {
                 tax_INR: 18,
                 tax_USD: 0,
                 tax_EURO: 0,
-                location:'-',
+                location: '-',
             };
             console.log("{payload}", payload);
             await axios.post(`${baseUrl}/api/Sales/AddQuoteDescription`, payload);
@@ -540,14 +582,17 @@ const AddQuotation: React.FC = () => {
     // -------------------------
     return (
         <Box sx={{ padding: "20px", maxWidth: 1300, mt: 15, ml: 5 }}>
-        
+
             <Box sx={{ mb: 2, display: "flex", gap: 2, alignItems: "center" }}>
-              <Link  to="/Home/ViewAllEnquiries">View All Enquiries</Link>
-       
-      
+                <Link to="/Home/ViewAllEnquiries">View All Enquiries</Link>
+
+
                 {/* Quote selector */}
                 <TextField select label="Select Quote" value={selectedQuoteNo ?? ""}
-                    onChange={(e) => setSelectedQuoteNo(e.target.value)}
+                    onChange={(e) => {
+                        setSelectedQuoteNo(e.target.value);
+                        setSelectedVersionNo(1);
+                    }}
                     size="small" sx={{ minWidth: 200 }}  >
                     {quotes.map(q => (
                         <MenuItem key={q.quoteNo} value={q.quoteNo}>
@@ -555,7 +600,20 @@ const AddQuotation: React.FC = () => {
                         </MenuItem>
                     ))}
                 </TextField>
-
+                <TextField
+                    select
+                    label="Version No"
+                    value={selectedVersionNo}
+                    onChange={(e) => setSelectedVersionNo(Number(e.target.value))}
+                    size="small"
+                    sx={{ minWidth: 90 }}
+                >
+                    {availableVersions.map(v => (
+                        <MenuItem key={v} value={v}>
+                            {v}
+                        </MenuItem>
+                    ))}
+                </TextField>
                 {/* New Quote button */}
                 <Button variant="outlined" onClick={() => startNewQuote()} >+ New Quote </Button>
             </Box>
@@ -595,7 +653,7 @@ const AddQuotation: React.FC = () => {
                         Enter and Save New Description
                     </Button>
                 </Box>
- 
+
                 {items.map((item, index) => (
                     <Box
                         key={index}
@@ -644,6 +702,7 @@ const AddQuotation: React.FC = () => {
                                 onChange={(e) => handleItemChange(index, "qty", Number(e.target.value))}
                                 size="small"
                                 sx={{ minWidth: 40 }}
+                                inputProps={{ min: 1 }}
                             />
                             <TextField
                                 label="Duration"
@@ -668,7 +727,7 @@ const AddQuotation: React.FC = () => {
                                 onChange={(e) => handleItemChange(index, "rate", Number(e.target.value))}
                                 size="small"
                                 sx={{ minWidth: 100 }}
-
+                                inputProps={{ min: 1 }}
                             />
                             <TextField
                                 label="Amount"
@@ -750,7 +809,7 @@ const AddQuotation: React.FC = () => {
                     )}
                 </Box>
                 <Box sx={{ mt: 3, textAlign: "right" }}>
-                    <Button type="button" variant="contained" color="primary" onClick={(e) => {
+                    <Button type="button" variant="contained" color="primary" onClick={() => {
                         console.log("AddQuotation ADD button clicked", { isEditMode, selectedQuoteNo });
                         handleSaveQuotation();
                     }}>

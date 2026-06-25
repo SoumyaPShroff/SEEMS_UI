@@ -3,28 +3,28 @@
 // Modern UI for ASP.NET/VB.NET Estimation Module
 
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Divider,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Card, CardContent, Divider, Typography,RadioGroup,TextField,Radio,  FormLabel,
+  FormControlLabel,} from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { baseUrl } from "../../const/BaseUrl";
+//import axios, { isAxiosError } from "axios";
+import axios from "axios";
+
+interface UploadResponse {
+  emailSent?: boolean;
+  message?: string;
+}
 
 const EstimationDocUpload: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState("");
-
   const [file, setFile] = useState<File | null>(null);
-
   const enquiryNo = searchParams.get("enquiryno")?.trim() || "";
+  const [enquiryType, setEnquiryType] = useState<"OFFSHORE" | "ONSITE">("OFFSHORE");
+  const [hours, setHours] = useState("");
 
   useEffect(() => {
     if (!enquiryNo) {
@@ -48,13 +48,15 @@ const EstimationDocUpload: React.FC = () => {
       "guest";
 
     const now = new Date();
-    return `${cleanedEnquiryNo}-${sessionLogin}-${now.getDate()}-${
-      now.getMonth() + 1
-    }-${now.getFullYear()}-${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}-${originalFileName}`;
+    return `${cleanedEnquiryNo}-${sessionLogin}-${now.getDate()}-${now.getMonth() + 1
+      }-${now.getFullYear()}-${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}-${originalFileName}`;
   };
 
   const handleUpload = async () => {
     if (!file || !enquiryNo) return;
+    if (enquiryType === "ONSITE" && !hours.trim()) { toast.error("Please enter Hours for ONSITE enquiry.");
+    return;
+}
 
     try {
       const formData = new FormData();
@@ -67,8 +69,11 @@ const EstimationDocUpload: React.FC = () => {
       formData.append("file", formattedFile, formattedFileName);
       formData.append("enquiryno", enquiryNo);
       formData.append("sessionUserId", sessionUserId);
+      formData.append("enquiryType", enquiryType);
 
-      const response = await axios.post(
+      if (enquiryType === "ONSITE") { formData.append("Hrs", hours);}
+
+      const response = await axios.post<UploadResponse>(
         `${baseUrl}/api/Sales/UploadEstimationDoc`,
         formData,
         {
@@ -78,9 +83,9 @@ const EstimationDocUpload: React.FC = () => {
         }
       );
 
-      console.log("Estimation document upload successful", response.data);
-      console.log("Response:", response.data);
-      const emailFailed = response.data?.emailSent === false || response.data?.EmailSent === false;
+     // console.log("Estimation document upload successful", response.data);
+      //console.log("Response:", response.data);
+      const emailFailed = (response.data as any)?.emailSent === false;
       const toastMessage = (
         <div>
           {emailFailed
@@ -102,11 +107,13 @@ const EstimationDocUpload: React.FC = () => {
       });
     } catch (err: any) {
       console.error("Estimation document upload failed", err);
-      if (axios.isAxiosError(err) && err.response) {
+      const error = err as any;
+      if (error?.response) {
         toast.error(`Failed to upload estimation document: ${err.response.status} ${err.response.statusText}`);
       } else {
         toast.error("Failed to upload estimation document.");
       }
+       // if (axios.isAxiosError(err)) { console.log(JSON.stringify(err.response?.data, null, 2));}
     }
   };
 
@@ -118,7 +125,8 @@ const EstimationDocUpload: React.FC = () => {
     );
   }
 
-  return (
+ return (
+  <>
     <Box p={4}>
       <Card elevation={4}>
         <CardContent>
@@ -127,6 +135,41 @@ const EstimationDocUpload: React.FC = () => {
           </Typography>
 
           <Divider sx={{ mb: 3 }} />
+
+          <Box mb={3}>
+            <FormLabel>Enquiry Type</FormLabel>
+
+            <RadioGroup
+              row
+              value={enquiryType}
+              onChange={(e) =>
+                setEnquiryType(e.target.value as "OFFSHORE" | "ONSITE")
+              }
+            >
+              <FormControlLabel
+                value="OFFSHORE"
+                control={<Radio />}
+                label="OFFSHORE"
+              />
+              <FormControlLabel
+                value="ONSITE"
+                control={<Radio />}
+                label="ONSITE"
+              />
+            </RadioGroup>
+
+            {enquiryType === "ONSITE" && (
+              <TextField
+                label="Hours"
+                type="number"
+                value={hours}
+                onChange={(e) => setHours(e.target.value)}
+               // fullWidth
+                sx={{ mt: 2 }}
+                inputProps={{ min: 1 }}
+              />
+            )}
+          </Box>
 
           <Box mt={4}>
             <Typography variant="body1" sx={{ mb: 2 }}>
@@ -161,9 +204,15 @@ const EstimationDocUpload: React.FC = () => {
           </Box>
         </CardContent>
       </Card>
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+      />
     </Box>
-  );
+  </>
+);
 };
 
 export default EstimationDocUpload;

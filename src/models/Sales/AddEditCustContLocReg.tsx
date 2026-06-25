@@ -1,33 +1,12 @@
 import { useEffect, useState, type ChangeEvent } from "react";
-import {
-  Box,
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Divider,
-  Checkbox,
-  FormControlLabel,
-  Tabs,
-  Tab,
-  Chip,
-  IconButton,
-  Paper,
-} from "@mui/material";
+import {  Box,  Grid,  Card,  CardContent,  Typography,  Button,  Divider,  Checkbox,  FormControlLabel,  Tabs,
+  Tab,  Chip,  IconButton,  Paper,} from "@mui/material";
 import axios from "axios";
 import { toast } from "react-toastify";
 import TextControl from "../../components/resusablecontrols/TextControl";
 import SelectControl from "../../components/resusablecontrols/SelectControl";
 import { baseUrl } from "../../const/BaseUrl";
-import {
-  Add,
-  Delete,
-  Business,
-  ContactPhone,
-  LocationOn,
-  ReceiptLong,
-} from "@mui/icons-material";
+import {  Add,  Delete,  Business,  ContactPhone,  LocationOn,  ReceiptLong,} from "@mui/icons-material";
 
 const customerTypes = ["Domestic", "SEZ", "Export", "Govt", "MNC"];
 const currencies = ["INR", "USD", "EUR"];
@@ -47,6 +26,10 @@ const coSearchTerms = [
   "Accounts",
   "Operations",
   "General",
+];
+const industryGroups = [
+  "Manufacturing",
+  "Others",
 ];
 
 type Option = {
@@ -282,6 +265,10 @@ export default function AddEditCustContLocReg() {
     label: item,
   }));
   const customerAccountGroupOptions = customerAccountGroups.map((item) => ({
+    value: item,
+    label: item,
+  }));
+  const IndustryGroupOptions = industryGroups.map((item) => ({
     value: item,
     label: item,
   }));
@@ -1189,9 +1176,8 @@ export default function AddEditCustContLocReg() {
                   />
                 </Box>
                 {renderTextField("Customer Abbreviation", "customerAbb", true)}
-                {renderTextField("GST Number", "gstNo", true)}
-                {renderTextField("PAN Number", "panNo", true)}
-
+                {form.customerType === "Domestic" && renderTextField("GST Number", "gstNo", true)}
+  
                 <Box sx={fieldShellStyle}>
                   <Typography sx={fieldLabelStyle}>
                     Currency
@@ -1212,8 +1198,20 @@ export default function AddEditCustContLocReg() {
                     disabled={isDeleteMode}
                   />
                 </Box>
-
-                {renderTextField("Industry", "industry")}
+<SelectControl
+  name="industry"
+  label="Industry"
+  value={form.industry}
+  onChange={handleChange}
+  options={IndustryGroupOptions}
+  required
+  width="100%"
+  height={40}
+  fontSize="0.9rem"
+  labelFontWeight={600}
+  shrinkLabel={false}
+  disabled={isDeleteMode}
+/>
                 {renderTextField("Sales Office", "salesOffice")}
 
                 <SelectControl
