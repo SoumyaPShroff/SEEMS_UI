@@ -552,6 +552,8 @@ const OnsiteEnquiry: React.FC = () => {
       fd.append("file", file);
       fd.append("uploadedfilename", file.name);
     }
+
+    fd.append("sessionUserId", loginId );
     // ✅ NOW LOG SAFELY
     // console.log("✅ FINAL FORMDATA PAYLOAD ↓↓↓");
     const url = isEditMode ? `${baseUrl}/api/Sales/EditEnquiryData` : `${baseUrl}/api/Sales/AddEnquiryData`;

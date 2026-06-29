@@ -866,6 +866,8 @@ const OffshoreEnquiry: React.FC = () => {
          formData.append("statename", postPayload.state || "");
          formData.append("tm", postPayload.tm || "");
 
+         formData.append("sessionUserId", loginId);   //pass sessionid also for fileupload -filenamesave
+
          if (isEditMode) formData.append("enquiryno", enquiryNo ?? "");
 
          // 7️⃣ Append the rest

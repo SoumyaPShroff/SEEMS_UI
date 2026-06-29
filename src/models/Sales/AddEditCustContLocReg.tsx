@@ -8,7 +8,7 @@ import SelectControl from "../../components/resusablecontrols/SelectControl";
 import { baseUrl } from "../../const/BaseUrl";
 import {  Add,  Delete,  Business,  ContactPhone,  LocationOn,  ReceiptLong,} from "@mui/icons-material";
 
-const customerTypes = ["Domestic", "SEZ", "Export", "Govt", "MNC"];
+const customerTypes = ["DOMESTIC", "SEZ", "Export", "Govt", "MNC"];
 const currencies = ["INR", "USD", "EUR"];
 const paymentTerms = ["Advance", "30 Days", "45 Days", "60 Days"];
 const contactRoles = ["Technical", "Purchase", "Finance"];
@@ -20,13 +20,13 @@ const customerAccountGroups = [
   "Trading",
 ];
 const titleTexts = ["Mr.", "Mrs.", "Ms.", "M/s"];
-const coSearchTerms = [
-  "Billing",
-  "Shipping",
-  "Accounts",
-  "Operations",
-  "General",
-];
+// const coSearchTerms = [
+//   "Billing",
+//   "Shipping",
+//   "Accounts",
+//   "Operations",
+//   "General",
+// ];
 const industryGroups = [
   "Manufacturing",
   "Others",
@@ -276,10 +276,10 @@ export default function AddEditCustContLocReg() {
     value: item,
     label: item,
   }));
-  const coSearchTermOptions = coSearchTerms.map((item) => ({
-    value: item,
-    label: item,
-  }));
+  // const coSearchTermOptions = coSearchTerms.map((item) => ({
+  //   value: item,
+  //   label: item,
+  // }));
   const paymentTermsOptions = paymentTerms.map((item) => ({
     value: item,
     label: item,
@@ -1176,7 +1176,7 @@ export default function AddEditCustContLocReg() {
                   />
                 </Box>
                 {renderTextField("Customer Abbreviation", "customerAbb", true)}
-                {form.customerType === "Domestic" && renderTextField("GST Number", "gstNo", true)}
+                {form.customerType === "DOMESTIC" && renderTextField("GST Number", "gstNo", true)}
   
                 <Box sx={fieldShellStyle}>
                   <Typography sx={fieldLabelStyle}>
@@ -1242,7 +1242,7 @@ export default function AddEditCustContLocReg() {
                   disabled={isDeleteMode}
                 />
 
-                <SelectControl
+                {/* <SelectControl
                   name="coSearchTerm1"
                   label="Co-Search Term 1"
                   value={form.coSearchTerm1}
@@ -1254,7 +1254,7 @@ export default function AddEditCustContLocReg() {
                   labelFontWeight={600}
                   shrinkLabel
                   disabled={isDeleteMode}
-                />
+                /> */}
 
                 <Box sx={{ gridColumn: { xs: "auto", md: "1 / -1" } }}>
                   {renderTextField("Reconciliation Account in General Ledger", "reconciliationAccountGL")}
