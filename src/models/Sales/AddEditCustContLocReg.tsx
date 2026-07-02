@@ -1,36 +1,19 @@
 import { useEffect, useState, type ChangeEvent } from "react";
-import {  Box,  Grid,  Card,  CardContent,  Typography,  Button,  Divider,  Checkbox,  FormControlLabel,  Tabs,
-  Tab,  Chip,  IconButton,  Paper,} from "@mui/material";
+import {
+  Box, Grid, Card, CardContent, Typography, Button, Divider, Tabs, Tab, Chip,
+  IconButton, Paper,
+} from "@mui/material";
 import axios from "axios";
 import { toast } from "react-toastify";
 import TextControl from "../../components/resusablecontrols/TextControl";
 import SelectControl from "../../components/resusablecontrols/SelectControl";
 import { baseUrl } from "../../const/BaseUrl";
-import {  Add,  Delete,  Business,  ContactPhone,  LocationOn,  ReceiptLong,} from "@mui/icons-material";
+import { Add, Delete, Business, ContactPhone, LocationOn, ReceiptLong, LocalShipping, } from "@mui/icons-material";
 
 const customerTypes = ["DOMESTIC", "SEZ", "Export", "Govt", "MNC"];
-const currencies = ["INR", "USD", "EUR"];
-const paymentTerms = ["Advance", "30 Days", "45 Days", "60 Days"];
+const currencies = ["INR", "USD", "EURO"];
 const contactRoles = ["Technical", "Purchase", "Finance"];
-const customerAccountGroups = [
-  "Domestic",
-  "Export",
-  "SEZ",
-  "Government",
-  "Trading",
-];
 const titleTexts = ["Mr.", "Mrs.", "Ms.", "M/s"];
-// const coSearchTerms = [
-//   "Billing",
-//   "Shipping",
-//   "Accounts",
-//   "Operations",
-//   "General",
-// ];
-const industryGroups = [
-  "Manufacturing",
-  "Others",
-];
 
 type Option = {
   value: string | number;
@@ -46,38 +29,32 @@ type CustomerForm = {
   panNo: string;
   currency: string;
   industry: string;
-  salesOffice: string;
+
   salesOrganization: string;
   distributionChannel: string;
-  division: string;
-  customerAccountGroup: string;
-  titleText: string;
-  coSearchTerm1: string;
-  reconciliationAccountGL: string;
-  languageKey: string;
+  contactTitle: string;
   paymentTerms: string;
   shippingConditions: string;
   incoterms: string;
-  exchangeRateType: string;
-  taxClassification: string;
+  taxclassification: string;
   sapCode: string;
-  billCompany: string;
-  billAddress1: string;
-  billAddress2: string;
+
+  billAddress: string;
   billCity: string;
   billState: string;
   billCountry: string;
   billPincode: string;
-  billPhone: string;
+  billPhone1: string;
+  //billPhone2: string;
   billEmail: string;
-  shipCompany: string;
-  shipAddress1: string;
-  shipAddress2: string;
+
+  shipAddress: string;
   shipCity: string;
   shipState: string;
   shipCountry: string;
   shipPincode: string;
-  shipPhone: string;
+  shipPhone1: string;
+  //shipPhone2: string;
   shipEmail: string;
 };
 
@@ -85,6 +62,7 @@ type ContactRow = {
   contactId: string;
   locationId: string;
   role: string;
+  contactTitle: string;
   name: string;
   mobile: string;
   alternateMobile: string;
@@ -92,9 +70,8 @@ type ContactRow = {
 };
 
 type AddressFields = {
-  address1: string;
-  address2: string;
-  city: string;
+  address: string;
+  city: string;           //location field backend
   state: string;
   country: string;
   pincode: string;
@@ -111,21 +88,60 @@ export default function AddEditCustContLocReg() {
   const [tab, setTab] = useState(0);
   const [formMode, setFormMode] = useState<"new" | "edit" | "delete">("new");
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
-  const [billLocationId, setBillLocationId] = useState("");
-  const [shipLocationId, setShipLocationId] = useState("");
   const [customerOptions, setCustomerOptions] = useState<Option[]>([]);
   const [loadingCustomers, setLoadingCustomers] = useState(false);
   const [loadingRecord, setLoadingRecord] = useState(false);
   const [saving, setSaving] = useState(false);
   const [salesRespOptions, setSalesRespOptions] = useState<Option[]>([]);
+  const [industryOptions, setIndustryOptions] = useState<Option[]>([]);
+  const [paymenttermsOptions, setPaymenttermsOptions] = useState<Option[]>([]);
+  const [stateOptions, setStateOptions] = useState<Option[]>([]);
+  const [cityOptions, setCityOptions] = useState<Option[]>([]);
+  const [countryOptions, setCountryOptions] = useState<Option[]>([]);
 
-  const [sameAddress, setSameAddress] = useState(false);
+  type CustomerLocation = {
+    locationId: string;
+    customer_id: string;
+    location: string;
+    locationName: string;
+    locationType: string;
+    address: string;
+    city: string;         //location field backend
+    state: string;
+    country: string;
+    pincode: string;
+    phone1: string;
+    //phone2: string;
+    email: string;
+    addresstype: number;
+  };
 
+  const emptyLocation: CustomerLocation = {
+    locationId: "",
+    customer_id: "",
+    location: "",
+    locationName: "",
+    locationType: "BILL",
+    address: "",
+    city: "",    //location field backend
+    state: "",
+    country: "",
+    pincode: "",
+    phone1: "",
+    //phone2: "", 
+    email: "",
+    addresstype: 1,
+  };
+
+  const [locations, setLocations] = useState<CustomerLocation[]>([
+    { ...emptyLocation }
+  ]);
   const [contacts, setContacts] = useState<ContactRow[]>([
     {
       contactId: "",
       locationId: "",
       role: "Technical",
+      contactTitle: "",
       name: "",
       mobile: "",
       alternateMobile: "",
@@ -142,40 +158,34 @@ export default function AddEditCustContLocReg() {
     panNo: "",
     currency: "INR",
     industry: "",
-    salesOffice: "",
+
     salesOrganization: "",
     distributionChannel: "",
-    division: "",
-    customerAccountGroup: "",
-    titleText: "",
-    coSearchTerm1: "",
-    reconciliationAccountGL: "",
-    languageKey: "English",
+    contactTitle: "",
     paymentTerms: "",
     shippingConditions: "",
     incoterms: "",
-    exchangeRateType: "",
-    taxClassification: "",
+    taxclassification: "",
     sapCode: "",
 
-    billCompany: "",
-    billAddress1: "",
-    billAddress2: "",
-    billCity: "",
+    //billCustomer: "",
+    billAddress: "",
+    billCity: "",        //location field backend
     billState: "",
     billCountry: "",
     billPincode: "",
-    billPhone: "",
+    billPhone1: "",
+    //billPhone2: "",
     billEmail: "",
 
-    shipCompany: "",
-    shipAddress1: "",
-    shipAddress2: "",
-    shipCity: "",
+    //shipCustomer: "",
+    shipAddress: "",
+    shipCity: "",          //location field backend
     shipState: "",
     shipCountry: "",
     shipPincode: "",
-    shipPhone: "",
+    shipPhone1: "",
+    //shipPhone2: "",
     shipEmail: "",
   });
 
@@ -207,6 +217,7 @@ export default function AddEditCustContLocReg() {
         contactId: "",
         locationId: "",
         role: "Purchase",
+        contactTitle: "",
         name: "",
         mobile: "",
         alternateMobile: "",
@@ -218,25 +229,6 @@ export default function AddEditCustContLocReg() {
   const removeContact = (index: number) => {
     const updated = contacts.filter((_, i) => i !== index);
     setContacts(updated);
-  };
-
-  const copyBillToShip = (checked: boolean) => {
-    setSameAddress(checked);
-
-    if (checked) {
-      setForm((prev) => ({
-        ...prev,
-        shipCompany: prev.billCompany,
-        shipAddress1: prev.billAddress1,
-        shipAddress2: prev.billAddress2,
-        shipCity: prev.billCity,
-        shipState: prev.billState,
-        shipCountry: prev.billCountry,
-        shipPincode: prev.billPincode,
-        shipPhone: prev.billPhone,
-        shipEmail: prev.billEmail,
-      }));
-    }
   };
 
   const sectionCardStyle = {
@@ -264,30 +256,100 @@ export default function AddEditCustContLocReg() {
     value: item,
     label: item,
   }));
-  const customerAccountGroupOptions = customerAccountGroups.map((item) => ({
-    value: item,
-    label: item,
-  }));
-  const IndustryGroupOptions = industryGroups.map((item) => ({
-    value: item,
-    label: item,
-  }));
+
   const titleTextOptions = titleTexts.map((item) => ({
     value: item,
     label: item,
   }));
-  // const coSearchTermOptions = coSearchTerms.map((item) => ({
-  //   value: item,
-  //   label: item,
-  // }));
-  const paymentTermsOptions = paymentTerms.map((item) => ({
-    value: item,
-    label: item,
-  }));
+
   const contactRoleOptions = contactRoles.map((item) => ({
     value: item,
     label: item,
   }));
+
+  const salesOrganizationOptions = [
+    { value: "ORG1", label: "ORG1" },
+    { value: "ORG2", label: "ORG2" },
+  ];
+
+  const distributionChannelOptions = [
+    { value: "ONLINE", label: "ONLINE" },
+    { value: "OFFLINE", label: "OFFLINE" },
+  ];
+
+  const taxClassificationOptions = [
+    { value: "GST 0%", label: "GST 0%" },
+    { value: "GST 5%", label: "GST 5%" },
+  ];
+
+  const fetchIndustryOptions = async () => {
+    try {
+      const res = await axios.get(`${baseUrl}/api/Sales/CustomerIndustry`);
+
+      const rows = Array.isArray(res.data) ? res.data : [];
+
+      setIndustryOptions(
+        rows.map((row: any) => ({
+          value: String(row.id),
+          label: row.industryname,
+        }))
+      );
+    } catch (error) {
+      console.error("Failed to load industry list:", error);
+      setIndustryOptions([]);
+      toast.error("Unable to load industry list.");
+    }
+  };
+
+  const fetchPaymenttermsOptions = async () => {
+    try {
+      const res = await axios.get(`${baseUrl}/api/Sales/CustomerPaymentTerms`);
+      const rows = Array.isArray(res.data) ? res.data : [];
+      setPaymenttermsOptions(
+        rows.map((row: any) => ({
+          value: String(row.id),
+          label: row.paymentterms,
+        }))
+      );
+    } catch (error) {
+      console.error("Failed to load payment terms list:", error);
+      setPaymenttermsOptions([]);
+      toast.error("Unable to load payment terms list.");
+    }
+  };
+
+  const buildUniqueOptions = (values: string[]) =>
+    Array.from(new Set(values.filter(Boolean))).map((value) => ({
+      value,
+      label: value,
+    }));
+
+  const fetchLocationCodeOptions = async () => {
+    try {
+      const res = await axios.get(`${baseUrl}/api/Sales/LocationCodes`);
+      const rows = Array.isArray(res.data) ? res.data : [];
+
+      const states = rows
+        .map((row: any) => String(row?.stateName ?? "").trim())
+        .filter(Boolean);
+      const cities = rows
+        .map((row: any) => String(row?.cityName ?? "").trim())
+        .filter(Boolean);
+      const countries = rows
+        .map((row: any) => String(row?.countryName ?? "").trim())
+        .filter(Boolean);
+
+      setStateOptions(buildUniqueOptions(states));
+      setCityOptions(buildUniqueOptions(cities));
+      setCountryOptions(buildUniqueOptions(countries));
+    } catch (error) {
+      console.error("Failed to load location code options:", error);
+      setStateOptions([]);
+      setCityOptions([]);
+      setCountryOptions([]);
+      toast.error("Unable to load location code options.");
+    }
+  };
 
   const isDeleteMode = formMode === "delete";
   const modeLabel =
@@ -296,8 +358,8 @@ export default function AddEditCustContLocReg() {
     formMode === "new"
       ? "Submit Customer"
       : formMode === "edit"
-      ? "Update Customer"
-      : "Delete Customer";
+        ? "Update Customer"
+        : "Delete Customer";
   const primaryActionColor =
     formMode === "delete" ? "error" : "primary";
 
@@ -330,56 +392,25 @@ export default function AddEditCustContLocReg() {
 
   const hydrateCustomer = (raw: Record<string, unknown> | null | undefined) => {
     if (!raw) return;
-    setForm({
-      salesRespId: String(raw.sales_resp_id ?? raw.salesRespId ?? ""),
-      customerType: String(raw.customer_Type ?? raw.customerType ?? ""),
-      companyName: String(raw.customer ?? raw.companyName ?? ""),
-      customerAbb: String(raw.customer_abb ?? raw.customerAbb ?? ""),
-      gstNo: String(raw.gst_no ?? raw.gstNo ?? ""),
-      panNo: String(raw.pan_no ?? raw.panNo ?? ""),
-      currency: String(raw.currency ?? "INR"),
-      industry: String(raw.industry ?? ""),
-      salesOffice: String(raw.salesOffice ?? ""),
-      salesOrganization: String(raw.salesOrganization ?? ""),
-      distributionChannel: String(raw.distributionChannel ?? ""),
-      division: String(raw.division ?? ""),
-      customerAccountGroup: String(raw.customerAccountGroup ?? ""),
-      titleText: String(raw.titleText ?? ""),
-      coSearchTerm1: String(raw.coSearchTerm1 ?? ""),
-      reconciliationAccountGL: String(raw.reconciliationAccountGL ?? ""),
-      languageKey: String(raw.languageKey ?? "English"),
-      paymentTerms: String(raw.paymentTerms ?? ""),
-      shippingConditions: String(raw.shippingConditions ?? ""),
-      incoterms: String(raw.incoterms ?? ""),
-      exchangeRateType: String(raw.exchangeRateType ?? ""),
-      taxClassification: String(raw.taxClassification ?? ""),
-      sapCode: String(raw.sapcustcode ?? raw.sapCode ?? ""),
-      billCompany: String(raw.billCompany ?? ""),
-      billAddress1: String(raw.billAddress1 ?? ""),
-      billAddress2: String(raw.billAddress2 ?? ""),
-      billCity: String(raw.billCity ?? ""),
-      billState: String(raw.billState ?? ""),
-      billCountry: String(raw.billCountry ?? ""),
-      billPincode: String(raw.billPincode ?? ""),
-      billPhone: String(raw.billPhone ?? ""),
-      billEmail: String(raw.billEmail ?? ""),
-      shipCompany: String(raw.shipCompany ?? ""),
-      shipAddress1: String(raw.shipAddress1 ?? ""),
-      shipAddress2: String(raw.shipAddress2 ?? ""),
-      shipCity: String(raw.shipCity ?? ""),
-      shipState: String(raw.shipState ?? ""),
-      shipCountry: String(raw.shipCountry ?? ""),
-      shipPincode: String(raw.shipPincode ?? ""),
-      shipPhone: String(raw.shipPhone ?? ""),
-      shipEmail: String(raw.shipEmail ?? ""),
-    });
-    setSameAddress(
-      Boolean(
-        raw.shipCompany &&
-          raw.shipCompany === raw.billCompany &&
-          raw.shipAddress1 === raw.billAddress1
-      )
-    );
+    //prev is the current form state - the data fetched from api, set to prev and then to form , next to controls
+    setForm((prev) => ({
+      ...prev,
+      salesRespId: String(raw.sales_resp_id ?? raw.salesRespId ?? prev.salesRespId ?? ""),
+      customerType: String(raw.customer_Type ?? raw.customerType ?? prev.customerType ?? ""),
+      companyName: String(raw.customer ?? raw.companyName ?? raw.CompanyName ?? prev.companyName ?? ""),
+      customerAbb: String(raw.customer_abb ?? raw.customerAbb ?? prev.customerAbb ?? ""),
+      gstNo: String(raw.gst_no ?? raw.gstNo ?? prev.gstNo ?? ""),
+      panNo: String(raw.panNo ?? raw.pan_no ?? prev.panNo ?? ""),
+      currency: String(raw.currency ?? prev.currency ?? "INR"),
+      industry: String(raw.industry ?? prev.industry ?? ""),
+      salesOrganization: String(raw.salesorg ?? prev.salesOrganization ?? ""),
+      distributionChannel: String(raw.distributionchannel ?? prev.distributionChannel ?? ""),
+      paymentTerms: String(raw.cuspaymentterms ?? raw.paymentterms ?? prev.paymentTerms ?? ""),
+      shippingConditions: String(raw.shippingconditions ?? prev.shippingConditions ?? ""),
+      taxclassification: String(raw.taxclassification ?? prev.taxclassification ?? ""),
+      incoterms: String(raw.incoterms ?? prev.incoterms ?? ""),
+      sapCode: String(raw.sapcustcode ?? raw.sapCode ?? prev.sapCode ?? ""),
+    }));
   };
 
   const splitAddressFields = (addressText: string) => {
@@ -389,65 +420,53 @@ export default function AddEditCustContLocReg() {
       .filter(Boolean);
 
     return {
-      address1: parts[0] ?? "",
-      address2: parts[1] ?? "",
-      city: parts[2] ?? "",
-      state: parts[3] ?? "",
-      country: parts[4] ?? "",
-      pincode: parts[5] ?? "",
+      address: parts[0] ?? "",
+      location: parts[1] ?? "",
+      state: parts[2] ?? "",
+      country: parts[3] ?? "",
+      pincode: parts[4] ?? "",
+      phone1: parts[5] ?? "",
+      // phone2: parts[6] ?? "",
+      email: parts[6] ?? "",
     };
   };
 
-  const buildAddressText = (address1: string, address2: string, city: string, state: string, country: string, pincode: string) =>
-    [address1, address2, city, state, country, pincode].map((part) => String(part ?? "").trim()).filter(Boolean).join("\n");
+  //  const buildAddressText = (address: string, city: string, state: string, country: string, pincode: string) =>
+  //     [address, city, state, country, pincode].map((part) => String(part ?? "").trim()).filter(Boolean).join("\n");
 
   const hydrateLocations = (rows: Record<string, unknown>[]) => {
-    const normalized = rows.map((row) => ({
-      locationId: String(row.location_id ?? row.locationId ?? "").trim(),
-      location: String(row.location ?? "").trim(),
-      address: String(row.address ?? "").trim(),
-      phoneno1: String(row.phoneno1 ?? "").trim(),
-      phoneno2: String(row.phoneno2 ?? "").trim(),
-    })).filter((row) => row.locationId || row.location);
+    const normalized = rows.map((row) => {
+      const address = splitAddressFields(String(row.address ?? ""));
+      const rawLocationType = String(row.locationType ?? row.location_type ?? row.addresstype ?? row.addressType ?? "BILL").trim().toUpperCase();
+      const locationType = rawLocationType === "SHIP" || rawLocationType === "2" ? "SHIP" : "BILL";
 
-    const billRow = normalized.find((row) => /bill/i.test(row.location)) ?? normalized[0];
-    const shipRow = normalized.find((row) => /ship/i.test(row.location)) ?? normalized[1] ?? normalized[0];
+      const state = String(row.state ?? row.locstate ?? address.state ?? "").trim();
+      const country = String(row.country ?? row.loccountry ?? address.country ?? "").trim();
+      const pincode = String(row.pincode ?? row.locpincode ?? address.pincode ?? "").trim();
+      const phone1 = String(row.phoneno1 ?? row.phone1 ?? row.phone ?? "").trim();
+      //const phone2 = String(row.phoneno2 ?? row.phone2 ?? "").trim();
+      const email = String(row.locemail ?? row.email ?? "").trim();
+      const city = String(row.location ?? "").trim();  //location field backend
 
-    if (billRow) {
-      const billAddress = splitAddressFields(billRow.address);
-      setBillLocationId(billRow.locationId);
-      setForm((prev) => ({
-        ...prev,
-        billCompany: billRow.location,
-        billAddress1: billAddress.address1,
-        billAddress2: billAddress.address2,
-        billCity: billAddress.city,
-        billState: billAddress.state,
-        billCountry: billAddress.country,
-        billPincode: billAddress.pincode,
-        billPhone: billRow.phoneno1,
-        billEmail: "",
-      }));
-    }
+      return {
+        locationId: String(row.location_id ?? row.locationId ?? "").trim(),
+        customer_id: String(row.customer_id ?? row.customerId ?? "").trim(),
+        location: String(row.location ?? row.locationName ?? "").trim(),
+        locationName: String(row.location ?? row.locationName ?? "").trim(),
+        locationType,
+        address: address.address,
+        city,
+        state,
+        country,
+        pincode,
+        phone1,
+        //  phone2,
+        email,
+        addresstype: Number(row.addresstype ?? (locationType === "SHIP" ? 2 : 1)),
+      };
+    });
 
-    if (shipRow) {
-      const shipAddress = splitAddressFields(shipRow.address);
-      setShipLocationId(shipRow.locationId);
-      setForm((prev) => ({
-        ...prev,
-        shipCompany: shipRow.location,
-        shipAddress1: shipAddress.address1,
-        shipAddress2: shipAddress.address2,
-        shipCity: shipAddress.city,
-        shipState: shipAddress.state,
-        shipCountry: shipAddress.country,
-        shipPincode: shipAddress.pincode,
-        shipPhone: shipRow.phoneno1,
-        shipEmail: "",
-      }));
-    }
-
-    setSameAddress(Boolean(billRow && shipRow && billRow.locationId === shipRow.locationId));
+    setLocations(normalized.length ? normalized : [{ ...emptyLocation }]);
   };
 
   const hydrateContacts = (rows: Record<string, unknown>[]) => {
@@ -455,11 +474,12 @@ export default function AddEditCustContLocReg() {
       .map((row) => ({
         contactId: String(row.contact_id ?? row.contactId ?? "").trim(),
         locationId: String(row.location_id ?? row.locationId ?? "").trim(),
-        role: String(row.ContactTitle ?? row.contactTitle ?? row.contact_title ?? "Technical"),
-        name: String(row.ContactName ?? row.contactName ?? row.contact_name ?? ""),
-        mobile: String(row.mobile1 ?? row.mobile_1 ?? row.mobileno1 ?? ""),
-        alternateMobile: String(row.mobile2 ?? row.mobile_2 ?? row.mobileno2 ?? ""),
-        email: String(row.email11 ?? row.email ?? row.email1 ?? ""),
+        role: String(row.role ?? "Technical").trim(),
+        contactTitle: String(row.contactTitle ?? "").trim(),
+        name: String(row.ContactName ?? row.contactName ?? row.contact_name ?? "").trim(),
+        mobile: String(row.mobile1 ?? row.mobile_1 ?? row.mobileno1 ?? "").trim(),
+        alternateMobile: String(row.mobile2 ?? row.mobile_2 ?? row.mobileno2 ?? "").trim(),
+        email: String(row.email11 ?? row.email ?? row.email1 ?? "").trim(),
       }))
       .filter((row) => row.contactId || row.name || row.email || row.mobile);
 
@@ -473,6 +493,7 @@ export default function AddEditCustContLocReg() {
         contactId: "",
         locationId: "",
         role: "Technical",
+        contactTitle: "",
         name: "",
         mobile: "",
         alternateMobile: "",
@@ -504,7 +525,7 @@ export default function AddEditCustContLocReg() {
     try {
       const [customerRes, locationRes, contactRes] = await Promise.all([
         axios.get(
-        `${baseUrl}/api/Sales/CustomerById?itemno=${encodeURIComponent(customerId)}`
+          `${baseUrl}/api/Sales/CustomerById?itemno=${encodeURIComponent(customerId)}`
         ),
         axios.get(
           `${baseUrl}/api/Sales/customerlocations?customerId=${encodeURIComponent(customerId)}`
@@ -536,12 +557,13 @@ export default function AddEditCustContLocReg() {
     setFormMode("new");
     setTab(0);
     setSelectedCustomerId("");
-    setSameAddress(false);
+    setLocations([{ ...emptyLocation }]);
     setContacts([
       {
         contactId: "",
         locationId: "",
         role: "Technical",
+        contactTitle: "",
         name: "",
         mobile: "",
         alternateMobile: "",
@@ -557,38 +579,30 @@ export default function AddEditCustContLocReg() {
       panNo: "",
       currency: "INR",
       industry: "",
-      salesOffice: "",
       salesOrganization: "",
       distributionChannel: "",
-      division: "",
-      customerAccountGroup: "",
-      titleText: "",
-      coSearchTerm1: "",
-      reconciliationAccountGL: "",
-      languageKey: "English",
+      contactTitle: "",
       paymentTerms: "",
       shippingConditions: "",
       incoterms: "",
-      exchangeRateType: "",
-      taxClassification: "",
+      taxclassification: "",
       sapCode: "",
-      billCompany: "",
-      billAddress1: "",
-      billAddress2: "",
+      billAddress: "",
       billCity: "",
       billState: "",
       billCountry: "",
       billPincode: "",
-      billPhone: "",
+      billPhone1: "",
+      //  billPhone2: "",
       billEmail: "",
       shipCompany: "",
-      shipAddress1: "",
-      shipAddress2: "",
+      shipAddress: "",
       shipCity: "",
       shipState: "",
       shipCountry: "",
       shipPincode: "",
-      shipPhone: "",
+      shipPhone1: "",
+      // shipPhone2: "",
       shipEmail: "",
     });
   };
@@ -596,14 +610,13 @@ export default function AddEditCustContLocReg() {
   const handleModeChange = (mode: "new" | "edit" | "delete") => {
     setFormMode(mode);
     setSelectedCustomerId("");
-    setBillLocationId("");
-    setShipLocationId("");
-    setSameAddress(false);
+    setLocations([{ ...emptyLocation }]);
     setContacts([
       {
         contactId: "",
         locationId: "",
         role: "Technical",
+        contactTitle: "",
         name: "",
         mobile: "",
         alternateMobile: "",
@@ -619,38 +632,29 @@ export default function AddEditCustContLocReg() {
       panNo: "",
       currency: "INR",
       industry: "",
-      salesOffice: "",
       salesOrganization: "",
       distributionChannel: "",
-      division: "",
-      customerAccountGroup: "",
-      titleText: "",
-      coSearchTerm1: "",
-      reconciliationAccountGL: "",
-      languageKey: "English",
+      contactTitle: "",
       paymentTerms: "",
       shippingConditions: "",
       incoterms: "",
-      exchangeRateType: "",
-      taxClassification: "",
+      taxclassification: "",
       sapCode: "",
-      billCompany: "",
-      billAddress1: "",
-      billAddress2: "",
+      billAddress: "",
       billCity: "",
       billState: "",
       billCountry: "",
       billPincode: "",
-      billPhone: "",
+      billPhone1: "",
+      // billPhone2: "",
       billEmail: "",
-      shipCompany: "",
-      shipAddress1: "",
-      shipAddress2: "",
+      shipAddress: "",
       shipCity: "",
       shipState: "",
       shipCountry: "",
       shipPincode: "",
-      shipPhone: "",
+      shipPhone1: "",
+      //  shipPhone2: "",
       shipEmail: "",
     });
     if (mode === "new") {
@@ -668,129 +672,116 @@ export default function AddEditCustContLocReg() {
   const getSalesRespLabel = (salesRespId: string) =>
     salesRespOptions.find((option) => String(option.value) === String(salesRespId))?.label ?? "";
 
-  const buildCustomerPayload = (customerId?: string) => ({
-    itemno: customerId ? Number(customerId) : undefined,
-    customer: form.companyName.trim(),
-    customer_abb: form.customerAbb.trim(),
-    gst_no: form.gstNo.trim(),
-    sales_resp_id: String(form.salesRespId ?? ""),
-    sales_resp: getSalesRespLabel(String(form.salesRespId ?? "")),
-    customer_Type: form.customerType,
-    sapcustcode: form.sapCode.trim(),
-    addedby: sessionStorage.getItem("SessionUserName") || "guest",
-  });
+  const buildCustomerDetailsPayload = (customerId?: string) => {
+    const activeLocations = locations.filter((loc) => {
+      return [loc.address, loc.city, loc.state, loc.country, loc.pincode, loc.phone1, loc.email].some(
+        (value) => String(value ?? "").trim() !== ""
+      );
+    });
 
-  const buildLocationPayload = (
-    customerId: string,
-    locationId: string,
-    locationName: string,
-    addressLines: AddressFields,
-    phone: string
-  ) => ({
-    itemno: customerId,
-    customer_id: customerId,
-    location_id: locationId ? Number(locationId) : undefined,
-    location: locationName.trim(),
-    address: buildAddressText(
-      addressLines.address1,
-      addressLines.address2,
-      addressLines.city,
-      addressLines.state,
-      addressLines.country,
-      addressLines.pincode
-    ),
-    phoneno1: phone.trim(),
-    phoneno2: "",
-    addedby: sessionStorage.getItem("SessionUserName") || "guest",
-  });
+    const locationPayloads = activeLocations.map((loc) => ({
+      Location_Id: loc.locationId ? Number(loc.locationId) : undefined,
+      Customer_Id: customerId ? Number(customerId) : 0,
+      Location: loc.city,
+      // Address: buildAddressText(loc.address, loc.city, loc.state, loc.country, loc.pincode),
+      Address: loc.address,
+      PhoneNo1: loc.phone1,
+      AddressType: loc.locationType === "SHIP" ? 2 : 1,
+      LocEmail: loc.email,
+      LocState: loc.state,
+      LocCountry: loc.country,
+      LocPincode: loc.pincode,
+    }));
 
-  const buildContactPayload = (customerId: string, locationId: string, contact: ContactRow) => ({
-    customer_id: Number(customerId),
-    location_id: Number(locationId),
-    ContactTitle: contact.role,
-    ContactName: contact.name.trim(),
-    email11: contact.email.trim(),
-    mobile1: contact.mobile.trim(),
-    mobile2: contact.alternateMobile.trim(),
-  });
+    const contactPayloads = contacts
+      .filter(isContactRowPopulated)
+      .map((contact) => ({
+        Contact_Id: contact.contactId ? Number(contact.contactId) : undefined,
+        Location_Id: contact.locationId ? Number(contact.locationId) : (locationPayloads.length > 0 ? locationPayloads[0].Location_Id : undefined),
+        Customer_Id: customerId ? Number(customerId) : 0,
+        ContactTitle: contact.contactTitle,
+        ContactName: contact.name.trim(),
+        Email11: contact.email.trim(),
+        Mobile1: contact.mobile.trim(),
+        Mobile2: contact.alternateMobile.trim(),
+        contactrole: contact.role,
+      }));
 
-  const isContactRowPopulated = (contact: ContactRow) =>
-    [contact.contactId, contact.locationId, contact.name, contact.mobile, contact.alternateMobile, contact.email].some(
-      (value) => String(value ?? "").trim() !== ""
-    );
+    return {
+      Customer: {
+        ItemNo: customerId ? Number(customerId) : undefined,
+        Customer: form.companyName.trim(),
+        Customer_Abb: form.customerAbb.trim(),
+        Sales_Resp: getSalesRespLabel(String(form.salesRespId ?? "")),
+        Sales_Resp_Id: String(form.salesRespId ?? ""),
+        Customer_Type: form.customerType,
+        Gst_No: form.gstNo.trim(),
+        SapCustCode: form.sapCode.trim(),
+        industry: form.industry,
+        currency: form.currency,
+        panNo: form.panNo,
+        salesorg: form.salesOrganization,
+        distributionchannel: form.distributionChannel,
+        cuspaymentterms: form.paymentTerms,
+        taxclassification: form.taxclassification,
+        shippingconditions: form.shippingConditions,
+        incoterms: form.incoterms,
+        AddedBy: sessionStorage.getItem("SessionUserName") || "guest",
+      },
+      Locations: locationPayloads,
+      Contacts: contactPayloads,
+    };
+  };
 
   const validateContactRows = () => {
     const rows = contacts.filter(isContactRowPopulated);
 
     for (const contact of rows) {
-      if (!String(contact.role ?? "").trim()) return "Contact title is required.";
+      if (!String(contact.role ?? "").trim()) return "Role is required.";
+      if (!String(contact.contactTitle ?? "").trim()) return "Contact title is required.";
       if (!String(contact.name ?? "").trim()) return "Contact name is required.";
       if (!String(contact.mobile ?? "").trim()) return "Contact mobile is required.";
       if (!String(contact.email ?? "").trim()) return "Contact email is required.";
     }
-
     return "";
   };
+
+  const isContactRowPopulated = (contact: ContactRow) =>
+    [contact.name, contact.mobile, contact.email].some(
+      (v) => String(v ?? "").trim() !== ""
+    );
 
   const validateForm = () => {
     if (!form.companyName.trim()) return "Customer name is required.";
     if (!form.customerAbb.trim()) return "Customer abbreviation is required.";
-    if (!form.gstNo.trim()) return "GST number is required.";
+    //if (!form.gstNo.trim()) return "GST number is required.";
+    if (form.customerType !== "Export" && !form.gstNo.trim()) {
+    return "GST number is required.";
+  }
     if (!form.salesRespId.trim()) return "Sales responsibility is required.";
     if (!form.customerType.trim()) return "Customer type is required.";
     if (!form.paymentTerms.trim()) return "Payment terms is required.";
     if (!form.incoterms.trim()) return "Incoterms is required.";
-    if (!form.billCompany.trim()) return "Bill to company name is required.";
-    if (!form.billAddress1.trim()) return "Bill to address is required.";
-    if (!form.shipCompany.trim() && !sameAddress) return "Ship to company name is required.";
-    if (!form.shipAddress1.trim() && !sameAddress) return "Ship to address is required.";
+    //phone2 to add below if used
+    const hasLocationData = locations.some((loc) =>
+      [loc.address, loc.city, loc.state, loc.country, loc.pincode, loc.phone1, loc.email].some(
+        (value) => String(value ?? "").trim() !== ""
+      )
+    );
+    if (!hasLocationData) return "At least one location address is required.";
     const contactError = validateContactRows();
     if (contactError) return contactError;
     return "";
   };
 
   const saveCustomerRecord = async (customerId?: string): Promise<SavedRecordResponse> => {
-    const payload = buildCustomerPayload(customerId);
+    const payload = buildCustomerDetailsPayload(customerId);
+    console.log("Saving customer record with payload:", payload);
     if (formMode === "edit" && customerId) {
-      const res = await axios.put<SavedRecordResponse>(`${baseUrl}/api/Sales/EditCustomer/${encodeURIComponent(customerId)}`, payload);
+      const res = await axios.put<SavedRecordResponse>(`${baseUrl}/api/Sales/EditCustomerDetails/${encodeURIComponent(customerId)}`, payload);
       return res.data;
     }
-
-    const res = await axios.post<SavedRecordResponse>(`${baseUrl}/api/Sales/AddCustomer`, payload);
-    return res.data;
-  };
-
-  const saveLocationRecord = async (
-    customerId: string,
-    locationId: string,
-    locationName: string,
-    addressLines: AddressFields,
-    phone: string
-  ): Promise<SavedRecordResponse> => {
-    const payload = buildLocationPayload(customerId, locationId, locationName, addressLines, phone);
-    if (locationId) {
-      const res = await axios.put<SavedRecordResponse>(
-        `${baseUrl}/api/Sales/EditCustLocation/${encodeURIComponent(locationId)}?customerId=${encodeURIComponent(customerId)}`,
-        payload
-      );
-      return res.data;
-    }
-
-    const res = await axios.post<SavedRecordResponse>(`${baseUrl}/api/Sales/AddCustLocation`, payload);
-    return res.data;
-  };
-
-  const saveContactRecord = async (customerId: string, contact: ContactRow, locationId: string) => {
-    const payload = buildContactPayload(customerId, locationId, contact);
-    if (contact.contactId) {
-      const res = await axios.put(
-        `${baseUrl}/api/Sales/EditCustContact/${encodeURIComponent(contact.contactId)}`,
-        { ...payload, contact_id: Number(contact.contactId) }
-      );
-      return res.data;
-    }
-
-    const res = await axios.post(`${baseUrl}/api/Sales/AddCustContact`, payload);
+    const res = await axios.post<SavedRecordResponse>(`${baseUrl}/api/Sales/AddCustomerDetails`, payload);
     return res.data;
   };
 
@@ -814,74 +805,20 @@ export default function AddEditCustContLocReg() {
     setSaving(true);
     try {
       const customerResult = await saveCustomerRecord(currentCustomerId || undefined);
-      const savedCustomerId = String(customerResult?.itemno ?? customerResult?.itemNo ?? currentCustomerId ?? "").trim();
+      const savedCustomerIdRaw = customerResult?.itemno ?? customerResult?.itemNo ?? customerResult?.CustomerId;
+      const savedCustomerId = String(savedCustomerIdRaw ?? "").trim();
 
       if (!savedCustomerId) {
         throw new Error("Customer save did not return an item number.");
       }
 
-      const savedBillLocation = await saveLocationRecord(
-        savedCustomerId,
-        billLocationId,
-        form.billCompany,
-        {
-          address1: form.billAddress1,
-          address2: form.billAddress2,
-          city: form.billCity,
-          state: form.billState,
-          country: form.billCountry,
-          pincode: form.billPincode,
-        },
-        form.billPhone
-      );
-
-      const effectiveBillLocationId = String(
-          savedBillLocation?.location_id ?? savedBillLocation?.locationId ?? billLocationId ?? ""
-      ).trim();
-
-      let effectiveShipLocationId = shipLocationId;
-      if (sameAddress) {
-        effectiveShipLocationId = effectiveBillLocationId;
-      } else {
-        const savedShipLocation = await saveLocationRecord(
-          savedCustomerId,
-          shipLocationId,
-          form.shipCompany,
-          {
-            address1: form.shipAddress1,
-            address2: form.shipAddress2,
-            city: form.shipCity,
-            state: form.shipState,
-            country: form.shipCountry,
-            pincode: form.shipPincode,
-          },
-          form.shipPhone
-        );
-        effectiveShipLocationId = String(
-          savedShipLocation?.location_id ?? savedShipLocation?.locationId ?? shipLocationId ?? ""
-      ).trim();
-      }
-
-      const contactRows = contacts.filter(isContactRowPopulated);
-
-      for (const contact of contactRows) {
-        const targetLocationId = String(contact.locationId || effectiveBillLocationId || effectiveShipLocationId || "").trim();
-        if (!targetLocationId) {
-          throw new Error("Unable to determine a location for one or more contacts.");
-        }
-        await saveContactRecord(savedCustomerId, contact, targetLocationId);
-      }
-
       setSelectedCustomerId(savedCustomerId);
-      setBillLocationId(effectiveBillLocationId);
-      setShipLocationId(effectiveShipLocationId);
-      setFormMode("edit");
-      toast.success(formMode === "new" ? "Customer saved successfully." : "Customer updated successfully.");
-      await loadCustomerForMode(savedCustomerId);
+      handleModeChange("new");
+      toast.success(formMode === "new" ? "New Customer added." : "Customer edited.");
       void loadCustomers();
     } catch (error) {
-      console.error("Bundle save failed:", error);
-      toast.error("Unable to save the customer bundle.");
+      console.log("error", error);
+      toast.error("Failed to update customer.");
     } finally {
       setSaving(false);
     }
@@ -940,6 +877,9 @@ export default function AddEditCustContLocReg() {
   useEffect(() => {
     void loadCustomers();
     void fetchSalesResponsibilityOptions();
+    void fetchIndustryOptions();
+    void fetchPaymenttermsOptions();
+    void fetchLocationCodeOptions();
   }, []);
 
   useEffect(() => {
@@ -947,6 +887,87 @@ export default function AddEditCustContLocReg() {
       void loadCustomers();
     }
   }, [formMode]);
+
+  useEffect(() => {
+    if (form.customerType === "Export") {
+      setForm(prev => ({
+        ...prev,
+        gstNo: "",
+      }));
+    }
+  }, [form.customerType]);
+
+  const handleLocationChange = (
+    index: number,
+    field: keyof CustomerLocation,
+    value: string
+  ) => {
+    setLocations(prev =>
+      prev.map((item, i) =>
+        i === index
+          ? {
+              ...item,
+              [field]: value,
+              ...(field === "locationType"
+                ? { addresstype: value === "SHIP" ? 2 : 1 }
+                : {}),
+            }
+          : item
+      )
+    );
+  };
+  const addLocation = () => {
+    setLocations(prev => [
+      ...prev,
+      {
+        locationId: crypto.randomUUID(),
+        customer_id: "",
+        location: "",
+        locationName: "",
+        locationType: "BILL",
+        address: "",
+        city: "",
+        state: "",
+        country: "",
+        pincode: "",
+        phone1: "",
+        //  phone2: "",
+        email: "",
+        addresstype: 1,
+      }
+    ]);
+  };
+  const getLocationHeader = (type: string) => {
+    switch (type) {
+      case "BILL":
+        return {
+          title: "Bill To Location",
+          icon: <Business />,
+          color: "#1565c0",
+          bg: "#e8f2ff",
+        };
+
+      case "SHIP":
+        return {
+          title: "Ship To Location",
+          icon: <LocalShipping />,
+          color: "#2e7d32",
+          bg: "#edf8ed",
+        };
+
+      default:
+        return {
+          title: "Other Location",
+          icon: <LocationOn />,
+          color: "#616161",
+          bg: "#f5f5f5",
+        };
+    }
+  };
+
+  const removeLocation = (index: number) => {
+    setLocations(prev => prev.filter((_, i) => i !== index));
+  };
 
   return (
     <Box
@@ -973,9 +994,9 @@ export default function AddEditCustContLocReg() {
             alignItems: "center",
             flexWrap: "wrap",
             gap: 2,
-          mb: 3,
-        }}
-      >
+            mb: 3,
+          }}
+        >
           <Box>
             <Typography
               variant="h4"
@@ -1064,8 +1085,8 @@ export default function AddEditCustContLocReg() {
                     {loadingRecord
                       ? "Loading..."
                       : formMode === "delete"
-                      ? "Load for Delete"
-                      : "Load Record"}
+                        ? "Load for Delete"
+                        : "Load Record"}
                   </Button>
                 </Grid>
               </Grid>
@@ -1078,7 +1099,7 @@ export default function AddEditCustContLocReg() {
           </Card>
         )}
 
-          <Tabs
+        <Tabs
           value={tab}
           onChange={(_, newValue) => setTab(newValue)}
           variant="scrollable"
@@ -1176,8 +1197,30 @@ export default function AddEditCustContLocReg() {
                   />
                 </Box>
                 {renderTextField("Customer Abbreviation", "customerAbb", true)}
-                {form.customerType === "DOMESTIC" && renderTextField("GST Number", "gstNo", true)}
-  
+                <Box sx={fieldShellStyle}>
+                  <Typography sx={fieldLabelStyle}>
+                    GST No
+                    <span style={{ color: "#d32f2f" }}> *</span>
+                  </Typography>
+                  <TextControl
+                    // label="GST No"
+                    name="gstNo"
+                    value={form.gstNo}
+                    onChange={handleChange}
+                    disabled={form.customerType === "Export"}
+                  />
+                </Box>
+                <Box sx={fieldShellStyle}>
+                  <Typography sx={fieldLabelStyle}>
+                    PAN No
+                    <span style={{ color: "#d32f2f" }}> *</span>
+                  </Typography>
+                  <TextControl
+                    name="panNo"
+                    value={form.panNo}
+                    onChange={handleChange}
+                  />
+                </Box>
                 <Box sx={fieldShellStyle}>
                   <Typography sx={fieldLabelStyle}>
                     Currency
@@ -1198,224 +1241,310 @@ export default function AddEditCustContLocReg() {
                     disabled={isDeleteMode}
                   />
                 </Box>
-<SelectControl
-  name="industry"
-  label="Industry"
-  value={form.industry}
-  onChange={handleChange}
-  options={IndustryGroupOptions}
-  required
-  width="100%"
-  height={40}
-  fontSize="0.9rem"
-  labelFontWeight={600}
-  shrinkLabel={false}
-  disabled={isDeleteMode}
-/>
-                {renderTextField("Sales Office", "salesOffice")}
-
-                <SelectControl
-                  name="customerAccountGroup"
-                  label="Customer Account Group"
-                  value={form.customerAccountGroup}
-                  onChange={handleChange}
-                  options={customerAccountGroupOptions}
-                  width="100%"
-                  height={40}
-                  fontSize="0.9rem"
-                  labelFontWeight={600}
-                  shrinkLabel
-                  disabled={isDeleteMode}
-                />
-
-                <SelectControl
-                  name="titleText"
-                  label="Title Text"
-                  value={form.titleText}
-                  onChange={handleChange}
-                  options={titleTextOptions}
-                  width="100%"
-                  height={40}
-                  fontSize="0.9rem"
-                  labelFontWeight={600}
-                  shrinkLabel
-                  disabled={isDeleteMode}
-                />
-
-                {/* <SelectControl
-                  name="coSearchTerm1"
-                  label="Co-Search Term 1"
-                  value={form.coSearchTerm1}
-                  onChange={handleChange}
-                  options={coSearchTermOptions}
-                  width="100%"
-                  height={40}
-                  fontSize="0.9rem"
-                  labelFontWeight={600}
-                  shrinkLabel
-                  disabled={isDeleteMode}
-                /> */}
-
-                <Box sx={{ gridColumn: { xs: "auto", md: "1 / -1" } }}>
-                  {renderTextField("Reconciliation Account in General Ledger", "reconciliationAccountGL")}
+                <Box sx={fieldShellStyle}>
+                  <Typography sx={fieldLabelStyle}>
+                    Industry
+                    <span style={{ color: "#d32f2f" }}> *</span>
+                  </Typography>
+                  <SelectControl
+                    name="industry"
+                    label=""
+                    value={form.industry}
+                    onChange={handleChange}
+                    options={industryOptions}
+                    required
+                    width="100%"
+                    height={40}
+                    fontSize="0.9rem"
+                    labelFontWeight={600}
+                    shrinkLabel={false}
+                    disabled={isDeleteMode}
+                  />
                 </Box>
               </Box>
             </CardContent>
           </Card>
         )}
-
         {tab === 1 && (
-          <Grid container spacing={3}>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Card sx={sectionCardStyle}>
-                <Box sx={sectionHeaderStyle}>
-                  <LocationOn />
-                  <Typography variant="h6" fontWeight={600}>
-                    Bill To Address
-                  </Typography>
-                </Box>
+          <Card sx={sectionCardStyle}>
 
-                <CardContent>
-                  <Grid container spacing={2} alignItems="stretch">
-                    <Grid size={{ xs: 12 }}>
-                      {renderTextField(
-                        "Company Name",
-                        "billCompany",
-                        true
-                      )}
-                    </Grid>
+            <Box sx={sectionHeaderStyle}>
+              <LocationOn />
+              <Typography variant="h6" fontWeight={600}>
+                Customer Locations
+              </Typography>
+            </Box>
 
-                    <Grid size={{ xs: 12 }}>
-                      {renderTextField(
-                        "Address Line 1",
-                        "billAddress1",
-                        true,
-                        true,
-                        2
-                      )}
-                    </Grid>
+            <CardContent>
+              {locations.map((loc, index) => {
 
-                    <Grid size={{ xs: 12 }}>
-                      {renderTextField(
-                        "Address Line 2",
-                        "billAddress2",
-                        false,
-                        true,
-                        2
-                      )}
-                    </Grid>
+                const header = getLocationHeader(loc.locationType);
 
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      {renderTextField("City", "billCity", true)}
-                    </Grid>
+                return (
+                  <Box
+                    key={`${loc.locationId || index}-${index}`}
+                    sx={{
+                      border: "1px solid #dde7f5",
+                      borderRadius: 3,
+                      p: 2,
+                      mb: 3,
+                      background: header.bg,
+                      color: header.color,
+                    }}
+                  >
 
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      {renderTextField("State", "billState", true)}
-                    </Grid>
-
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      {renderTextField("Country", "billCountry", true)}
-                    </Grid>
-
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      {renderTextField("Pincode", "billPincode", true)}
-                    </Grid>
-
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      {renderTextField("Phone", "billPhone")}
-                    </Grid>
-
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      {renderTextField("Email ID", "billEmail")}
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Card sx={sectionCardStyle}>
-                <Box sx={sectionHeaderStyle}>
-                  <LocationOn />
-                  <Typography variant="h6" fontWeight={600}>
-                    Ship To Address
-                  </Typography>
-                </Box>
-
-                <CardContent>
-                  <FormControlLabel
-                    control={
-                    <Checkbox
-                        checked={sameAddress}
-                        onChange={(e) =>
-                          copyBillToShip(e.target.checked)
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        mb: 2,
+                      }}
+                    >
+                      <Chip
+                        label={loc.locationType}
+                        color={
+                          loc.locationType === "BILL"
+                            ? "primary"
+                            : loc.locationType === "SHIP"
+                              ? "success"
+                              : "default"
                         }
-                        disabled={isDeleteMode}
                       />
-                    }
-                    label="Same as Bill To"
-                    sx={{ mb: 2 }}
-                  />
 
-                  <Grid container spacing={2} alignItems="stretch">
-                    <Grid size={{ xs: 12 }}>
-                      {renderTextField(
-                        "Company Name",
-                        "shipCompany",
-                        true
+                      {locations.length > 1 && (
+                        <IconButton
+                          color="error"
+                          onClick={() => removeLocation(index)}
+                        >
+                          <Delete />
+                        </IconButton>
                       )}
+                    </Box>
+
+                    <Grid container spacing={2}>
+
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <Box sx={fieldShellStyle}>
+                          <Typography sx={fieldLabelStyle}>
+                            Location Type
+                          </Typography>
+
+                          <SelectControl
+                            value={loc.locationType}
+                            onChange={(e) =>
+                              handleLocationChange(
+                                index,
+                                "locationType",
+                                e.target.value
+                              )
+                            }
+                            //though the value in string, while storing we store int
+                            options={[
+                              { value: "BILL", label: "Bill To" },
+                              { value: "SHIP", label: "Ship To" },
+                            ]}
+                            fullWidth
+                          />
+                        </Box>
+                      </Grid>
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <Box sx={fieldShellStyle}>
+                          <Typography sx={fieldLabelStyle}>
+                            Address
+                          </Typography>
+
+                          <TextControl
+                            multiline
+                            rows={2}
+                            value={loc.address}
+                            onChange={(e) =>
+                              handleLocationChange(
+                                index,
+                                "address",
+                                e.target.value
+                              )
+                            }
+                            fullWidth
+                            style={inputStyle}
+                          />
+                        </Box>
+                      </Grid>
+
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <Box sx={fieldShellStyle}>
+                          <Typography sx={fieldLabelStyle}>
+                            City
+                          </Typography>
+
+                          <SelectControl
+                            name={`city-${index}`}
+                            label=""
+                            value={loc.city}
+                            onChange={(e) =>
+                              handleLocationChange(
+                                index,
+                                "city",
+                                e.target.value
+                              )
+                            }
+                            options={cityOptions}
+                            width="100%"
+                            height={40}
+                            fontSize="0.9rem"
+                            labelFontWeight={600}
+                            shrinkLabel={false}
+                            disabled={isDeleteMode}
+                          />
+                        </Box>
+                      </Grid>
+
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <Box sx={fieldShellStyle}>
+                          <Typography sx={fieldLabelStyle}>
+                            State
+                          </Typography>
+
+                          <SelectControl
+                            name={`state-${index}`}
+                            label=""
+                            value={loc.state}
+                            onChange={(e) =>
+                              handleLocationChange(
+                                index,
+                                "state",
+                                e.target.value
+                              )
+                            }
+                            options={stateOptions}
+                            width="100%"
+                            height={40}
+                            fontSize="0.9rem"
+                            labelFontWeight={600}
+                            shrinkLabel={false}
+                            disabled={isDeleteMode}
+                          />
+                        </Box>
+                      </Grid>
+
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <Box sx={fieldShellStyle}>
+                          <Typography sx={fieldLabelStyle}>
+                            Country
+                          </Typography>
+
+                          <SelectControl
+                            name={`country-${index}`}
+                            label=""
+                            value={loc.country}
+                            onChange={(e) =>
+                              handleLocationChange(
+                                index,
+                                "country",
+                                e.target.value
+                              )
+                            }
+                            options={countryOptions}
+                            width="100%"
+                            height={40}
+                            fontSize="0.9rem"
+                            labelFontWeight={600}
+                            shrinkLabel={false}
+                            disabled={isDeleteMode}
+                          />
+                        </Box>
+                      </Grid>
+
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <Box sx={fieldShellStyle}>
+                          <Typography sx={fieldLabelStyle}>
+                            Pincode
+                          </Typography>
+
+                          <TextControl
+                            value={loc.pincode}
+                            onChange={(e) =>
+                              handleLocationChange(
+                                index,
+                                "pincode",
+                                e.target.value
+                              )
+                            }
+                            fullWidth
+                            style={inputStyle}
+                          />
+                        </Box>
+                      </Grid>
+
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <Box sx={fieldShellStyle}>
+                          <Typography sx={fieldLabelStyle}>
+                            Phone
+                          </Typography>
+
+                          <TextControl
+                            name={`phone-${index}`}
+                            type="tel"
+                            inputMode="tel"
+                            value={loc.phone1}
+                            onChange={(e) =>
+                              handleLocationChange(
+                                index,
+                                "phone1",
+                                e.target.value
+                              )
+                            }
+                            fullWidth
+                            style={inputStyle}
+                          />
+                        </Box>
+                      </Grid>
+
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <Box sx={fieldShellStyle}>
+                          <Typography sx={fieldLabelStyle}>
+                            Email
+                          </Typography>
+
+                          <TextControl
+                            value={loc.email}
+                            onChange={(e) =>
+                              handleLocationChange(
+                                index,
+                                "email",
+                                e.target.value
+                              )
+                            }
+                            fullWidth
+                            style={inputStyle}
+                          />
+                        </Box>
+                      </Grid>
+
                     </Grid>
 
-                    <Grid size={{ xs: 12 }}>
-                      {renderTextField(
-                        "Address Line 1",
-                        "shipAddress1",
-                        true,
-                        true,
-                        2
-                      )}
-                    </Grid>
+                  </Box>
 
-                    <Grid size={{ xs: 12 }}>
-                      {renderTextField(
-                        "Address Line 2",
-                        "shipAddress2",
-                        false,
-                        true,
-                        2
-                      )}
-                    </Grid>
+                );
+              })}
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={addLocation}
+                sx={{
+                  mt: 2,
+                  borderRadius: 3,
+                  textTransform: "none",
+                  px: 3
+                }}
+              >
+                Add Another Location
+              </Button>
 
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      {renderTextField("City", "shipCity", true)}
-                    </Grid>
+            </CardContent>
 
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      {renderTextField("State", "shipState", true)}
-                    </Grid>
-
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      {renderTextField("Country", "shipCountry", true)}
-                    </Grid>
-
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      {renderTextField("Pincode", "shipPincode", true)}
-                    </Grid>
-
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      {renderTextField("Phone", "shipPhone")}
-                    </Grid>
-
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      {renderTextField("Email", "shipEmail")}
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+          </Card>
         )}
-
         {tab === 2 && (
           <Card sx={sectionCardStyle}>
             <Box sx={sectionHeaderStyle}>
@@ -1459,9 +1588,8 @@ export default function AddEditCustContLocReg() {
                       </IconButton>
                     )}
                   </Box>
-
                   <Grid container spacing={2} alignItems="flex-start">
-                    <Grid size={{ xs: 12, md: 3 }}>
+                    <Grid size={{ xs: 12, md: 2 }}>
                       <Box sx={fieldShellStyle}>
                         <Typography sx={fieldLabelStyle}>
                           Role
@@ -1474,17 +1602,33 @@ export default function AddEditCustContLocReg() {
                             handleContactChange(index, "role", e.target.value)
                           }
                           options={contactRoleOptions}
-                          width="100%"
                           height={40}
                           fontSize="0.9rem"
                           labelFontWeight={600}
                           shrinkLabel={false}
                           disabled={isDeleteMode}
+                          fullWidth
+                        />
+                      </Box>
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 1 }}>
+                      <Box sx={fieldShellStyle}>
+                        <Typography sx={fieldLabelStyle}>Title</Typography>
+                        <SelectControl
+                          name="contactTitle"
+                          value={contact.contactTitle}
+                          onChange={(e) =>
+                            handleContactChange(index, "contactTitle", e.target.value)
+                          }
+                          options={titleTextOptions}
+                          fullWidth
+                          height={40}
+                          shrinkLabel={false}
                         />
                       </Box>
                     </Grid>
 
-                    <Grid size={{ xs: 12, md: 3 }}>
+                    <Grid size={{ xs: 12, md: 2 }}>
                       <Box sx={fieldShellStyle}>
                         <Typography sx={fieldLabelStyle}>
                           Contact Name
@@ -1499,8 +1643,8 @@ export default function AddEditCustContLocReg() {
                               e.target.value
                             )
                           }
-                          fullWidth
                           style={inputStyle}
+                          fullWidth
                           disabled={isDeleteMode}
                         />
                       </Box>
@@ -1518,8 +1662,9 @@ export default function AddEditCustContLocReg() {
                               e.target.value
                             )
                           }
-                          fullWidth
+                          // style={{ width: 150 }, inputStyle}
                           style={inputStyle}
+                          fullWidth
                           disabled={isDeleteMode}
                         />
                       </Box>
@@ -1544,7 +1689,7 @@ export default function AddEditCustContLocReg() {
                       </Box>
                     </Grid>
 
-                    <Grid size={{ xs: 12, md: 2 }}>
+                    <Grid size={{ xs: 12, md: 3 }}>
                       <Box sx={fieldShellStyle}>
                         <Typography sx={fieldLabelStyle}>Email ID</Typography>
                         <TextControl
@@ -1589,73 +1734,78 @@ export default function AddEditCustContLocReg() {
 
             <CardContent>
               <Grid container spacing={2} alignItems="stretch">
-                <Grid size={{ xs: 12, md: 4 }}>
-                  {renderTextField(
-                    "Sales Organization",
-                    "salesOrganization",
-                    true
-                  )}
+                <Grid size={{ xs: 12, md: 3 }}>
+                  <Box sx={fieldShellStyle}>
+                    <SelectControl
+                      label="Sales Organization"
+                      name="salesOrganization"
+                      value={form.salesOrganization}
+                      onChange={handleChange}
+                      options={salesOrganizationOptions}
+                    />
+                  </Box>
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 4 }}>
-                  {renderTextField(
-                    "Distribution Channel",
-                    "distributionChannel"
-                  )}
-                </Grid>
-                
-                <Grid size={{ xs: 12, md: 4 }}>
-                  {renderTextField("Division", "division")}
+                <Grid size={{ xs: 12, md: 3 }}>
+                  <Box sx={fieldShellStyle}>
+                    <SelectControl
+                      label="Distribution Channel"
+                      name="distributionChannel"
+                      value={form.distributionChannel}
+                      onChange={handleChange}
+                      options={distributionChannelOptions}
+                    />
+                  </Box>
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <Box sx={{ display: "flex", width: "100%", minHeight: 52 }}>
-                     <SelectControl
+                <Grid size={{ xs: 12, md: 3 }}>
+                  <Box sx={fieldShellStyle}>
+                    <SelectControl
                       name="paymentTerms"
                       label="Payment Terms"
                       value={form.paymentTerms}
                       onChange={handleChange}
                       required
-                      options={paymentTermsOptions}
-                      fullWidth={false}
-                      width={240}
-                      height={40}
-                      fontSize="0.9rem"
-                      labelFontWeight={600}
-                      shrinkLabel
-                      sx={{ width: "100%", mt: "auto" }}
+                      options={paymenttermsOptions}
+                      fullWidth
                       disabled={isDeleteMode}
                     />
                   </Box>
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 4 }}>
-                  {renderTextField(
-                    "Shipping Conditions",
-                    "shippingConditions"
-                  )}
+                <Grid size={{ xs: 12, md: 3 }}>
+                  <Box sx={fieldShellStyle}>
+                    <SelectControl
+                      label="Tax Classification"
+                      name="taxclassification"
+                      value={form.taxclassification}
+                      fullWidth
+                      shrinkLabel
+                      onChange={handleChange}
+                      options={taxClassificationOptions}
+                    />
+                  </Box>
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 4 }}>
-                  {renderTextField("Incoterms", "incoterms", true)}
+                <Grid size={{ xs: 12, md: 3 }}>
+                  <Box sx={fieldShellStyle}>
+                    {renderTextField(
+                      "Shipping Conditions",
+                      "shippingConditions"
+                    )}
+                  </Box>
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 4 }}>
-                  {renderTextField(
-                    "Exchange Rate Type",
-                    "exchangeRateType"
-                  )}
+                <Grid size={{ xs: 12, md: 3 }}>
+                  <Box sx={fieldShellStyle}>
+                    {renderTextField("Incoterms", "incoterms", true)}
+                  </Box>
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 4 }}>
-                  {renderTextField(
-                    "Tax Classification",
-                    "taxClassification"
-                  )}
-                </Grid>
-
-                <Grid size={{ xs: 12, md: 4 }}>
-                  {renderTextField("SAP Customer Code", "sapCode")}
+                <Grid size={{ xs: 12, md: 3 }}>
+                  <Box sx={fieldShellStyle}>
+                    {renderTextField("SAP Customer Code", "sapCode")}
+                  </Box>
                 </Grid>
               </Grid>
             </CardContent>
@@ -1677,8 +1827,8 @@ export default function AddEditCustContLocReg() {
             {formMode === "delete"
               ? "Delete mode locks the form. Confirm the record reference before deleting."
               : formMode === "edit"
-              ? "Edit mode lets you update an existing customer."
-              : "New entry mode creates a fresh customer record."}
+                ? "Edit mode lets you update an existing customer."
+                : "New entry mode creates a fresh customer record."}
           </Typography>
 
           <Box sx={{ display: "flex", gap: 2 }}>

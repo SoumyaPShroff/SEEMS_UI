@@ -1226,7 +1226,7 @@ const RptBillingPlanner: React.FC = () => {
             name="costcenter"
             label="Select Manager"
             value={selectedValue}
-            width="200px"
+            width="300px"
             options={managerOptions}
             onChange={(e: any) => handleManagerChange(e.target.value)}
           />

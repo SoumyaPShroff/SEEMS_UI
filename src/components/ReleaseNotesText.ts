@@ -6,14 +6,22 @@ export interface ReleaseNote {
 
 const ReleaseNotesText: ReleaseNote[] = [
   {
-    version: "v1.5.0",
-    date: "2026-06-10",
+    version: "v1.6.0",
+    date: "2026-07-01",
     changes: [
-      "Billing Planner - Team costcenter wise default column visibility shown(selected columns)",
-      "Previous Billing Data Report - New implementation with totals ",
-      "Export to excel - format styles added",
+      "Billing Planner - Library and CAM hrs added to their respective category worked on nonlib,noncam jobs.Accordingly deducted values from other respective categories.",
+      "Previous Billing Data Report -Multiple costcenter selection added for report generation",
     ],
   },
+  // {
+  //   version: "v1.5.0",
+  //   date: "2026-06-10",
+  //   changes: [
+  //     "Billing Planner - Team costcenter wise default column visibility shown(selected columns)",
+  //     "Previous Billing Data Report - New implementation with totals ",
+  //     "Export to excel - format styles added",
+  //   ],
+  // },
   //   {
   //   version: "v1.4.0",
   //   date: "2026-05-04",

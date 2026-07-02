@@ -9,10 +9,10 @@ import ExportButton from "../../../../components/resusablecontrols/ExportButton"
 import { exporttoexcel } from "../../../../components/utils/exporttoexcel";
 
 interface PreviousBillingDataDto {
-  Jobnumber: string;
-  Hourlyrate: string;
-  BilPreDayHrs: string;
-  considered_working_day: string;
+  jobnumber?: string;
+  hourlyrate?: string | number;
+  bilPrevDayHrs?: string | number;
+  considered_working_day?: string;
   wipamount?: string | number;
   costcenter?: string;
   name?: string;
@@ -48,10 +48,9 @@ const PreviousBillingDataReport = () => {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [userRoleRes, employeeRes, response] = await Promise.all([
+      const [userRoleRes, employeeRes] = await Promise.all([
         axios.get(`${baseUrl}/api/Home/UserDesignation/${loginId}`),
         axios.get(`${baseUrl}/api/Home/EmployeeDetails/${loginId}`),
-        axios.get<PreviousBillingDataDto[]>(`${baseUrl}/api/Job/PreviousBillingData`),
       ]);
 
       const userRole = userRoleRes.data;
@@ -64,19 +63,19 @@ const PreviousBillingDataReport = () => {
         employee?.costcenter ?? employee?.costCenter ?? employee?.Costcenter ?? employee?.CostCenter ?? ""
       ).trim();
 
-      const allRows = response.data || [];
-      const filtered = hasCompleteRights
-        ? allRows
-        : allRows.filter((item: any) => {
-            const rowCostCenter = String(
-              item?.costcenter ?? item?.costCenter ?? item?.Costcenter ?? item?.CostCenter ?? ""
-            ).trim();
-            return loggedInCostCenter !== "" && rowCostCenter === loggedInCostCenter;
-          });
+      const response = await axios.get<PreviousBillingDataDto[]>(`${baseUrl}/api/Job/PreviousBillingData`, {
+        params: hasCompleteRights ? undefined : { costcenter: loggedInCostCenter },
+      });
 
-      const mapped = filtered.map((item, index) => ({
+      const mapped = (response.data || []).map((item, index) => ({
         id: index + 1,
-        ...item,
+        jobnumber: item.jobnumber ?? "",
+        hourlyrate: item.hourlyrate ?? "",
+        bilPrevDayHrs: item.bilPrevDayHrs ?? "",
+        wipamount: item.wipamount ?? "",
+        costcenter: item.costcenter ?? "",
+        name: item.name ?? "",
+        considered_working_day: item.considered_working_day ?? "",
       }));
       setRows(mapped);
     } catch (error) {

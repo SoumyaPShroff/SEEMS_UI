@@ -103,7 +103,7 @@ const App: React.FC = () => {
           <Route path="QueryBuilder" element={<QueryBuilder />} />
           <Route path="AddEditSEEMSRequest" element={<AddEditSEEMSRequest />} />
           <Route path="ViewSEEMSRequests" element={<ViewSEEMSRequests />} />
-          <Route path="AddEditCustContLocReg" element={<AddEditCustContLocReg />} />
+          <Route path="AddEditCustContLocReg" element={<AddEditCustContLocReg />} /> 
           <Route path="EstimationDocUpload" element={<EstimationDocUpload />} />
           <Route path="EstimationDocList" element={<EstimationDocList />} />
           <Route path="POJobAllocation" element={<POJobAllocation />} />
