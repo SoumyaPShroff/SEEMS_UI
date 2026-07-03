@@ -736,12 +736,14 @@ export default function AddEditCustContLocReg() {
   const validateContactRows = () => {
     const rows = contacts.filter(isContactRowPopulated);
 
+    if (rows.length === 0) return "At least one contact must be added.";
+
     for (const contact of rows) {
       if (!String(contact.role ?? "").trim()) return "Role is required.";
       if (!String(contact.contactTitle ?? "").trim()) return "Contact title is required.";
       if (!String(contact.name ?? "").trim()) return "Contact name is required.";
       if (!String(contact.mobile ?? "").trim()) return "Contact mobile is required.";
-      if (!String(contact.email ?? "").trim()) return "Contact email is required.";
+     // if (!String(contact.email ?? "").trim()) return "Contact email is required.";
     }
     return "";
   };
@@ -752,23 +754,35 @@ export default function AddEditCustContLocReg() {
     );
 
   const validateForm = () => {
-    if (!form.companyName.trim()) return "Customer name is required.";
-    if (!form.customerAbb.trim()) return "Customer abbreviation is required.";
-    //if (!form.gstNo.trim()) return "GST number is required.";
-    if (form.customerType !== "Export" && !form.gstNo.trim()) {
-    return "GST number is required.";
-  }
-    if (!form.salesRespId.trim()) return "Sales responsibility is required.";
+
     if (!form.customerType.trim()) return "Customer type is required.";
+    if (!form.salesRespId.trim()) return "Sales responsibility is required.";
+    if (!form.customerAbb.trim()) return "Customer abbreviation is required.";
+    if (!form.companyName.trim()) return "Customer name is required.";
+    if (form.customerType !== "Export" && !form.gstNo.trim()) { return "GST number is required.";}
+    if (form.customerType !== "Export" && !form.panNo.trim()) { return "PAN No is required.";}
     if (!form.paymentTerms.trim()) return "Payment terms is required.";
     if (!form.incoterms.trim()) return "Incoterms is required.";
-    //phone2 to add below if used
+
     const hasLocationData = locations.some((loc) =>
       [loc.address, loc.city, loc.state, loc.country, loc.pincode, loc.phone1, loc.email].some(
         (value) => String(value ?? "").trim() !== ""
       )
     );
     if (!hasLocationData) return "At least one location address is required.";
+
+    for (const loc of locations) {
+      const hasAnyData = [loc.address, loc.city, loc.state, loc.country, loc.pincode, loc.phone1, loc.email].some(
+        (value) => String(value ?? "").trim() !== ""
+      );
+      if (hasAnyData) {
+        if (!String(loc.city ?? "").trim()) return "City is required for each location with data.";
+        if (!String(loc.state ?? "").trim()) return "State is required for each location with data.";
+        if (!String(loc.country ?? "").trim()) return "Country is required for each location with data.";
+        if (!String(loc.phone1 ?? "").trim()) return "Phone number is required for each location with data.";
+      }
+    }
+
     const contactError = validateContactRows();
     if (contactError) return contactError;
     return "";
@@ -1367,6 +1381,7 @@ export default function AddEditCustContLocReg() {
                             }
                             fullWidth
                             style={inputStyle}
+                            required
                           />
                         </Box>
                       </Grid>
@@ -1375,6 +1390,7 @@ export default function AddEditCustContLocReg() {
                         <Box sx={fieldShellStyle}>
                           <Typography sx={fieldLabelStyle}>
                             City
+                            <span style={{ color: "#d32f2f" }}> *</span>
                           </Typography>
 
                           <SelectControl
@@ -1395,6 +1411,7 @@ export default function AddEditCustContLocReg() {
                             labelFontWeight={600}
                             shrinkLabel={false}
                             disabled={isDeleteMode}
+                            required
                           />
                         </Box>
                       </Grid>
@@ -1403,6 +1420,7 @@ export default function AddEditCustContLocReg() {
                         <Box sx={fieldShellStyle}>
                           <Typography sx={fieldLabelStyle}>
                             State
+                            <span style={{ color: "#d32f2f" }}> *</span>
                           </Typography>
 
                           <SelectControl
@@ -1423,6 +1441,7 @@ export default function AddEditCustContLocReg() {
                             labelFontWeight={600}
                             shrinkLabel={false}
                             disabled={isDeleteMode}
+                            required
                           />
                         </Box>
                       </Grid>
@@ -1431,6 +1450,7 @@ export default function AddEditCustContLocReg() {
                         <Box sx={fieldShellStyle}>
                           <Typography sx={fieldLabelStyle}>
                             Country
+                            <span style={{ color: "#d32f2f" }}> *</span>
                           </Typography>
 
                           <SelectControl
@@ -1451,6 +1471,7 @@ export default function AddEditCustContLocReg() {
                             labelFontWeight={600}
                             shrinkLabel={false}
                             disabled={isDeleteMode}
+                            required
                           />
                         </Box>
                       </Grid>
@@ -1480,6 +1501,7 @@ export default function AddEditCustContLocReg() {
                         <Box sx={fieldShellStyle}>
                           <Typography sx={fieldLabelStyle}>
                             Phone
+                            <span style={{ color: "#d32f2f" }}> *</span>
                           </Typography>
 
                           <TextControl

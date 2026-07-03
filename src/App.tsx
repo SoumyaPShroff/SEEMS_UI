@@ -27,7 +27,7 @@ import ComingSoon from './components/ComingSoon';
 import ReleaseNotesText from './components/ReleaseNotesText';
 import ReleaseNotes from './components/ReleaseNotes';
 import PlannedHours from './models/Projects/PlannedHours';
-import ViewCustomers from './models/Sales/ViewCustomers';
+//import ViewCustomers from './models/Sales/ViewCustomers';//old ui
 import AddEditCustomer from './models/Sales/AddEditCustomer';
 import AddEditCustLocation from './models/Sales/AddEditCustLocation';
 import AddEditCustContact from './models/Sales/AddEditCustContact';
@@ -93,7 +93,7 @@ const App: React.FC = () => {
           <Route path="ViewQuoteReportNoGST/:quoteNo/:versionNo/:enquiryNo" element={<ViewQuoteReportNoGST />} />
           <Route path="PlannedHours" element={<PlannedHours />} />
           <Route path="MeetMyTeam" element={<MeetMyTeam />} />
-          <Route path="ViewCustomers" element={<ViewCustomers />} />
+          {/* <Route path="ViewCustomers" element={<ViewCustomers />} /> */}
           <Route path="AddEditCustomer/:itemno" element={<AddEditCustomer />} />
           <Route path="AddEditCustLocation/:itemno" element={<AddEditCustLocation />} />
           <Route path="AddEditCustContact/:itemno" element={<AddEditCustContact />} />

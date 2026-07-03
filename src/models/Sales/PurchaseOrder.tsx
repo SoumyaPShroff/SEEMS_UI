@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { Box,  Button, IconButton,  Dialog,  DialogTitle,  DialogContent,  DialogActions,
   Grid,  Tooltip,  TextField,  Typography,  Paper} from "@mui/material";
 import { DataGrid, type GridColDef, type GridRenderCellParams } from "@mui/x-data-grid";
@@ -6,6 +6,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
 import SelectControl from "../../components/resusablecontrols/SelectControl";
+import CustomDataGrid2 from "../../components/resusablecontrols/CustomDataGrid2";
 import { useForm } from "react-hook-form";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -59,7 +60,6 @@ const PurchaseOrder: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteRemarks, setDeleteRemarks] = useState("");
   const [pendingDeleteId, setPendingDeleteId] = useState<number | string | null>(null);
-  const [searchText, setSearchText] = useState('');
   const [loading, setLoading] = useState(false);
   //const [isInitialLoad, setIsInitialLoad] = useState(true);
 
@@ -87,16 +87,6 @@ const PurchaseOrder: React.FC = () => {
   useEffect(() => {
     loadData();
   }, []);
-
-  const filteredRows = useMemo(() => {
-    if (!searchText.trim()) return rows;
-    const lowerSearch = searchText.toLowerCase();
-    return rows.filter((row) =>
-      row.pponumber?.toLowerCase().includes(lowerSearch) ||
-      row.penquiryno?.toLowerCase().includes(lowerSearch) ||
-      row.pquoteno?.toLowerCase().includes(lowerSearch)
-    );
-  }, [rows, searchText]);
 
   const openDeleteDialog = (id: number | string) => {
     setPendingDeleteId(id);
@@ -141,30 +131,29 @@ const PurchaseOrder: React.FC = () => {
   };
 
   const columns: GridColDef<PurchaseOrderData>[] = [
-    { field: "pponumber", headerName: "PO Number", flex: 1 },
-    { field: "penquiryno", headerName: "Enquiry", flex: 1 },
-    { field: "ppoamount", headerName: "PO Amount", flex: 1 },
-    { field: "pbalanceamt", headerName: "Bal Amount", flex: 1 },
-    { field: "podate", headerName: "PO Date", flex: 1 },
-    { field: "pquoteno", headerName: "Quote", flex: 1 },
-    { field: "ppaymentterm", headerName: "PaymentTerms", flex: 1 },
-    {
-      field: "pcurrency_id",
-      headerName: "Currency",
-      flex: 1,
-      renderCell: (params: GridRenderCellParams<PurchaseOrderData>) => {
-        const currencyMap: Record<number, string> = { 1: "INR", 2: "USD", 3: "EURO" };
-        const label = currencyMap[Number(params.value)] || "Unknown";
-        return (
-          <Tooltip title={label} arrow>
-            <span>{params.value}</span>
-          </Tooltip>
-        );
-      }
-    },
-    { field: "pconvrate", headerName: "ConvRate", flex: 1 },
-    { field: "pcomments", headerName: "Comments", flex: 1 },
-
+    { field: "pponumber", headerName: "PO Number", flex: 1, minWidth: 150 },
+    { field: "penquiryno", headerName: "Enquiry", flex: 1, minWidth: 130 },
+    { field: "ppoamount", headerName: "PO Amt", flex: 1, minWidth: 130 },
+    { field: "pbalanceamt", headerName: "Bal Amt", flex: 1, minWidth: 130 },
+    { field: "podate", headerName: "PO Date", flex: 1, minWidth: 140 },
+    { field: "pquoteno", headerName: "Quote", flex: 1, minWidth: 120 },
+    { field: "ppaymentterm", headerName: "PaymentTerms", flex: 1, minWidth: 150 },
+   { field: "pcomments", headerName: "Comments", flex: 1, minWidth: 100 },
+    // {
+    //   field: "pcurrency_id",
+    //   headerName: "Currency",
+    //   flex: 1,
+    //   minWidth: 70 ,
+    //   renderCell: (params: GridRenderCellParams<PurchaseOrderData>) => {
+    //     const currencyMap: Record<number, string> = { 1: "INR", 2: "USD", 3: "EURO" };
+    //     const label = currencyMap[Number(params.value)] || "Unknown";
+    //     return (
+    //       <Tooltip title={label} arrow>
+    //         <span>{params.value}</span>
+    //       </Tooltip>
+    //     );
+    //   }
+    // },
     {
       field: "actions",
       headerName: "Actions",
@@ -187,33 +176,26 @@ const PurchaseOrder: React.FC = () => {
       <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold", color: "#1b4f91" }}>
         Purchase Order Management
       </Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-
-      <Button
-        variant="contained"
-        onClick={() => { setSelected(null); setOpen(true); }}
-        sx={{ mb: 2 }}
-      >
-        New PO
-      </Button>
-   <TextField
-          label="Search POs (Number, Enquiry, Quote)"
-          variant="outlined"
-          size="small"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          sx={{ width: '300px' }}
-        />
+      <Box sx={{ mb: 2 }}>
+        <Button
+          variant="contained"
+          onClick={() => { setSelected(null); setOpen(true); }}
+          sx={{ mb: 2 }}
+        >
+          New PO
+        </Button>
       </Box>
-      <Box sx={{ height: 400, width: "100%", mt: 2 }}>
-        <DataGrid
-          rows={filteredRows}
-          columns={columns}
-          loading={loading}
-          pageSizeOptions={[5, 10, 25]}
-          initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-        />
-      </Box>
+      <CustomDataGrid2
+        rows={rows}
+        columns={columns}
+        title="Purchase Orders"
+        loading={loading}
+        gridHeight={400}
+        rowHeight={42}
+        searchableFields={['pponumber', 'penquiryno', 'pquoteno']}
+        placeholder="Search POs (Number, Enquiry, Quote)"
+        onRowClick={handleEdit}
+      />
 
       <Dialog open={deleteDialogOpen} onClose={handleCancelDelete} maxWidth="sm" fullWidth>
         <DialogTitle>Delete PO?</DialogTitle>

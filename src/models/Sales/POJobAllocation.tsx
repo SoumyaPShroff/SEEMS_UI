@@ -1,34 +1,7 @@
 import React, { useState } from "react";
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  Grid,
-  Paper,
-  Stack,
-  Tab,
-  Tabs,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-  Typography,
-} from "@mui/material";
-import {
-  Add,
-  ContentCopy,
-  ReceiptLong,
-  Save,
-  WorkOutline,
-  TrendingUp,
-  TaskAlt,
-  AccountTree,
-} from "@mui/icons-material";
+import {  Box,  Button,  Card,  CardContent,  Chip,  Grid,  Paper,  Stack,  Tab,  Tabs,  Table,  TableBody,  TableCell,  TableContainer,
+  TableHead,  TableRow,  TextField,  Typography,} from "@mui/material";
+import {  Add,  ContentCopy,  ReceiptLong,  Save,  WorkOutline,  TrendingUp,  TaskAlt,  AccountTree,} from "@mui/icons-material";
 
 const tabs = ["PO Details", "Scope Costing", "Jobs", "Allocation", "Billing"];
 
