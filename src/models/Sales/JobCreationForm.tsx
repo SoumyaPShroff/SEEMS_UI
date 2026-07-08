@@ -304,7 +304,7 @@ const JobCreationForm: React.FC = () => {
             <div className="form-group">
               <SelectControl
                 name="enquiry"
-                label="Enquiry Number"
+                label="Enquiry No."
                 value={formState.enquiry}
                 options={enquiryOptions}
                 onChange={handleInputChange}
