@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { baseUrl } from "../../const/BaseUrl";
+import { baseUrl } from "../const/BaseUrl";
 
 const parseAccessFlag = (value: unknown): boolean => {
   if (typeof value === "boolean") return value;

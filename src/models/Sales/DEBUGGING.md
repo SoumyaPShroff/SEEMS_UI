@@ -19,7 +19,7 @@ Check: SEEMS_UI/src/models/Sales/styles/JobCreationForm.css
 DevTools → Network tab
 
 **Watch for these API calls when page loads:**
-- `GET /api/enquiries/realised` - Should return array of enquiries
+- `GET /api/Sales/RealisedEnquiries` - Should return array of enquiries
 
 **If you see:**
 - 🔴 404 → API endpoint doesn't exist yet

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { getCurrentMonthDates } from "../../components/utils/DateUtils";
+import { getCurrentMonthDates } from "../../utils/DateUtils";
 import { baseUrl } from "../../const/BaseUrl";
 import { LoadingButton } from "@mui/lab";
 import { motion } from "framer-motion";

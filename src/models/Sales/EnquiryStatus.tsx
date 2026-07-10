@@ -3,14 +3,13 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Box, Button, Card, CardContent, CircularProgress, Stack, Typography } from "@mui/material";
 import axios from "axios";
 import { ToastContainer , toast } from "react-toastify";
-
 import SelectControl from "../../components/resusablecontrols/SelectControl";
 import TextControl from "../../components/resusablecontrols/TextControl";
 import Label from "../../components/resusablecontrols/Label";
 import { baseUrl } from "../../const/BaseUrl";
 import { REMARKS_ALLOWED_CHARS_REGEX } from "../../const/ValidationPatterns";
 import { standardInputStyle } from "./styles/standardInputStyle";
-import { formatDateYYYYMMDD } from "../../components/utils/DateUtils";
+import { formatDateYYYYMMDD } from "../../utils/DateUtils";
 
 const EnquiryStatus = () => {
   const navigate = useNavigate();

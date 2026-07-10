@@ -7,7 +7,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import CustomDataGrid2 from "../../components/resusablecontrols/CustomDataGrid2";
 import ExportButton from "../../components/resusablecontrols/ExportButton";
-import { exporttoexcel } from "../../components/utils/exporttoexcel";
+import { exporttoexcel } from "../../utils/exporttoexcel";
 import { baseUrl } from "../../const/BaseUrl";
 
 const invoiceColumns: GridColDef[] = [

@@ -5,7 +5,7 @@ import styled, { keyframes } from "styled-components";
 import { fetchDefaultActionCards, type DashboardActionCard } from "../const/DashboardActionCards";
 import { baseUrl } from "../const/BaseUrl";
 import { useFavourites } from "./FavouritesContext";
-import { useRoleAccess } from "./utils/useRoleAccess";
+import { useRoleAccess } from "../utils/useRoleAccess";
 
 interface TeamMemberApi {
   teamMemID: string;
