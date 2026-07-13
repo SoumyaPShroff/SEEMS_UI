@@ -39,6 +39,7 @@ import EstimationDocList from './models/Sales/EstimationDocList';
 import POJobAllocation from './models/Sales/POJobAllocation';
 import PurchaseOrder from './models/Sales/PurchaseOrder';
 import JobCreationForm from './models/sales/JobCreationForm';
+import OrderInvoiceRegister from './models/Sales/OrderInvoiceRegister';
 
 const App: React.FC = () => {
   const [userId, setUserId] = useState(sessionStorage.getItem('SessionUserID'));
@@ -100,7 +101,8 @@ const App: React.FC = () => {
           <Route path="EstimationDocList" element={<EstimationDocList />} />
           <Route path="POJobAllocation" element={<POJobAllocation />} />
           <Route path="JobCreationForm" element={<JobCreationForm />} />
-        
+          <Route path="OrderInvoiceRegister" element={<OrderInvoiceRegister />} />
+          
         </Route>
         {/* Password + Blank */}
         <Route path="/ResetPassword" element={<ResetPassword />} />

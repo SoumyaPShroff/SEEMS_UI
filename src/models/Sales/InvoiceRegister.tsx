@@ -1,6 +1,6 @@
-import  { useMemo, useState } from "react";
-import {FormControl, Select, MenuItem, RadioGroup, FormControlLabel,  Radio,  InputLabel,  Box,
-  Card,  CardContent,  Typography,  CircularProgress,  Paper,  Button,
+import { useMemo, useState } from "react";
+import {  FormControl, Select, MenuItem, RadioGroup, FormControlLabel, Radio, InputLabel, Box,
+  Card, CardContent, Typography, CircularProgress, Paper, Button,
 } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
 import axios from "axios";
@@ -12,43 +12,43 @@ import { baseUrl } from "../../const/BaseUrl";
 
 const invoiceColumns: GridColDef[] = [
   { field: "jobnumber", headerName: "Jobnumber", minWidth: 250, flex: 1 },
-  { field: "startdate", headerName: "Startdate", minWidth: 140 , flex: 1 },
-  { field: "enddate", headerName: "Enddate", minWidth: 140, flex: 1 },
+  { field: "startDate", headerName: "Startdate", minWidth: 140, flex: 1 },
+  { field: "endDate", headerName: "Enddate", minWidth: 140, flex: 1 },
   { field: "billableHours", headerName: "BillableHrs", minWidth: 150, flex: 1 },
-  { field: "nonBillableHours", headerName: "NonBillableHrs", minWidth: 160, flex: 1 },
+  { field: "nonBillableHours", headerName: "NonBillableHrs", minWidth: 180, flex: 1 },
   { field: "totalHours", headerName: "TotalHours", minWidth: 150, flex: 1 },
   { field: "numberOfResources", headerName: "NoOfResources", minWidth: 150, flex: 1 },
   { field: "duration", headerName: "Duration", minWidth: 150, flex: 1 },
-  { field: "invoiceHours", headerName: "InvoiceHours", minWidth: 150, flex: 1 },
+  { field: "invoiceHours", headerName: "InvoiceHours", minWidth: 180, flex: 1 },
   { field: "ratePerHour", headerName: "RatePerHour", minWidth: 160, flex: 1 },
   { field: "billingType", headerName: "BillingType", minWidth: 170, flex: 1 },
   { field: "currency", headerName: "currency", minWidth: 160, flex: 1 },
   { field: "invoiceNo", headerName: "InvoiceNo", minWidth: 160, flex: 1 },
 
-    { field: "invoice_Value", headerName: "InvoiceValue", minWidth: 160, flex: 1 },
+  { field: "invoiceValue", headerName: "InvoiceValue", minWidth: 160, flex: 1 },
   { field: "projectManager", headerName: "ProjectManager", minWidth: 160, flex: 1 },
   { field: "pcbtool", headerName: "PCBTool", minWidth: 170, flex: 1 },
   { field: "efforts", headerName: "Efforts", minWidth: 160, flex: 1 },
   { field: "status", headerName: "Status", minWidth: 120, flex: 1 },
 
-      { field: "customer", headerName: "Customer", minWidth: 140, flex: 1 },
+  { field: "customer", headerName: "Customer", minWidth: 140, flex: 1 },
   { field: "salesManager", headerName: "SalesManager", minWidth: 160, flex: 1 },
   { field: "rejectedHours", headerName: "RejectedHrs", minWidth: 170, flex: 1 },
   { field: "approvedHours", headerName: "ApprovedHrs", minWidth: 160, flex: 1 },
   { field: "ecOhours", headerName: "ECOHrs", minWidth: 120, flex: 1 },
 
-        { field: "raiseflagDate", headerName: "RaiseFLagDate", minWidth: 140, flex: 1 },
+  { field: "raiseflagDate", headerName: "RaiseFLagDate", minWidth: 140, flex: 1 },
   { field: "rejectedRemarks", headerName: "RejectedRemarks", minWidth: 160, flex: 1 },
   { field: "rupees", headerName: "Rupees", minWidth: 170, flex: 1 },
   { field: "poNumber", headerName: "PONumber", minWidth: 160, flex: 1 },
   { field: "invoiceDate", headerName: "InvoiceDate", minWidth: 120, flex: 1 },
 
-    { field: "enquirytype", headerName: "Enquiry Type", minWidth: 160, flex: 1 },
+  { field: "enquirytype", headerName: "Enquiry Type", minWidth: 160, flex: 1 },
   { field: "actualEndDate", headerName: "Received Amount", minWidth: 170, flex: 1 },
   { field: "expectedDeliveryDate", headerName: "ExpectedDeliveryDate", minWidth: 160, flex: 1 },
   { field: "totalInvoicedAmt", headerName: "TotalInvoicedAmt", minWidth: 120, flex: 1 },
 
-    { field: "totalInvoicedHrs", headerName: "TotalInvoicedHrs", minWidth: 160, flex: 1 },
+  { field: "totalInvoicedHrs", headerName: "TotalInvoicedHrs", minWidth: 160, flex: 1 },
   { field: "sapcustcode", headerName: "SapCustCode", minWidth: 120, flex: 1 },
 ];
 
@@ -76,11 +76,16 @@ const InvoiceRegister = () => {
   const [hasFetched, setHasFetched] = useState(false);
 
   const months = useMemo(() => {
-    const start = dayjs("2025-01-01").startOf("month");
+    const currentYear = dayjs().year();
+    const previousYear = currentYear - 1;
+
+    const start = dayjs(`${previousYear}-01-01`).startOf("month");
     const end = dayjs().startOf("month");
+
     const list: string[] = [];
 
     let cursor = start;
+
     while (cursor.isBefore(end) || cursor.isSame(end)) {
       list.push(cursor.format("MMM-YYYY"));
       cursor = cursor.add(1, "month");
@@ -97,8 +102,8 @@ const InvoiceRegister = () => {
         params: { status },
       });
       const data = Array.isArray(response.data) ? response.data : [];
-     
-      const normalizedRows = data.map((row: any, index: number) => ({ 
+
+      const normalizedRows = data.map((row: any, index: number) => ({
         ...row,
         id:
           row?.id ??
@@ -106,7 +111,7 @@ const InvoiceRegister = () => {
           row?.InvoiceID ??
           `${monthYear}-${status}-${index + 1}`,
       }));
- 
+
       setRows(normalizedRows);
     } catch (error) {
       console.error("Failed to load invoice register data:", error);
@@ -124,7 +129,7 @@ const InvoiceRegister = () => {
   return (
     <Box
       sx={{
-        maxWidth: 1150,
+         width: "90%",
         mx: "auto",
         mt: 15,
         fontFamily: "Arial",
