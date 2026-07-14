@@ -3,7 +3,7 @@ import "./styles/JobCreationForm.css";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
 import { Box, Grid, Card, CardContent, Typography, Button as MuiButton,  Divider, Paper, Chip, Alert} from "@mui/material";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import SelectControl from "../../components/resusablecontrols/SelectControl";
 import TextControl from "../../components/resusablecontrols/TextControl";
 import Button from "../../components/resusablecontrols/Button";
@@ -245,14 +245,13 @@ const JobCreationForm: React.FC = () => {
 
       const response = await axios.post(`${baseUrl}/api/Sales/CreateJob`, payload);
       toast.success(`Job created successfully! Job Number: ${response.data.jobNumber}`);
-      handleClearForm();
 
-      // Redirect after success
-    setTimeout(() => {
-      navigate(`/Home/JobCreationForm`);
-    }, 1000);
+      handleClearForm();
+      setPoNumbers([]);
+      setPoDetails({ totalAmount: 0, totalHours: 0, balanceHours: 0 });
+      await fetchEnquiries('Fixed-Cost');
     } catch (err: any) {
- 
+
   let errorMsg = "Error creating job";
 
   // Try to extract error message from different .NET response formats
@@ -272,6 +271,8 @@ const JobCreationForm: React.FC = () => {
 
   setError(errorMsg);
   showErrorToast(errorMsg);
+} finally {
+  setLoading(false);
 }
   };
 
@@ -630,7 +631,6 @@ const JobCreationForm: React.FC = () => {
           </Box>
         </Box>
       </Paper>
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
     </Box>
   );
 };

@@ -1,19 +1,18 @@
 import { useEffect, useState, type ChangeEvent } from "react";
-import {
-  Box, Grid, Card, CardContent, Typography, Button, Divider, Tabs, Tab, Chip,
-  IconButton, Paper,
-} from "@mui/material";
+import { Box, Grid, Card, CardContent, Typography, Button, Divider, Tabs, Tab, Chip, IconButton, Paper,} from "@mui/material";
 import axios from "axios";
 import { toast } from "react-toastify";
 import TextControl from "../../components/resusablecontrols/TextControl";
 import SelectControl from "../../components/resusablecontrols/SelectControl";
 import { baseUrl } from "../../const/BaseUrl";
 import { Add, Delete, Business, ContactPhone, LocationOn, ReceiptLong, LocalShipping, } from "@mui/icons-material";
+import { useRoleAccess } from "../../utils/useRoleAccess";
 
 const customerTypes = ["DOMESTIC", "SEZ", "Export", "Govt", "MNC"];
 const currencies = ["INR", "USD", "EURO"];
 const contactRoles = ["Technical", "Purchase", "Finance"];
 const titleTexts = ["Mr.", "Mrs.", "Ms.", "M/s"];
+const modeOfInvoices = ["Portal", "Email"];
 
 type Option = {
   value: string | number;
@@ -29,6 +28,7 @@ type CustomerForm = {
   panNo: string;
   currency: string;
   industry: string;
+  modeOfInvoice: string;
 
   salesOrganization: string;
   distributionChannel: string;
@@ -45,7 +45,7 @@ type CustomerForm = {
   billCountry: string;
   billPincode: string;
   billPhone1: string;
-  //billPhone2: string;
+  billPhone2: string;
   billEmail: string;
 
   shipAddress: string;
@@ -54,7 +54,7 @@ type CustomerForm = {
   shipCountry: string;
   shipPincode: string;
   shipPhone1: string;
-  //shipPhone2: string;
+  shipPhone2: string;
   shipEmail: string;
 };
 
@@ -85,6 +85,8 @@ type SavedRecordResponse = {
 };
 
 export default function AddEditCustContLocReg() {
+  const loginId = sessionStorage.getItem("SessionUserID") || "guest";
+  const { hasAccess: hasSpecialRole } = useRoleAccess(loginId, "viewcustomers");
   const [tab, setTab] = useState(0);
   const [formMode, setFormMode] = useState<"new" | "edit" | "delete">("new");
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
@@ -98,7 +100,7 @@ export default function AddEditCustContLocReg() {
   const [stateOptions, setStateOptions] = useState<Option[]>([]);
   const [cityOptions, setCityOptions] = useState<Option[]>([]);
   const [countryOptions, setCountryOptions] = useState<Option[]>([]);
-
+ 
   type CustomerLocation = {
     locationId: string;
     customer_id: string;
@@ -111,7 +113,7 @@ export default function AddEditCustContLocReg() {
     country: string;
     pincode: string;
     phone1: string;
-    //phone2: string;
+    phone2: string;
     email: string;
     addresstype: number;
   };
@@ -128,7 +130,7 @@ export default function AddEditCustContLocReg() {
     country: "",
     pincode: "",
     phone1: "",
-    //phone2: "", 
+    phone2: "", 
     email: "",
     addresstype: 1,
   };
@@ -158,6 +160,7 @@ export default function AddEditCustContLocReg() {
     panNo: "",
     currency: "INR",
     industry: "",
+    modeOfInvoice: "",
 
     salesOrganization: "",
     distributionChannel: "",
@@ -175,7 +178,7 @@ export default function AddEditCustContLocReg() {
     billCountry: "",
     billPincode: "",
     billPhone1: "",
-    //billPhone2: "",
+    billPhone2: "",
     billEmail: "",
 
     //shipCustomer: "",
@@ -185,7 +188,7 @@ export default function AddEditCustContLocReg() {
     shipCountry: "",
     shipPincode: "",
     shipPhone1: "",
-    //shipPhone2: "",
+    shipPhone2: "",
     shipEmail: "",
   });
 
@@ -258,6 +261,11 @@ export default function AddEditCustContLocReg() {
   }));
 
   const titleTextOptions = titleTexts.map((item) => ({
+    value: item,
+    label: item,
+  }));
+
+  const modeOfInvoiceOptions = modeOfInvoices.map((item) => ({
     value: item,
     label: item,
   }));
@@ -366,7 +374,12 @@ export default function AddEditCustContLocReg() {
   const loadCustomers = async () => {
     setLoadingCustomers(true);
     try {
-      const res = await axios.get(`${baseUrl}/api/Sales/Customers`);
+      // In edit mode, restrict to the logged-in user's own customers unless they hold the special role
+      const applyOwnerFilter = formMode === "edit" && !hasSpecialRole;
+      const url = applyOwnerFilter
+        ? `${baseUrl}/api/Sales/Customers?sales_resp_id=${encodeURIComponent(loginId)}`
+        : `${baseUrl}/api/Sales/Customers`;
+      const res = await axios.get(url);
       const rows = Array.isArray(res.data) ? res.data : [];
       const mapped = rows
         .map((row: any) => {
@@ -403,6 +416,7 @@ export default function AddEditCustContLocReg() {
       panNo: String(raw.panNo ?? raw.pan_no ?? prev.panNo ?? ""),
       currency: String(raw.currency ?? prev.currency ?? "INR"),
       industry: String(raw.industry ?? prev.industry ?? ""),
+      modeOfInvoice: String(raw.modeofinvoice ?? prev.modeOfInvoice ?? ""),
       salesOrganization: String(raw.salesorg ?? prev.salesOrganization ?? ""),
       distributionChannel: String(raw.distributionchannel ?? prev.distributionChannel ?? ""),
       paymentTerms: String(raw.cuspaymentterms ?? raw.paymentterms ?? prev.paymentTerms ?? ""),
@@ -426,8 +440,8 @@ export default function AddEditCustContLocReg() {
       country: parts[3] ?? "",
       pincode: parts[4] ?? "",
       phone1: parts[5] ?? "",
-      // phone2: parts[6] ?? "",
-      email: parts[6] ?? "",
+      phone2: parts[6] ?? "",
+      email: parts[7] ?? "",
     };
   };
 
@@ -444,7 +458,7 @@ export default function AddEditCustContLocReg() {
       const country = String(row.country ?? row.loccountry ?? address.country ?? "").trim();
       const pincode = String(row.pincode ?? row.locpincode ?? address.pincode ?? "").trim();
       const phone1 = String(row.phoneno1 ?? row.phone1 ?? row.phone ?? "").trim();
-      //const phone2 = String(row.phoneno2 ?? row.phone2 ?? "").trim();
+      const phone2 = String(row.phoneno2 ?? row.phone2 ?? "").trim();
       const email = String(row.locemail ?? row.email ?? "").trim();
       const city = String(row.location ?? "").trim();  //location field backend
 
@@ -460,7 +474,7 @@ export default function AddEditCustContLocReg() {
         country,
         pincode,
         phone1,
-        //  phone2,
+        phone2,
         email,
         addresstype: Number(row.addresstype ?? (locationType === "SHIP" ? 2 : 1)),
       };
@@ -579,6 +593,7 @@ export default function AddEditCustContLocReg() {
       panNo: "",
       currency: "INR",
       industry: "",
+      modeOfInvoice: "",
       salesOrganization: "",
       distributionChannel: "",
       contactTitle: "",
@@ -593,7 +608,7 @@ export default function AddEditCustContLocReg() {
       billCountry: "",
       billPincode: "",
       billPhone1: "",
-      //  billPhone2: "",
+      billPhone2: "",
       billEmail: "",
       shipCompany: "",
       shipAddress: "",
@@ -602,7 +617,7 @@ export default function AddEditCustContLocReg() {
       shipCountry: "",
       shipPincode: "",
       shipPhone1: "",
-      // shipPhone2: "",
+      shipPhone2: "",
       shipEmail: "",
     });
   };
@@ -632,6 +647,7 @@ export default function AddEditCustContLocReg() {
       panNo: "",
       currency: "INR",
       industry: "",
+      modeOfInvoice: "",
       salesOrganization: "",
       distributionChannel: "",
       contactTitle: "",
@@ -646,7 +662,7 @@ export default function AddEditCustContLocReg() {
       billCountry: "",
       billPincode: "",
       billPhone1: "",
-      // billPhone2: "",
+      billPhone2: "",
       billEmail: "",
       shipAddress: "",
       shipCity: "",
@@ -654,7 +670,7 @@ export default function AddEditCustContLocReg() {
       shipCountry: "",
       shipPincode: "",
       shipPhone1: "",
-      //  shipPhone2: "",
+      shipPhone2: "",
       shipEmail: "",
     });
     if (mode === "new") {
@@ -686,6 +702,7 @@ export default function AddEditCustContLocReg() {
       // Address: buildAddressText(loc.address, loc.city, loc.state, loc.country, loc.pincode),
       Address: loc.address,
       PhoneNo1: loc.phone1,
+      PhoneNo2: loc.phone2,
       AddressType: loc.locationType === "SHIP" ? 2 : 1,
       LocEmail: loc.email,
       LocState: loc.state,
@@ -718,6 +735,7 @@ export default function AddEditCustContLocReg() {
         Gst_No: form.gstNo.trim(),
         SapCustCode: form.sapCode.trim(),
         industry: form.industry,
+        modeOfInvoice: form.modeOfInvoice,
         currency: form.currency,
         panNo: form.panNo,
         salesorg: form.salesOrganization,
@@ -900,7 +918,7 @@ export default function AddEditCustContLocReg() {
     if (formMode === "edit" || formMode === "delete") {
       void loadCustomers();
     }
-  }, [formMode]);
+  }, [formMode, hasSpecialRole]);
 
   useEffect(() => {
     if (form.customerType === "Export") {
@@ -945,7 +963,7 @@ export default function AddEditCustContLocReg() {
         country: "",
         pincode: "",
         phone1: "",
-        //  phone2: "",
+        phone2: "",
         email: "",
         addresstype: 1,
       }
@@ -1275,6 +1293,24 @@ export default function AddEditCustContLocReg() {
                     disabled={isDeleteMode}
                   />
                 </Box>
+                <Box sx={fieldShellStyle}>
+                  <Typography sx={fieldLabelStyle}>
+                    Mode of Invoice
+                  </Typography>
+                  <SelectControl
+                    name="modeOfInvoice"
+                    label=""
+                    value={form.modeOfInvoice}
+                    onChange={handleChange}modeOfInvoice
+                    options={modeOfInvoiceOptions}
+                    width="100%"
+                    height={40}
+                    fontSize="0.9rem"
+                    labelFontWeight={600}
+                    shrinkLabel={false}
+                    disabled={isDeleteMode}
+                  />
+                </Box>
               </Box>
             </CardContent>
           </Card>
@@ -1498,27 +1534,51 @@ export default function AddEditCustContLocReg() {
                       </Grid>
 
                       <Grid size={{ xs: 12, md: 6 }}>
-                        <Box sx={fieldShellStyle}>
-                          <Typography sx={fieldLabelStyle}>
-                            Phone
-                            <span style={{ color: "#d32f2f" }}> *</span>
-                          </Typography>
+                        <Box sx={{ display: "flex", gap: 2 }}>
+                          <Box sx={fieldShellStyle}>
+                            <Typography sx={fieldLabelStyle}>
+                              Phone 1
+                              <span style={{ color: "#d32f2f" }}> *</span>
+                            </Typography>
 
-                          <TextControl
-                            name={`phone-${index}`}
-                            type="tel"
-                            inputMode="tel"
-                            value={loc.phone1}
-                            onChange={(e) =>
-                              handleLocationChange(
-                                index,
-                                "phone1",
-                                e.target.value
-                              )
-                            }
-                            fullWidth
-                            style={inputStyle}
-                          />
+                            <TextControl
+                              name={`phone-${index}`}
+                              type="tel"
+                              inputMode="tel"
+                              value={loc.phone1}
+                              onChange={(e) =>
+                                handleLocationChange(
+                                  index,
+                                  "phone1",
+                                  e.target.value
+                                )
+                              }
+                              fullWidth
+                              style={inputStyle}
+                            />
+                          </Box>
+
+                          <Box sx={fieldShellStyle}>
+                            <Typography sx={fieldLabelStyle}>
+                              Phone 2
+                            </Typography>
+
+                            <TextControl
+                              name={`phone2-${index}`}
+                              type="tel"
+                              inputMode="tel"
+                              value={loc.phone2}
+                              onChange={(e) =>
+                                handleLocationChange(
+                                  index,
+                                  "phone2",
+                                  e.target.value
+                                )
+                              }
+                              fullWidth
+                              style={inputStyle}
+                            />
+                          </Box>
                         </Box>
                       </Grid>
 
