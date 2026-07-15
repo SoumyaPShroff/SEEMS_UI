@@ -69,17 +69,18 @@ type ContactRow = {
   email: string;
 };
 
-type AddressFields = {
-  address: string;
-  city: string;           //location field backend
-  state: string;
-  country: string;
-  pincode: string;
-};
+// type AddressFields = {
+//   address: string;
+//   city: string;           //location field backend
+//   state: string;
+//   country: string;
+//   pincode: string;
+// };
 
 type SavedRecordResponse = {
   itemno?: string | number;
   itemNo?: string | number;
+  CustomerId?: string | number;
   location_id?: string | number;
   locationId?: string | number;
 };
@@ -87,6 +88,7 @@ type SavedRecordResponse = {
 export default function AddEditCustContLocReg() {
   const loginId = sessionStorage.getItem("SessionUserID") || "guest";
   const { hasAccess: hasSpecialRole } = useRoleAccess(loginId, "viewcustomers");
+  const [costcenter, setCostcenter] = useState("");
   const [tab, setTab] = useState(0);
   const [formMode, setFormMode] = useState<"new" | "edit" | "delete">("new");
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
@@ -360,6 +362,22 @@ export default function AddEditCustContLocReg() {
   };
 
   const isDeleteMode = formMode === "delete";
+  // Cost center 45010 users (without special role) may only update the Commercial & SAP tab;
+  // all other non-special users are limited to Basic Info, Addresses, and Contacts.
+  // The Commercial & SAP tab itself stays visible/clickable for everyone so its data can
+  // always be viewed; only users with edit permission get its controls enabled.
+  const isCostCenterRestricted = !hasSpecialRole && costcenter.trim() === "45010";
+  // Special-role users who also sit in cost center 45010 can browse every customer (special
+  // role bypasses the owner filter) and view all tabs, but like other 45010 users they may
+  // only edit the Commercial & SAP tab - Basic Info/Addresses/Contacts stay read-only for them.
+  const isCommercialOnlyUser = hasSpecialRole && costcenter.trim() === "45010";
+  const canEditCommercial = hasSpecialRole || isCostCenterRestricted;
+  const canEditOtherTabs = !isCostCenterRestricted && !isCommercialOnlyUser;
+  const allowedTabs = hasSpecialRole
+    ? [0, 1, 2, 3]
+    : isCostCenterRestricted
+      ? [3]
+      : [0, 1, 2, 3];
   const modeLabel =
     formMode === "new" ? "New Entry" : formMode === "edit" ? "Edit Mode" : "Delete Mode";
   const primaryActionLabel =
@@ -427,36 +445,37 @@ export default function AddEditCustContLocReg() {
     }));
   };
 
-  const splitAddressFields = (addressText: string) => {
-    const parts = String(addressText ?? "")
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
+  // const splitAddressFields = (addressText: string) => {
+  //   const parts = String(addressText ?? "")
+  //     .split(/\r?\n/)
+  //     .map((line) => line.trim())
+  //     .filter(Boolean);
 
-    return {
-      address: parts[0] ?? "",
-      location: parts[1] ?? "",
-      state: parts[2] ?? "",
-      country: parts[3] ?? "",
-      pincode: parts[4] ?? "",
-      phone1: parts[5] ?? "",
-      phone2: parts[6] ?? "",
-      email: parts[7] ?? "",
-    };
-  };
+  //   return {
+  //     address: parts[0] ?? "",
+  //     location: parts[1] ?? "",
+  //     state: parts[2] ?? "",
+  //     country: parts[3] ?? "",
+  //     pincode: parts[4] ?? "",
+  //     phone1: parts[5] ?? "",
+  //     phone2: parts[6] ?? "",
+  //     email: parts[7] ?? "",
+  //   };
+  // };
 
   //  const buildAddressText = (address: string, city: string, state: string, country: string, pincode: string) =>
   //     [address, city, state, country, pincode].map((part) => String(part ?? "").trim()).filter(Boolean).join("\n");
 
   const hydrateLocations = (rows: Record<string, unknown>[]) => {
     const normalized = rows.map((row) => {
-      const address = splitAddressFields(String(row.address ?? ""));
+     // const address = splitAddressFields(String(row.address ?? ""));
+      const address =  String(row.address ?? "");
       const rawLocationType = String(row.locationType ?? row.location_type ?? row.addresstype ?? row.addressType ?? "BILL").trim().toUpperCase();
       const locationType = rawLocationType === "SHIP" || rawLocationType === "2" ? "SHIP" : "BILL";
 
-      const state = String(row.state ?? row.locstate ?? address.state ?? "").trim();
-      const country = String(row.country ?? row.loccountry ?? address.country ?? "").trim();
-      const pincode = String(row.pincode ?? row.locpincode ?? address.pincode ?? "").trim();
+      const state = String(row.state ?? row.locstate ?? "").trim();
+      const country = String(row.country ?? row.loccountry ?? "").trim();
+      const pincode = String(row.pincode ?? row.locpincode ?? "").trim();
       const phone1 = String(row.phoneno1 ?? row.phone1 ?? row.phone ?? "").trim();
       const phone2 = String(row.phoneno2 ?? row.phone2 ?? "").trim();
       const email = String(row.locemail ?? row.email ?? "").trim();
@@ -468,7 +487,7 @@ export default function AddEditCustContLocReg() {
         location: String(row.location ?? row.locationName ?? "").trim(),
         locationName: String(row.location ?? row.locationName ?? "").trim(),
         locationType,
-        address: address.address,
+        address,
         city,
         state,
         country,
@@ -610,7 +629,6 @@ export default function AddEditCustContLocReg() {
       billPhone1: "",
       billPhone2: "",
       billEmail: "",
-      shipCompany: "",
       shipAddress: "",
       shipCity: "",
       shipState: "",
@@ -725,6 +743,7 @@ export default function AddEditCustContLocReg() {
       }));
 
     return {
+      SessionLoginId: loginId,
       Customer: {
         ItemNo: customerId ? Number(customerId) : undefined,
         Customer: form.companyName.trim(),
@@ -734,13 +753,13 @@ export default function AddEditCustContLocReg() {
         Customer_Type: form.customerType,
         Gst_No: form.gstNo.trim(),
         SapCustCode: form.sapCode.trim(),
-        industry: form.industry,
+        industry: form.industry.trim() ? Number(form.industry) : undefined,
         modeOfInvoice: form.modeOfInvoice,
         currency: form.currency,
         panNo: form.panNo,
         salesorg: form.salesOrganization,
         distributionchannel: form.distributionChannel,
-        cuspaymentterms: form.paymentTerms,
+        cuspaymentterms: form.paymentTerms.trim() ? Number(form.paymentTerms) : undefined,
         taxclassification: form.taxclassification,
         shippingconditions: form.shippingConditions,
         incoterms: form.incoterms,
@@ -779,8 +798,13 @@ export default function AddEditCustContLocReg() {
     if (!form.companyName.trim()) return "Customer name is required.";
     if (form.customerType !== "Export" && !form.gstNo.trim()) { return "GST number is required.";}
     if (form.customerType !== "Export" && !form.panNo.trim()) { return "PAN No is required.";}
-    if (!form.paymentTerms.trim()) return "Payment terms is required.";
-    if (!form.incoterms.trim()) return "Incoterms is required.";
+    // Payment terms/Incoterms live on the Commercial & SAP tab, whose controls are
+    // disabled for users without edit permission on that tab — don't force them to
+    // fill in fields they aren't allowed to touch.
+    if (canEditCommercial) {
+      if (!form.paymentTerms.trim()) return "Payment terms is required.";
+      if (!form.incoterms.trim()) return "Incoterms is required.";
+    }
 
     const hasLocationData = locations.some((loc) =>
       [loc.address, loc.city, loc.state, loc.country, loc.pincode, loc.phone1, loc.email].some(
@@ -849,8 +873,14 @@ export default function AddEditCustContLocReg() {
       toast.success(formMode === "new" ? "New Customer added." : "Customer edited.");
       void loadCustomers();
     } catch (error) {
-      console.log("error", error);
-      toast.error("Failed to update customer.");
+      console.error("Failed to update customer:", error);
+      const message =
+        axios.isAxiosError(error)
+          ? error.response?.data?.message ?? error.message
+          : error instanceof Error
+          ? error.message
+          : "Failed to update customer.";
+      toast.error(message);
     } finally {
       setSaving(false);
     }
@@ -887,7 +917,8 @@ export default function AddEditCustContLocReg() {
     name: keyof CustomerForm,
     required = false,
     multiline = false,
-    rows = 1
+    rows = 1,
+    disabled = false
   ) => (
     <Box sx={fieldShellStyle}>
       <Typography sx={fieldLabelStyle}>
@@ -902,6 +933,7 @@ export default function AddEditCustContLocReg() {
         multiline={multiline}
         rows={rows}
         style={inputStyle}
+        disabled={disabled}
       />
     </Box>
   );
@@ -915,10 +947,30 @@ export default function AddEditCustContLocReg() {
   }, []);
 
   useEffect(() => {
+    const fetchCostcenter = async () => {
+      try {
+        const res = await axios.get(`${baseUrl}/api/Home/EmployeeDetails/${loginId}`);
+        setCostcenter(String(res.data?.costcenter ?? "").trim());
+      } catch (error) {
+        console.error("Failed to load employee cost center:", error);
+      }
+    };
+    void fetchCostcenter();
+  }, [loginId]);
+
+  useEffect(() => {
     if (formMode === "edit" || formMode === "delete") {
       void loadCustomers();
     }
   }, [formMode, hasSpecialRole]);
+
+  useEffect(() => {
+    if (!allowedTabs.includes(tab)) {
+      setTab(allowedTabs[0]);
+    }
+    // allowedTabs is derived from hasSpecialRole/costcenter each render; re-check whenever those resolve or the tab changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasSpecialRole, costcenter, tab]);
 
   useEffect(() => {
     if (form.customerType === "Export") {
@@ -1144,10 +1196,10 @@ export default function AddEditCustContLocReg() {
             px: 1,
           }}
         >
-          <Tab label="Basic Info" />
-          <Tab label="Addresses" />
-          <Tab label="Contacts" />
-          <Tab label="Commercial & SAP" />
+          <Tab label="Basic Info" disabled={!allowedTabs.includes(0)} />
+          <Tab label="Addresses" disabled={!allowedTabs.includes(1)} />
+          <Tab label="Contacts" disabled={!allowedTabs.includes(2)} />
+          <Tab label="Commercial & SAP" disabled={!allowedTabs.includes(3)} />
         </Tabs>
 
         {tab === 0 && (
@@ -1189,7 +1241,7 @@ export default function AddEditCustContLocReg() {
                     fontSize="0.9rem"
                     labelFontWeight={600}
                     shrinkLabel={false}
-                    disabled={isDeleteMode}
+                    disabled={isDeleteMode || !canEditOtherTabs}
                   />
                 </Box>
 
@@ -1210,7 +1262,7 @@ export default function AddEditCustContLocReg() {
                     fontSize="0.9rem"
                     labelFontWeight={600}
                     shrinkLabel={false}
-                    disabled={isDeleteMode}
+                    disabled={isDeleteMode || !canEditOtherTabs}
                   />
                 </Box>
 
@@ -1225,10 +1277,10 @@ export default function AddEditCustContLocReg() {
                     onChange={handleChange}
                     fullWidth
                     style={inputStyle}
-                    disabled={isDeleteMode}
+                    disabled={isDeleteMode || !canEditOtherTabs}
                   />
                 </Box>
-                {renderTextField("Customer Abbreviation", "customerAbb", true)}
+                {renderTextField("Customer Abbreviation", "customerAbb", true, false, 1, isDeleteMode || !canEditOtherTabs)}
                 <Box sx={fieldShellStyle}>
                   <Typography sx={fieldLabelStyle}>
                     GST No
@@ -1239,7 +1291,7 @@ export default function AddEditCustContLocReg() {
                     name="gstNo"
                     value={form.gstNo}
                     onChange={handleChange}
-                    disabled={form.customerType === "Export"}
+                    disabled={form.customerType === "Export" || isDeleteMode || !canEditOtherTabs}
                   />
                 </Box>
                 <Box sx={fieldShellStyle}>
@@ -1251,6 +1303,7 @@ export default function AddEditCustContLocReg() {
                     name="panNo"
                     value={form.panNo}
                     onChange={handleChange}
+                    disabled={isDeleteMode || !canEditOtherTabs}
                   />
                 </Box>
                 <Box sx={fieldShellStyle}>
@@ -1270,7 +1323,7 @@ export default function AddEditCustContLocReg() {
                     fontSize="0.9rem"
                     labelFontWeight={600}
                     shrinkLabel={false}
-                    disabled={isDeleteMode}
+                    disabled={isDeleteMode || !canEditOtherTabs}
                   />
                 </Box>
                 <Box sx={fieldShellStyle}>
@@ -1290,7 +1343,7 @@ export default function AddEditCustContLocReg() {
                     fontSize="0.9rem"
                     labelFontWeight={600}
                     shrinkLabel={false}
-                    disabled={isDeleteMode}
+                    disabled={isDeleteMode || !canEditOtherTabs}
                   />
                 </Box>
                 <Box sx={fieldShellStyle}>
@@ -1301,14 +1354,14 @@ export default function AddEditCustContLocReg() {
                     name="modeOfInvoice"
                     label=""
                     value={form.modeOfInvoice}
-                    onChange={handleChange}modeOfInvoice
+                    onChange={handleChange}
                     options={modeOfInvoiceOptions}
                     width="100%"
                     height={40}
                     fontSize="0.9rem"
                     labelFontWeight={600}
                     shrinkLabel={false}
-                    disabled={isDeleteMode}
+                    disabled={isDeleteMode || !canEditOtherTabs}
                   />
                 </Box>
               </Box>
@@ -1366,6 +1419,7 @@ export default function AddEditCustContLocReg() {
                         <IconButton
                           color="error"
                           onClick={() => removeLocation(index)}
+                          disabled={isDeleteMode || !canEditOtherTabs}
                         >
                           <Delete />
                         </IconButton>
@@ -1381,6 +1435,7 @@ export default function AddEditCustContLocReg() {
                           </Typography>
 
                           <SelectControl
+                            name={`locationType-${index}`}
                             value={loc.locationType}
                             onChange={(e) =>
                               handleLocationChange(
@@ -1395,6 +1450,7 @@ export default function AddEditCustContLocReg() {
                               { value: "SHIP", label: "Ship To" },
                             ]}
                             fullWidth
+                            disabled={isDeleteMode || !canEditOtherTabs}
                           />
                         </Box>
                       </Grid>
@@ -1417,7 +1473,7 @@ export default function AddEditCustContLocReg() {
                             }
                             fullWidth
                             style={inputStyle}
-                            required
+                            disabled={isDeleteMode || !canEditOtherTabs}
                           />
                         </Box>
                       </Grid>
@@ -1446,7 +1502,7 @@ export default function AddEditCustContLocReg() {
                             fontSize="0.9rem"
                             labelFontWeight={600}
                             shrinkLabel={false}
-                            disabled={isDeleteMode}
+                            disabled={isDeleteMode || !canEditOtherTabs}
                             required
                           />
                         </Box>
@@ -1476,7 +1532,7 @@ export default function AddEditCustContLocReg() {
                             fontSize="0.9rem"
                             labelFontWeight={600}
                             shrinkLabel={false}
-                            disabled={isDeleteMode}
+                            disabled={isDeleteMode || !canEditOtherTabs}
                             required
                           />
                         </Box>
@@ -1506,7 +1562,7 @@ export default function AddEditCustContLocReg() {
                             fontSize="0.9rem"
                             labelFontWeight={600}
                             shrinkLabel={false}
-                            disabled={isDeleteMode}
+                            disabled={isDeleteMode || !canEditOtherTabs}
                             required
                           />
                         </Box>
@@ -1529,6 +1585,7 @@ export default function AddEditCustContLocReg() {
                             }
                             fullWidth
                             style={inputStyle}
+                            disabled={isDeleteMode || !canEditOtherTabs}
                           />
                         </Box>
                       </Grid>
@@ -1543,7 +1600,6 @@ export default function AddEditCustContLocReg() {
 
                             <TextControl
                               name={`phone-${index}`}
-                              type="tel"
                               inputMode="tel"
                               value={loc.phone1}
                               onChange={(e) =>
@@ -1555,6 +1611,7 @@ export default function AddEditCustContLocReg() {
                               }
                               fullWidth
                               style={inputStyle}
+                              disabled={isDeleteMode || !canEditOtherTabs}
                             />
                           </Box>
 
@@ -1565,7 +1622,6 @@ export default function AddEditCustContLocReg() {
 
                             <TextControl
                               name={`phone2-${index}`}
-                              type="tel"
                               inputMode="tel"
                               value={loc.phone2}
                               onChange={(e) =>
@@ -1577,6 +1633,7 @@ export default function AddEditCustContLocReg() {
                               }
                               fullWidth
                               style={inputStyle}
+                              disabled={isDeleteMode || !canEditOtherTabs}
                             />
                           </Box>
                         </Box>
@@ -1599,6 +1656,7 @@ export default function AddEditCustContLocReg() {
                             }
                             fullWidth
                             style={inputStyle}
+                            disabled={isDeleteMode || !canEditOtherTabs}
                           />
                         </Box>
                       </Grid>
@@ -1613,6 +1671,7 @@ export default function AddEditCustContLocReg() {
                 variant="contained"
                 startIcon={<Add />}
                 onClick={addLocation}
+                disabled={isDeleteMode || !canEditOtherTabs}
                 sx={{
                   mt: 2,
                   borderRadius: 3,
@@ -1665,6 +1724,7 @@ export default function AddEditCustContLocReg() {
                       <IconButton
                         color="error"
                         onClick={() => removeContact(index)}
+                        disabled={isDeleteMode || !canEditOtherTabs}
                       >
                         <Delete />
                       </IconButton>
@@ -1688,7 +1748,7 @@ export default function AddEditCustContLocReg() {
                           fontSize="0.9rem"
                           labelFontWeight={600}
                           shrinkLabel={false}
-                          disabled={isDeleteMode}
+                          disabled={isDeleteMode || !canEditOtherTabs}
                           fullWidth
                         />
                       </Box>
@@ -1706,6 +1766,7 @@ export default function AddEditCustContLocReg() {
                           fullWidth
                           height={40}
                           shrinkLabel={false}
+                          disabled={isDeleteMode || !canEditOtherTabs}
                         />
                       </Box>
                     </Grid>
@@ -1727,7 +1788,7 @@ export default function AddEditCustContLocReg() {
                           }
                           style={inputStyle}
                           fullWidth
-                          disabled={isDeleteMode}
+                          disabled={isDeleteMode || !canEditOtherTabs}
                         />
                       </Box>
                     </Grid>
@@ -1747,7 +1808,7 @@ export default function AddEditCustContLocReg() {
                           // style={{ width: 150 }, inputStyle}
                           style={inputStyle}
                           fullWidth
-                          disabled={isDeleteMode}
+                          disabled={isDeleteMode || !canEditOtherTabs}
                         />
                       </Box>
                     </Grid>
@@ -1766,7 +1827,7 @@ export default function AddEditCustContLocReg() {
                           }
                           fullWidth
                           style={inputStyle}
-                          disabled={isDeleteMode}
+                          disabled={isDeleteMode || !canEditOtherTabs}
                         />
                       </Box>
                     </Grid>
@@ -1785,6 +1846,7 @@ export default function AddEditCustContLocReg() {
                           }
                           fullWidth
                           style={inputStyle}
+                          disabled={isDeleteMode || !canEditOtherTabs}
                         />
                       </Box>
                     </Grid>
@@ -1797,7 +1859,7 @@ export default function AddEditCustContLocReg() {
                 startIcon={<Add />}
                 onClick={addContact}
                 sx={{ borderRadius: 3 }}
-                disabled={isDeleteMode}
+                disabled={isDeleteMode || !canEditOtherTabs}
               >
                 Add Contact
               </Button>
@@ -1824,6 +1886,7 @@ export default function AddEditCustContLocReg() {
                       value={form.salesOrganization}
                       onChange={handleChange}
                       options={salesOrganizationOptions}
+                      disabled={isDeleteMode || !canEditCommercial}
                     />
                   </Box>
                 </Grid>
@@ -1836,6 +1899,7 @@ export default function AddEditCustContLocReg() {
                       value={form.distributionChannel}
                       onChange={handleChange}
                       options={distributionChannelOptions}
+                      disabled={isDeleteMode || !canEditCommercial}
                     />
                   </Box>
                 </Grid>
@@ -1850,7 +1914,7 @@ export default function AddEditCustContLocReg() {
                       required
                       options={paymenttermsOptions}
                       fullWidth
-                      disabled={isDeleteMode}
+                      disabled={isDeleteMode || !canEditCommercial}
                     />
                   </Box>
                 </Grid>
@@ -1865,6 +1929,7 @@ export default function AddEditCustContLocReg() {
                       shrinkLabel
                       onChange={handleChange}
                       options={taxClassificationOptions}
+                      disabled={isDeleteMode || !canEditCommercial}
                     />
                   </Box>
                 </Grid>
@@ -1873,20 +1938,38 @@ export default function AddEditCustContLocReg() {
                   <Box sx={fieldShellStyle}>
                     {renderTextField(
                       "Shipping Conditions",
-                      "shippingConditions"
+                      "shippingConditions",
+                      false,
+                      false,
+                      1,
+                      isDeleteMode || !canEditCommercial
                     )}
                   </Box>
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 3 }}>
                   <Box sx={fieldShellStyle}>
-                    {renderTextField("Incoterms", "incoterms", true)}
+                    {renderTextField(
+                      "Incoterms",
+                      "incoterms",
+                      true,
+                      false,
+                      1,
+                      isDeleteMode || !canEditCommercial
+                    )}
                   </Box>
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 3 }}>
                   <Box sx={fieldShellStyle}>
-                    {renderTextField("SAP Customer Code", "sapCode")}
+                    {renderTextField(
+                      "SAP Customer Code",
+                      "sapCode",
+                      false,
+                      false,
+                      1,
+                      isDeleteMode || !canEditCommercial
+                    )}
                   </Box>
                 </Grid>
               </Grid>

@@ -43,6 +43,7 @@ const SelectControl: React.FC<SelectControlProps> = ({
   labelFontWeight = 600,
   shrinkLabel = true,
   disablePortal = false,
+  disabled = false,
   sx = {},
 }) => {
   // const controlFontFamily =
@@ -86,6 +87,7 @@ const selectedOption =
         getOptionLabel={(opt) => opt.label?.toString() ?? ""}
         isOptionEqualToValue={(option, val) => option.value === val.value}
         disablePortal={disablePortal}
+        disabled={disabled}
         onChange={(_, newValue) => {
           onChange({
             target: { name, value: newValue ? newValue.value : "" },

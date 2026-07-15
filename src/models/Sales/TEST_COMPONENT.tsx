@@ -32,9 +32,7 @@ const TestJobCreationComponent: React.FC = () => {
 
 const TestAPIConnection: React.FC = () => {
   const [apiStatus, setApiStatus] = React.useState<string>('Testing...');
-  const [apiUrl, setApiUrl] = React.useState<string>(
-    process.env.REACT_APP_API_URL || 'NOT SET'
-  );
+  const apiUrl = process.env.REACT_APP_API_URL || 'NOT SET';
 
   React.useEffect(() => {
     const testAPI = async () => {

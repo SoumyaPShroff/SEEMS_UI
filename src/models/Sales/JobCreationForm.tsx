@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import "./styles/JobCreationForm.css";
 import axios from "axios";
-import { useNavigate } from 'react-router-dom';
-import { Box, Grid, Card, CardContent, Typography, Button as MuiButton,  Divider, Paper, Chip, Alert} from "@mui/material";
+import { Box, Grid, Card, CardContent, Typography, Button as MuiButton,  Divider, Paper, Chip} from "@mui/material";
 import { toast } from "react-toastify";
 import SelectControl from "../../components/resusablecontrols/SelectControl";
 import TextControl from "../../components/resusablecontrols/TextControl";
@@ -36,7 +35,6 @@ interface PODetails {
 }
 
 const JobCreationForm: React.FC = () => {
-  const navigate = useNavigate();
   const lastErrorRef = useRef<string | null>(null);
 
   const [formState, setFormState] = useState<FormState>({
@@ -55,7 +53,7 @@ const JobCreationForm: React.FC = () => {
     balanceHours: 0,
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  //const [error, setError] = useState<string | null>(null);
 
   const showErrorToast = (errorMsg: string) => {
     if (lastErrorRef.current !== errorMsg) {
@@ -92,7 +90,6 @@ const JobCreationForm: React.FC = () => {
 
   const fetchEnquiries = async (billingType: BillingType) => {
     try {
-      setError(null);
       const url = new URL(`${baseUrl}/api/Sales/RealisedEnquiries`);
       url.searchParams.append('billingType', billingType);
       const response = await axios.get(url.toString());
@@ -107,14 +104,12 @@ const JobCreationForm: React.FC = () => {
       }));
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Error fetching enquiries';
-      setError(errorMsg);
       showErrorToast(errorMsg);
     }
   };
 
   const fetchPONumbers = async () => {
     try {
-      setError(null);
       const encodedEnquiry = encodeURIComponent(formState.enquiry);
       const response = await axios.get(`${baseUrl}/api/Sales/PONumbersByEnquiry/${encodedEnquiry}`);
 
@@ -125,7 +120,6 @@ const JobCreationForm: React.FC = () => {
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Error fetching PO numbers';
-      setError(errorMsg);
       showErrorToast(errorMsg);
       setPoNumbers([]);
     }
@@ -133,7 +127,6 @@ const JobCreationForm: React.FC = () => {
 
   const fetchPODetails = async () => {
     try {
-      setError(null);
       const encodedPoNumber = encodeURIComponent(formState.poNumber);
       const response = await axios.get(`${baseUrl}/api/Sales/PODetailsAsync/${encodedPoNumber}`);
 
@@ -144,7 +137,6 @@ const JobCreationForm: React.FC = () => {
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Error fetching PO details';
-      setError(errorMsg);
       showErrorToast(errorMsg);
       setPoDetails({ totalAmount: 0, totalHours: 0, balanceHours: 0 });
     }
@@ -195,32 +187,26 @@ const JobCreationForm: React.FC = () => {
   const validateForm = (): boolean => {
     if (!formState.enquiry) {
       const msg = 'Please select an enquiry';
-      setError(msg);
       showErrorToast(msg);
       return false;
     }
     if (!formState.poNumber) {
       const msg = 'Please select a PO number';
-      setError(msg);
       showErrorToast(msg);
       return false;
     }
     if (formState.billingType === 'Time and Material' && !formState.billingDate) {
       const msg = 'Please select a billing date';
-      setError(msg);
       showErrorToast(msg);
       return false;
     }
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSubmit = async () => {
     if (!validateForm()) return;
 
     setLoading(true);
-    setError(null);
 
     try {
       const sessionLoginName = sessionStorage.getItem('SessionUserName') || 'System';
@@ -269,7 +255,6 @@ const JobCreationForm: React.FC = () => {
     errorMsg = err.message;
   }
 
-  setError(errorMsg);
   showErrorToast(errorMsg);
 } finally {
   setLoading(false);
@@ -284,7 +269,6 @@ const JobCreationForm: React.FC = () => {
       boardRef: '',
       billingDate: '',
     });
-    setError(null);
   };
 
   // Convert EnquiryOption to SelectControl format

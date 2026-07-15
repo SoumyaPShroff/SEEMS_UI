@@ -38,7 +38,7 @@ import EstimationDocUpload from './models/Sales/EstimationDocUpload';
 import EstimationDocList from './models/Sales/EstimationDocList';
 import POJobAllocation from './models/Sales/POJobAllocation';
 import PurchaseOrder from './models/Sales/PurchaseOrder';
-import JobCreationForm from './models/sales/JobCreationForm';
+import JobCreationForm from './models/Sales/JobCreationForm';
 import OrderInvoiceRegister from './models/Sales/OrderInvoiceRegister';
 
 const App: React.FC = () => {
