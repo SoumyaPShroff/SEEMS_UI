@@ -39,6 +39,8 @@ import EstimationDocList from './models/Sales/EstimationDocList';
 import POJobAllocation from './models/Sales/POJobAllocation';
 import PurchaseOrder from './models/Sales/PurchaseOrder';
 import JobCreationForm from './models/Sales/JobCreationForm';
+import ViewAllJobs from './models/Sales/ViewAllJobs';
+import TransferJob from './models/Sales/TransferJob';
 import OrderInvoiceRegister from './models/Sales/OrderInvoiceRegister';
 
 const App: React.FC = () => {
@@ -101,6 +103,8 @@ const App: React.FC = () => {
           <Route path="EstimationDocList" element={<EstimationDocList />} />
           <Route path="POJobAllocation" element={<POJobAllocation />} />
           <Route path="JobCreationForm" element={<JobCreationForm />} />
+          <Route path="ViewAllJobs" element={<ViewAllJobs />} />
+          <Route path="TransferJob" element={<TransferJob />} />
           <Route path="OrderInvoiceRegister" element={<OrderInvoiceRegister />} />
           
         </Route>

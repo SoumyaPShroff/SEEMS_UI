@@ -43,7 +43,7 @@ type SavePayload = {
 const SaveButton = styled.button`
   display: flex;
   align-items: center;
-  background-color: #0f172a;
+  background: linear-gradient(135deg, #1f62b2 0%, #0f7dd6 100%);
   color: white;
   border: none;
   padding: 12px 24px;
@@ -52,16 +52,16 @@ const SaveButton = styled.button`
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 16px rgba(20, 93, 178, 0.28);
 
   &:hover {
-    background-color: #334155;
+    background: linear-gradient(135deg, #1a5598 0%, #0c6dbc 100%);
     transform: translateY(-1px);
-    box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 10px 18px rgba(20, 93, 178, 0.32);
   }
 
   &:disabled {
-    background-color: #94a3b8;
+    background: #94a3b8;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
@@ -315,6 +315,7 @@ export default function PlannedHours() {
 
   return (
     <StandardPageLayout
+      variant="blue"
       title="Planned Hours"
       subtitle="Project planning and monthly hour allocation"
       actions={
@@ -346,7 +347,7 @@ export default function PlannedHours() {
         </FiltersRow>
       }
     >
-      <StandardPageCard>
+      <StandardPageCard $variant="blue">
         {isLoading ? (
           <EmptyState>
             <CircularProgress />
