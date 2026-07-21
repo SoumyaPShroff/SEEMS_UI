@@ -1,5 +1,5 @@
 import { useEffect, useState, type ChangeEvent } from "react";
-import { Box, Grid, Card, CardContent, Typography, Button, Divider, Tabs, Tab, Chip, IconButton, Paper,} from "@mui/material";
+import { Box, Grid, Card, CardContent, Typography, Button, Divider, Tabs, Tab, Chip, IconButton, Paper, } from "@mui/material";
 import axios from "axios";
 import { toast } from "react-toastify";
 import TextControl from "../../components/resusablecontrols/TextControl";
@@ -31,7 +31,7 @@ type CustomerForm = {
   modeOfInvoice: string;
 
   salesOrganization: string;
-  distributionChannel: string;
+  distributionchannel: string;
   contactTitle: string;
   paymentTerms: string;
   shippingConditions: string;
@@ -69,14 +69,6 @@ type ContactRow = {
   email: string;
 };
 
-// type AddressFields = {
-//   address: string;
-//   city: string;           //location field backend
-//   state: string;
-//   country: string;
-//   pincode: string;
-// };
-
 type SavedRecordResponse = {
   itemno?: string | number;
   itemNo?: string | number;
@@ -99,10 +91,11 @@ export default function AddEditCustContLocReg() {
   const [salesRespOptions, setSalesRespOptions] = useState<Option[]>([]);
   const [industryOptions, setIndustryOptions] = useState<Option[]>([]);
   const [paymenttermsOptions, setPaymenttermsOptions] = useState<Option[]>([]);
+  const [distributionChannelOptions, setDistributionChannelOptions] = useState<Option[]>([]);
   const [stateOptions, setStateOptions] = useState<Option[]>([]);
   const [cityOptions, setCityOptions] = useState<Option[]>([]);
   const [countryOptions, setCountryOptions] = useState<Option[]>([]);
- 
+
   type CustomerLocation = {
     locationId: string;
     customer_id: string;
@@ -132,7 +125,7 @@ export default function AddEditCustContLocReg() {
     country: "",
     pincode: "",
     phone1: "",
-    phone2: "", 
+    phone2: "",
     email: "",
     addresstype: 1,
   };
@@ -163,17 +156,14 @@ export default function AddEditCustContLocReg() {
     currency: "INR",
     industry: "",
     modeOfInvoice: "",
-
     salesOrganization: "",
-    distributionChannel: "",
+    distributionchannel: "",
     contactTitle: "",
     paymentTerms: "",
     shippingConditions: "",
     incoterms: "",
     taxclassification: "",
     sapCode: "",
-
-    //billCustomer: "",
     billAddress: "",
     billCity: "",        //location field backend
     billState: "",
@@ -182,8 +172,6 @@ export default function AddEditCustContLocReg() {
     billPhone1: "",
     billPhone2: "",
     billEmail: "",
-
-    //shipCustomer: "",
     shipAddress: "",
     shipCity: "",          //location field backend
     shipState: "",
@@ -278,18 +266,15 @@ export default function AddEditCustContLocReg() {
   }));
 
   const salesOrganizationOptions = [
-    { value: "ORG1", label: "ORG1" },
-    { value: "ORG2", label: "ORG2" },
-  ];
-
-  const distributionChannelOptions = [
-    { value: "ONLINE", label: "ONLINE" },
-    { value: "OFFLINE", label: "OFFLINE" },
+    { value: "YLBO - Domestic", label: "YLBO - Domestic" },
+    { value: "YLBE - Export", label: "YLBE - Export" },
+    { value: "YLBZ - SEZ", label: "YLBZ - SEZ" },
   ];
 
   const taxClassificationOptions = [
-    { value: "GST 0%", label: "GST 0%" },
-    { value: "GST 5%", label: "GST 5%" },
+    { value: "SGST & CGST", label: "SGST & CGST"},
+    { value: "IGST", label: "IGST" },
+    { value: "Exempt", label: "Exempt" }
   ];
 
   const fetchIndustryOptions = async () => {
@@ -325,6 +310,31 @@ export default function AddEditCustContLocReg() {
       console.error("Failed to load payment terms list:", error);
       setPaymenttermsOptions([]);
       toast.error("Unable to load payment terms list.");
+    }
+  };
+
+  const fetchDistributionChannelOptions = async () => {
+    try {
+      const res = await axios.get(`${baseUrl}/api/Sales/CustomerDistributionChannel`);
+      console.log("distribution channel full res:", res);
+      console.log("distribution channel request URL:", res.config?.url, "baseURL:", res.config?.baseURL);
+      console.log("distribution channel raw status:", res.status, "content-type:", res.headers?.["content-type"], "raw data:", res.data);
+      const rows = Array.isArray(res.data) ? res.data : [];
+      const mapped = rows.map((row: any) => ({
+        value: String(row.id),
+        label: row.distributionchannel,
+      }));
+      console.log("mapped distribution channel options:", mapped);
+      setDistributionChannelOptions(mapped);
+    }
+     catch (error: any) {
+  console.error("Full error:", error);
+  console.error("Response:", error.response);
+  console.error("Status:", error.response?.status);
+  console.error("Data:", error.response?.data);
+
+  setDistributionChannelOptions([]);
+ 
     }
   };
 
@@ -436,7 +446,7 @@ export default function AddEditCustContLocReg() {
       industry: String(raw.industry ?? prev.industry ?? ""),
       modeOfInvoice: String(raw.modeofinvoice ?? prev.modeOfInvoice ?? ""),
       salesOrganization: String(raw.salesorg ?? prev.salesOrganization ?? ""),
-      distributionChannel: String(raw.distributionchannel ?? prev.distributionChannel ?? ""),
+      distributionchannel: String(raw.distributionchannel ?? prev.distributionchannel ?? ""),
       paymentTerms: String(raw.cuspaymentterms ?? raw.paymentterms ?? prev.paymentTerms ?? ""),
       shippingConditions: String(raw.shippingconditions ?? prev.shippingConditions ?? ""),
       taxclassification: String(raw.taxclassification ?? prev.taxclassification ?? ""),
@@ -445,31 +455,10 @@ export default function AddEditCustContLocReg() {
     }));
   };
 
-  // const splitAddressFields = (addressText: string) => {
-  //   const parts = String(addressText ?? "")
-  //     .split(/\r?\n/)
-  //     .map((line) => line.trim())
-  //     .filter(Boolean);
-
-  //   return {
-  //     address: parts[0] ?? "",
-  //     location: parts[1] ?? "",
-  //     state: parts[2] ?? "",
-  //     country: parts[3] ?? "",
-  //     pincode: parts[4] ?? "",
-  //     phone1: parts[5] ?? "",
-  //     phone2: parts[6] ?? "",
-  //     email: parts[7] ?? "",
-  //   };
-  // };
-
-  //  const buildAddressText = (address: string, city: string, state: string, country: string, pincode: string) =>
-  //     [address, city, state, country, pincode].map((part) => String(part ?? "").trim()).filter(Boolean).join("\n");
-
   const hydrateLocations = (rows: Record<string, unknown>[]) => {
     const normalized = rows.map((row) => {
-     // const address = splitAddressFields(String(row.address ?? ""));
-      const address =  String(row.address ?? "");
+      // const address = splitAddressFields(String(row.address ?? ""));
+      const address = String(row.address ?? "");
       const rawLocationType = String(row.locationType ?? row.location_type ?? row.addresstype ?? row.addressType ?? "BILL").trim().toUpperCase();
       const locationType = rawLocationType === "SHIP" || rawLocationType === "2" ? "SHIP" : "BILL";
 
@@ -614,7 +603,7 @@ export default function AddEditCustContLocReg() {
       industry: "",
       modeOfInvoice: "",
       salesOrganization: "",
-      distributionChannel: "",
+      distributionchannel: "",
       contactTitle: "",
       paymentTerms: "",
       shippingConditions: "",
@@ -667,7 +656,7 @@ export default function AddEditCustContLocReg() {
       industry: "",
       modeOfInvoice: "",
       salesOrganization: "",
-      distributionChannel: "",
+      distributionchannel: "",
       contactTitle: "",
       paymentTerms: "",
       shippingConditions: "",
@@ -717,7 +706,6 @@ export default function AddEditCustContLocReg() {
       Location_Id: loc.locationId ? Number(loc.locationId) : undefined,
       Customer_Id: customerId ? Number(customerId) : 0,
       Location: loc.city,
-      // Address: buildAddressText(loc.address, loc.city, loc.state, loc.country, loc.pincode),
       Address: loc.address,
       PhoneNo1: loc.phone1,
       PhoneNo2: loc.phone2,
@@ -758,7 +746,7 @@ export default function AddEditCustContLocReg() {
         currency: form.currency,
         panNo: form.panNo,
         salesorg: form.salesOrganization,
-        distributionchannel: form.distributionChannel,
+        distributionchannel: form.distributionchannel,
         cuspaymentterms: form.paymentTerms.trim() ? Number(form.paymentTerms) : undefined,
         taxclassification: form.taxclassification,
         shippingconditions: form.shippingConditions,
@@ -780,7 +768,6 @@ export default function AddEditCustContLocReg() {
       if (!String(contact.contactTitle ?? "").trim()) return "Contact title is required.";
       if (!String(contact.name ?? "").trim()) return "Contact name is required.";
       if (!String(contact.mobile ?? "").trim()) return "Contact mobile is required.";
-     // if (!String(contact.email ?? "").trim()) return "Contact email is required.";
     }
     return "";
   };
@@ -796,8 +783,8 @@ export default function AddEditCustContLocReg() {
     if (!form.salesRespId.trim()) return "Sales responsibility is required.";
     if (!form.customerAbb.trim()) return "Customer abbreviation is required.";
     if (!form.companyName.trim()) return "Customer name is required.";
-    if (form.customerType !== "Export" && !form.gstNo.trim()) { return "GST number is required.";}
-    if (form.customerType !== "Export" && !form.panNo.trim()) { return "PAN No is required.";}
+    if (form.customerType !== "Export" && !form.gstNo.trim()) { return "GST number is required."; }
+    if (form.customerType !== "Export" && !form.panNo.trim()) { return "PAN No is required."; }
     // Payment terms/Incoterms live on the Commercial & SAP tab, whose controls are
     // disabled for users without edit permission on that tab — don't force them to
     // fill in fields they aren't allowed to touch.
@@ -878,8 +865,8 @@ export default function AddEditCustContLocReg() {
         axios.isAxiosError(error)
           ? error.response?.data?.message ?? error.message
           : error instanceof Error
-          ? error.message
-          : "Failed to update customer.";
+            ? error.message
+            : "Failed to update customer.";
       toast.error(message);
     } finally {
       setSaving(false);
@@ -943,6 +930,7 @@ export default function AddEditCustContLocReg() {
     void fetchSalesResponsibilityOptions();
     void fetchIndustryOptions();
     void fetchPaymenttermsOptions();
+    void fetchDistributionChannelOptions();
     void fetchLocationCodeOptions();
   }, []);
 
@@ -981,6 +969,25 @@ export default function AddEditCustContLocReg() {
     }
   }, [form.customerType]);
 
+  useEffect(() => {
+    const gstNo = form.gstNo.trim();
+    let computedTaxClassification = "";
+
+    if (form.customerType === "DOMESTIC") {
+      computedTaxClassification = gstNo.startsWith("29") ? "SGST & CGST" : "IGST";
+    } else if (form.customerType === "SEZ" || form.customerType === "MNC") {
+      computedTaxClassification = "Exempt";
+    } else if (form.customerType === "Export" && !gstNo) {
+      computedTaxClassification = "Exempt";
+    }
+
+    setForm(prev =>
+      prev.taxclassification === computedTaxClassification
+        ? prev
+        : { ...prev, taxclassification: computedTaxClassification }
+    );
+  }, [form.customerType, form.gstNo]);
+
   const handleLocationChange = (
     index: number,
     field: keyof CustomerLocation,
@@ -990,12 +997,12 @@ export default function AddEditCustContLocReg() {
       prev.map((item, i) =>
         i === index
           ? {
-              ...item,
-              [field]: value,
-              ...(field === "locationType"
-                ? { addresstype: value === "SHIP" ? 2 : 1 }
-                : {}),
-            }
+            ...item,
+            [field]: value,
+            ...(field === "locationType"
+              ? { addresstype: value === "SHIP" ? 2 : 1 }
+              : {}),
+          }
           : item
       )
     );
@@ -1895,10 +1902,11 @@ export default function AddEditCustContLocReg() {
                   <Box sx={fieldShellStyle}>
                     <SelectControl
                       label="Distribution Channel"
-                      name="distributionChannel"
-                      value={form.distributionChannel}
+                      name="distributionchannel"
+                      value={form.distributionchannel}
                       onChange={handleChange}
                       options={distributionChannelOptions}
+                      fullWidth
                       disabled={isDeleteMode || !canEditCommercial}
                     />
                   </Box>
@@ -1929,7 +1937,7 @@ export default function AddEditCustContLocReg() {
                       shrinkLabel
                       onChange={handleChange}
                       options={taxClassificationOptions}
-                      disabled={isDeleteMode || !canEditCommercial}
+                      disabled
                     />
                   </Box>
                 </Grid>

@@ -19,9 +19,18 @@ Switching modes (`handleModeChange`) clears `form`, `locations`, and `contacts` 
 | Index | Tab | Contents |
 |---|---|---|
 | 0 | Basic Info | Customer Type, Sales Responsibility, Company Name, Customer Abbreviation, GST No, PAN No, Currency, Industry, Mode of Invoice (`Portal` / `Email`) |
-| 1 | Addresses | Repeatable location blocks (Bill To / Ship To): Location Type, Address, City, State, Country, Pincode, Phone 1, Phone 2, Email |
-| 2 | Contacts | Repeatable contact rows: Role, Title, Contact Name, Phone, Alternate Phone, Email |
-| 3 | Commercial & SAP | Sales Organization, Distribution Channel, Payment Terms, Tax Classification, Shipping Conditions, Incoterms, SAP Customer Code |
+| 1 | Addresses | Repeatable location blocks (Bill To / Ship To): Location Type, Address (free text), City/State/Country (dropdowns sourced from `LocationCodes`), Pincode, Phone 1, Phone 2, Email |
+| 2 | Contacts | Repeatable contact rows: Role, Title (dropdown: `Mr.`/`Mrs.`/`Ms.`/`M/s`), Contact Name, Phone, Alternate Phone, Email |
+| 3 | Commercial & SAP | Sales Organization, Distribution Channel, Payment Terms, Tax Classification (auto-computed, always read-only), Shipping Conditions, Incoterms, SAP Customer Code |
+
+### Derived/auto-computed fields
+
+- **GST No** is cleared automatically whenever Customer Type is switched to `Export`.
+- **Tax Classification** (Tab 3) is never directly editable — its `SelectControl` is unconditionally `disabled`, even for users with `canEditCommercial`. It is recomputed on every Customer Type / GST No change:
+  - `DOMESTIC` — `SGST & CGST` if GST No starts with `29`, otherwise `IGST`.
+  - `SEZ` — `Exempt`.
+  - `Export` with no GST No — `Exempt`.
+  - Any other combination (e.g. `Govt`, `MNC`, or `Export` with a GST No present) — cleared to empty.
 
 ### Tab access control
 
@@ -102,7 +111,8 @@ Only locations/contacts with at least one populated field are included (`activeL
 | GET | `/api/Sales/customercontacts?customerId=` | Load a customer's contacts |
 | GET | `/api/Sales/CustomerIndustry` | Industry options |
 | GET | `/api/Sales/CustomerPaymentTerms` | Payment terms options |
-| GET | `/api/Sales/LocationCodes` | State/City/Country options |
+| GET | `/api/Sales/CustomerDistributionChannel` | Distribution channel options |
+| GET | `/api/Sales/LocationCodes` | State/City/Country dropdown options (Addresses tab) |
 | GET | `/api/Home/SalesManagers` | Sales Responsibility options |
 | GET | `/api/Home/UserDesignation/{loginId}` | Resolve caller's role (special-role + owner-filter checks) |
 | GET | `/api/Home/UserRoleInternalRights/{role}/{key}` | Role → access-flag lookup (`viewcustomers`, and inline in `loadCustomers`) |
@@ -125,4 +135,5 @@ This means even if a `45010` user's request is replayed or crafted outside the U
 
 - Delete mode has no backend call wired up yet (`handleSaveBundle` short-circuits with a toast).
 - `CustomerForm` still carries unused `billAddress`/`shipAddress`-family fields left over from an earlier single-address design; the active address model is the `locations` array.
-- The "Existing Customer Reference" dropdown and Commercial & SAP options (`salesOrganizationOptions`, `distributionChannelOptions`, `taxClassificationOptions`) are hardcoded in the component rather than fetched from the API.
+- The "Existing Customer Reference" dropdown is populated from `/api/Sales/Customers`, but `salesOrganizationOptions` and `taxClassificationOptions` are still hardcoded in the component rather than fetched from the API (`distributionChannelOptions` now comes from `/api/Sales/CustomerDistributionChannel`).
+- `fetchDistributionChannelOptions` and `saveCustomerRecord` still contain leftover `console.log` debug statements.
