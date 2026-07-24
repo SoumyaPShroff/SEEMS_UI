@@ -10,14 +10,21 @@ export const useBillingData = () => {
     if (!startdate || !enddate) return;
     setLoading(true);
     try {
-      // Build params for query string
-      const params: any = { startdate, enddate };
+      // startdate/enddate are route path segments; costcenter is a query param
+      const params: any = {};
       if (costcenter && costcenter !== "All") {
         params.costcenter = costcenter;
       }
 
-      // Since your API expects query parameters, this is correct
-      const res = await axios.get<any[]>(`${baseUrl}/api/Job/BillingPlanner`, { params });
+      const res = await axios.get<any[]>(
+        `${baseUrl}/api/Job/BillingPlanner/${startdate}/${enddate}`,
+        { params }
+      );
+      if (!Array.isArray(res.data)) {
+        console.warn("BillingPlanner response was not an array:", res.data);
+        setData([]);
+        return [];
+      }
       const rows = res.data.map((item: any, i: number) => ({ id: i + 1, ...item }));
       setData(rows);
       return rows;

@@ -109,10 +109,11 @@ const [checkingQuote, setCheckingQuote] = useState(true);
     setCheckingQuote(true);
 
     const res = await axios.get(
-      `${baseUrl}/api/Sales/GetQuoteDetailsByEnqQuoteNoAsync/${enquiryNo}`
+      `${baseUrl}/api/Sales/QuotationDetailsByEnqQuote/${enquiryNo}`
     );
-   setHasQuote(Array.isArray(res.data) && res.data.length > 0);
-   if (!toast.isActive("quote-required")) {
+   const quoteExists = Array.isArray(res.data) && res.data.length > 0;
+   setHasQuote(quoteExists);
+   if (!quoteExists && !toast.isActive("quote-required")) {
   toast.error("Please add a quote before updating enquiry status.", {
     toastId: "quote-required",
   });

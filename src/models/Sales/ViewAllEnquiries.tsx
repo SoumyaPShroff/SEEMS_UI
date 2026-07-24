@@ -333,7 +333,11 @@ url += `?${params.toString()}`;
       return;
     }
 
-    navigate(`/Home/EstimationDocUpload?enquiryno=${encodeURIComponent(enqNo)}`);
+    const enqType = (row.enquiryType || row.EnquiryType || "").toString().trim().toUpperCase();
+
+    navigate(
+      `/Home/EstimationDocUpload?enquiryno=${encodeURIComponent(enqNo)}&enquirytype=${encodeURIComponent(enqType)}`
+    );
   };
  
 

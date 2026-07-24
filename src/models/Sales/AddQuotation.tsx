@@ -83,6 +83,12 @@ const currencyOptions = [
     "EURO"
 ];
 
+// Shared sizing so every line-item control lines up on the same row
+const ITEM_CONTROL_HEIGHT = 40;
+const itemFieldSx = {
+    "& .MuiOutlinedInput-root": { height: ITEM_CONTROL_HEIGHT },
+};
+
 const AddQuotation: React.FC = () => {
     // console.log("🔥 AddQuotation component mounted");
     const { enquiryNo, quoteNo } = useParams();
@@ -581,7 +587,7 @@ const AddQuotation: React.FC = () => {
     // UI
     // -------------------------
     return (
-        <Box sx={{ padding: "20px", maxWidth: 1300, mt: 15, ml: 5 }}>
+        <Box sx={{ padding: "20px", maxWidth: 1400, mt: 15, ml: 5 }}>
 
             <Box sx={{ mb: 2, display: "flex", gap: 2, alignItems: "center" }}>
                 <Link to="/Home/ViewAllEnquiries">View All Enquiries</Link>
@@ -674,11 +680,12 @@ const AddQuotation: React.FC = () => {
                                     value: d.idNo,
                                     label: d.layout,
                                 }))}
+                                height={ITEM_CONTROL_HEIGHT}
                                 required
                             />
                         </Box>
                         {/* First Row */}
-                        <Box sx={{ display: "flex", gap: 1 }}>
+                        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
                             <SelectControl
                                 name="currency"
                                 label="Currency"
@@ -688,6 +695,7 @@ const AddQuotation: React.FC = () => {
                                     value: cur,
                                     label: cur,
                                 }))}
+                                height={ITEM_CONTROL_HEIGHT}
                                 sx={{
                                     "& input": { title: "" },
                                     "& .MuiSelect-select": { title: "" },
@@ -699,10 +707,14 @@ const AddQuotation: React.FC = () => {
                                 type="number"
                                 fullWidth
                                 value={item.qty}
-                                onChange={(e) => handleItemChange(index, "qty", Number(e.target.value))}
-                                size="small"
-                                sx={{ minWidth: 40 }}
-                                inputProps={{ min: 1 }}
+                                onChange={(e) => {
+                                    const raw = e.target.value;
+                                    if (raw.length > 5) return;
+                                    handleItemChange(index, "qty", raw === "" ? 0 : Number(raw));
+                                }}
+                                size="medium"
+                                sx={{ minWidth: 80, ...itemFieldSx }}
+                                inputProps={{ min: 1, max: 99999, maxLength: 5 }}
                             />
                             <TextField
                                 label="Duration"
@@ -712,7 +724,7 @@ const AddQuotation: React.FC = () => {
                                     handleItemChange(index, "duration", e.target.value)
                                 }
                                 size="small"
-                                sx={{ minWidth: 110 }}
+                                sx={{ minWidth: 110, ...itemFieldSx }}
                             >
                                 {durationOptions.map((option) => (
                                     <MenuItem key={option} value={option}>
@@ -723,18 +735,18 @@ const AddQuotation: React.FC = () => {
                             <TextField
                                 label="Unit Rate(Rs)"
                                 type="number"
-                                value={item.rate}
+                                value={item.rate === 0 ? "" : item.rate}
                                 onChange={(e) => handleItemChange(index, "rate", Number(e.target.value))}
                                 size="small"
-                                sx={{ minWidth: 100 }}
+                                sx={{ minWidth: 100, ...itemFieldSx }}
                                 inputProps={{ min: 1 }}
                             />
                             <TextField
                                 label="Amount"
-                                value={item.amount}
+                                value={item.amount === 0 ? "" : item.amount}
                                 size="small"
                                 InputProps={{ readOnly: true }}
-                                sx={{ minWidth: 120 }}
+                                sx={{ minWidth: 120, ...itemFieldSx }}
                             />
 
                             {/* Second Row */}
@@ -742,7 +754,7 @@ const AddQuotation: React.FC = () => {
                                 label="Tax Name"
                                 value={item.taxName}
                                 size="small"
-                                sx={{ minWidth: 80 }}
+                                sx={{ minWidth: 80, ...itemFieldSx }}
                                 InputProps={{ readOnly: true }}
                             />
 
@@ -751,7 +763,7 @@ const AddQuotation: React.FC = () => {
                                 type="number"
                                 value={item.taxRate}
                                 size="small"
-                                sx={{ minWidth: 100 }}
+                                sx={{ minWidth: 100, ...itemFieldSx }}
                                 InputProps={{ readOnly: true }}
                             />
 
@@ -760,7 +772,7 @@ const AddQuotation: React.FC = () => {
                                 value={item.taxAmount.toFixed(2)}
                                 size="small"
                                 InputProps={{ readOnly: true }}
-                                sx={{ minWidth: 100 }}
+                                sx={{ minWidth: 100, ...itemFieldSx }}
                             />
 
                             <TextField
@@ -768,7 +780,7 @@ const AddQuotation: React.FC = () => {
                                 value={item.incTaxAmount.toFixed(2)}
                                 size="small"
                                 InputProps={{ readOnly: true }}
-                                sx={{ minWidth: 160 }}
+                                sx={{ minWidth: 160, ...itemFieldSx }}
                             />
                             {/* </Box> */}
                         </Box>

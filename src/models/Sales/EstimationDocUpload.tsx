@@ -23,7 +23,12 @@ const EstimationDocUpload: React.FC = () => {
   const [error, setError] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const enquiryNo = searchParams.get("enquiryno")?.trim() || "";
-  const [enquiryType, setEnquiryType] = useState<"OFFSHORE" | "ONSITE">("OFFSHORE");
+  const enquiryTypeParam = searchParams.get("enquirytype")?.trim().toUpperCase() || "";
+  const lockedEnquiryType: "OFFSHORE" | "ONSITE" | null =
+    enquiryTypeParam === "OFFSHORE" || enquiryTypeParam === "ONSITE" ? enquiryTypeParam : null;
+  const [enquiryType, setEnquiryType] = useState<"OFFSHORE" | "ONSITE">(
+    lockedEnquiryType ?? "OFFSHORE"
+  );
   const [hours, setHours] = useState("");
 
   useEffect(() => {
@@ -31,6 +36,12 @@ const EstimationDocUpload: React.FC = () => {
       setError("Enquiry number is missing.");
     }
   }, [enquiryNo]);
+
+  useEffect(() => {
+    if (lockedEnquiryType) {
+      setEnquiryType(lockedEnquiryType);
+    }
+  }, [lockedEnquiryType]);
 
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -128,13 +139,25 @@ const EstimationDocUpload: React.FC = () => {
  return (
   <>
     <Box p={4}>
-      <Card elevation={4}>
+      <Card
+        elevation={4}
+        sx={{
+          borderRadius: 3,
+          border: "1px solid #557ec6",
+          boxShadow: "0 14px 30px rgba(24, 71, 153, 0.16)",
+          background: "linear-gradient(145deg, #f7fbff 0%, #e8f2ff 52%, #dbeaff 100%)",
+        }}
+      >
         <CardContent>
-          <Typography variant="h5" gutterBottom>
+          <Typography
+            variant="h5"
+            gutterBottom
+            sx={{ fontWeight: 700, color: "#0f4ea6", letterSpacing: "0.01em" }}
+          >
             Upload Estimation Document
           </Typography>
 
-          <Divider sx={{ mb: 3 }} />
+          <Divider sx={{ mb: 3, borderColor: "#d5e1f8" }} />
 
           <Box mb={3}>
             <FormLabel>Enquiry Type</FormLabel>
@@ -150,11 +173,13 @@ const EstimationDocUpload: React.FC = () => {
                 value="OFFSHORE"
                 control={<Radio />}
                 label="OFFSHORE"
+                disabled={lockedEnquiryType !== null && lockedEnquiryType !== "OFFSHORE"}
               />
               <FormControlLabel
                 value="ONSITE"
                 control={<Radio />}
                 label="ONSITE"
+                disabled={lockedEnquiryType !== null && lockedEnquiryType !== "ONSITE"}
               />
             </RadioGroup>
 

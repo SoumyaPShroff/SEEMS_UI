@@ -9,7 +9,7 @@ Route: `/Home/EnquiryStatus?enquiryno={enquiryNo}&fromStatus={status}` (register
 On mount, two independent calls run in parallel:
 
 - `loadEnquiry()` — `GET /api/Sales/EnquiryDetailsByEnquiryno/{enquiryno}` to read the enquiry's current `status`, `enquirytype`, `salesresponsibilityid`, `completeresponsibilityid`. The current status is excluded from the dropdown (see below); `status` itself starts blank so the user must explicitly pick a new one.
-- `checkQuoteExists()` — `GET /api/Sales/GetQuoteDetailsByEnqQuoteNoAsync/{enquiryno}` to check whether at least one quotation exists. If none, an error toast (`toastId: "quote-required"`, deduped) fires immediately and the **Submit** button stays disabled (`disabled={!hasQuote || checkingQuote}`) — a quote is a hard prerequisite for any status change.
+- `checkQuoteExists()` — `GET /api/Sales/QuotationDetailsByEnqQuote/{enquiryno}` to check whether at least one quotation exists. If none, an error toast (`toastId: "quote-required"`, deduped) fires immediately and the **Submit** button stays disabled (`disabled={!hasQuote || checkingQuote}`) — a quote is a hard prerequisite for any status change.
 
 ## Allowed status transitions (`buildStatusOptions`)
 
@@ -66,7 +66,7 @@ Any 2xx response (or any response with a body) is treated as success. On success
 | Method | Endpoint | Purpose |
 |---|---|---|
 | GET | `/api/Sales/EnquiryDetailsByEnquiryno/{enquiryno}` | Load current status, enquiry type, sales/complete responsibility IDs |
-| GET | `/api/Sales/GetQuoteDetailsByEnqQuoteNoAsync/{enquiryno}` | Check whether a quotation exists (gates Submit) |
+| GET | `/api/Sales/QuotationDetailsByEnqQuote/{enquiryno}` | Check whether a quotation exists (gates Submit) |
 | GET | `/api/Home/EmailId/{loginIds}` | Resolve login IDs → email addresses for To/CC lists |
 | PUT | `/api/Sales/UpdateEnquiryStatus` | Apply the status change (see below) |
 

@@ -682,16 +682,8 @@ const libWorkedAdjustmentRules: LibWorkedAdjustmentRule[] = [
   { field: "CAMVAOnExp", category: "Onsite Export", sourceColumns: ["VA"], targetColumn: "DFM" },
 ];
 
-// For an individual Library/CAM costcenter, their own worked-job values should be added
-// straight onto Library/DFM rather than moved out of other columns (see buildSummaryFromData).
-type DirectAddTarget = "Library" | "DFM" | null;
-
 // ✅ Compute summary grouped by main categories
-const buildSummaryFromData = (
-  data: BillingData[],
-  libWorkedJobs: LibWorkedJobsSummary[] = [],
-  directAddTarget: DirectAddTarget = null
-) => {
+const buildSummaryFromData = (data: BillingData[], libWorkedJobs: LibWorkedJobsSummary[] = []) => {
   const buckets: Record<string, TotalsRow> = {};
 
   data.forEach((r) => {
@@ -735,13 +727,7 @@ const buildSummaryFromData = (
         buckets[rule.category] = initTotalsRow();
       }
       console.log(`Adjustment Rule: ${rule.field}, Amount: ${amount}, Category: ${rule.category}`, "Current buckets:", buckets[rule.category]);
-
-      if (directAddTarget && rule.targetColumn === directAddTarget) {
-        // This costcenter's own team already owns this column; add on top instead of moving from other columns
-        buckets[rule.category][rule.targetColumn] += amount;
-      } else {
-        moveAmount(buckets[rule.category], rule.sourceColumns, rule.targetColumn, amount);
-      }
+      moveAmount(buckets[rule.category], rule.sourceColumns, rule.targetColumn, amount);
     });
   });
 
@@ -788,8 +774,7 @@ const RptBillingPlanner: React.FC = () => {
   const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [isSellingFunctional, setIsSellingFunctional] = useState(false);
-  const [hasCompleteRights, setHasCompleteRights] = useState(false);
-  const [teamDescription, setTeamDescription] = useState("");
+  const [, setHasCompleteRights] = useState(false);
   const hasAppliedFunctionalDefaultRef = useRef(false);
   const { startdate, enddate } = useMemo(() => {
     const start = `${year}-${String(month).padStart(2, "0")}-01`;
@@ -824,14 +809,12 @@ const RptBillingPlanner: React.FC = () => {
       try {
         const { data } = await axios.get(`${baseUrl}/api/Home/EmployeeDetails/${loginId}`);
         const employee = Array.isArray(data) ? data[0] : data;
-       console.log("employee", employee);
+       console.log("employee", employee);  
         const functional = String(employee?.functional ?? "").trim();
         setIsSellingFunctional(functional === "Selling");
-        setTeamDescription(String(employee?.teamdescription ?? "").trim());
       } catch (error) {
        console.error("Error loading employee functional details:", error);
         setIsSellingFunctional(false);
-        setTeamDescription("");
       }
     };
 
@@ -997,82 +980,34 @@ const RptBillingPlanner: React.FC = () => {
       // // ✅ Fetch Invoice Dictionary
       const invUrl = `${baseUrl}/api/Job/InvoiceDictionary/${startdate}/${enddate}`;
       const invPendingUrl = `${baseUrl}/api/Sales/PendingInvoices/${selectedManager.costcenter}`;
-     const omitCostCenter = hasCompleteRights && selectedManager.costcenter === "All";
-      const libWorkedParams = new URLSearchParams();
-      if (!omitCostCenter) libWorkedParams.set("costcenter", selectedManager.costcenter);
-      if (teamDescription) libWorkedParams.set("team", teamDescription);
-      const libWorkedQuery = libWorkedParams.toString();
-      const libWorkedUrl = `${baseUrl}/api/Job/BillSummaryofLibWorkedJobs/${startdate}/${enddate}${libWorkedQuery ? `?${libWorkedQuery}` : ""}`;
+      const libWorkedUrl = `${baseUrl}/api/Job/BillSummaryofLibWorkedJobs?startdate=${startdate}&enddate=${enddate}`;
       const billingPromise = fetchBillingData(startdate, enddate, selectedManager.costcenter);
-      
-    // const libWorkedUrl =  hasCompleteRights  ? `${baseUrl}/api/Job/BillSummaryofLibWorkedJobs/${startdate}/${enddate}`
-     //   : `${baseUrl}/api/Job/BillSummaryofLibWorkedJobs/${startdate}/${enddate}?costcenter=${selectedManager.costcenter}`;
-     // const billingPromise = fetchBillingData(startdate, enddate, selectedManager.costcenter);
       const invoicePromise = axios.get<InvoiceDictionaryItem[]>(invUrl);
       const pendingPromise = axios.get<BillingData[]>(invPendingUrl);
       const libWorkedPromise = axios.get<LibWorkedJobsSummary[]>(libWorkedUrl);
-      // to improve performance, fetch all report data in parallel.
-      // allSettled so one failing call (e.g. lib-worked-jobs) doesn't blank out the whole report
-      const [billingResult, invResult, pendingResult, libWorkedResult] = await Promise.allSettled([
+      // to improve performance, fetch all report data in parallel
+      const [billingRows, invResponse, pendingResponse, libWorkedResponse] = await Promise.all([
         billingPromise,
         invoicePromise,
         pendingPromise,
         libWorkedPromise
       ]);
 
-      console.log("[BillingPlanner] billing data (url: /api/Job/BillingPlanner) ->", billingResult);
-      console.log("[BillingPlanner] invoice dictionary (url:", invUrl, ") ->", invResult);
-      console.log("[BillingPlanner] pending invoices (url:", invPendingUrl, ") ->", pendingResult);
-      console.log("[BillingPlanner] library worked jobs summary (url:", libWorkedUrl, ") ->", libWorkedResult);
-
-      const failedCalls: string[] = [];
-
-      const extractRows = (label: string, result: PromiseSettledResult<unknown>): any[] => {
-        if (result.status === "rejected") {
-          console.error(`Error fetching ${label}:`, result.reason);
-          failedCalls.push(label);
-          return [];
-        }
-        const value: any = result.value;
-        const rows = Array.isArray(value) ? value : value?.data;
-        if (!Array.isArray(rows)) {
-          console.error(`Unexpected response shape for ${label}:`, value);
-          failedCalls.push(label);
-          return [];
-        }
-        return rows;
-      };
-
-      const billingRows: BillingData[] = extractRows("billing data", billingResult);
-      const invRows: InvoiceDictionaryItem[] = extractRows("invoice dictionary", invResult);
-      const pendingRows: BillingData[] = extractRows("pending invoices", pendingResult);
-      const libWorkedRows: LibWorkedJobsSummary[] = extractRows("library worked jobs summary", libWorkedResult);
-
       const invSet = new Set<string>();
-      invRows.forEach((row) => {
+      invResponse.data.forEach((row) => {
         const key = `${row.jobnumber}_${row.month}_${row.year}`;
         invSet.add(key);
       });
+
       setInvoiceDict(invSet);
 
-      setInvoicePendingData(pendingRows);
+      setInvoicePendingData(pendingResponse.data);
 
-      const pending = buildPendingSummary(pendingRows);
+      const pending = buildPendingSummary(pendingResponse.data);
       setPendingSummary(pending);
 
-      if (failedCalls.length > 0) {
-        toast.warning(`Some report data failed to load: ${failedCalls.join(", ")}.`);
-      }
-
-      const sourceRows = billingRows;
-      const directAddTarget: DirectAddTarget = hasCompleteRights
-        ? null
-        : teamDescription === "Library"
-        ? "Library"
-        : teamDescription === "CAM"
-        ? "DFM"
-        : null;
-      setSummary(buildSummaryFromData(sourceRows, libWorkedRows, directAddTarget));
+      const sourceRows = Array.isArray(billingRows) ? billingRows : [];
+      setSummary(buildSummaryFromData(sourceRows, libWorkedResponse.data ?? []));
 
       const wipSum = sourceRows.reduce(
         (acc, item) => acc + ((item as any).wipAmount || 0),
@@ -1093,7 +1028,7 @@ const RptBillingPlanner: React.FC = () => {
     } finally {
       setLoadingData(false); // hide spinner
     }
-  }, [buildPendingSummary, enddate, fetchBillingData, selectedManager, startdate, hasCompleteRights, teamDescription]);
+  }, [buildPendingSummary, enddate, fetchBillingData, selectedManager, startdate]);
 
 
   useEffect(() => {
