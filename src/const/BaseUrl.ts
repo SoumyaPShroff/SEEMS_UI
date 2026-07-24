@@ -45,7 +45,7 @@ const getDefaultApiBaseUrl = () => {
     return url;
   }
 
-  // Test server - not work,since local host and http, it considers above case only
+  // Test server 
   if (host === "10.60.2.141") {
     url = `http://${host}:7117`; // add port if needed
     console.log("API Base test URL:", url);
