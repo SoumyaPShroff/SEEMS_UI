@@ -532,9 +532,7 @@ const recalculateGrandTotal = (row: TotalsRow) => {
     row.GovtLayout +
     row.GovtAnalysis +
     row.Library +
-    row.DFM +
-    row.VA +
-    row.NPI;
+    row.DFM;
 };
 
 const aggregateTotals = (buckets: Record<string, TotalsRow>): TotalsRow => {

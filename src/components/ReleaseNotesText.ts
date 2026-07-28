@@ -6,13 +6,29 @@ export interface ReleaseNote {
 
 const ReleaseNotesText: ReleaseNote[] = [
   {
-    version: "v1.6.0",
-    date: "2026-07-01",
+    version: "v1.7.1",
+    date: "2026-07-28",
     changes: [
-      "Billing Planner - Library and CAM hrs added to their respective category worked on nonlib,noncam jobs.Accordingly deducted values from other respective categories.",
-      "Previous Billing Data Report -Multiple costcenter selection added for report generation",
+      "Billing Planner - Library and CAM hrs added to their respective category worked on nonlib,noncam jobs.Accordingly deducted values from other respective categories.Grantotals - VA and NPI skipped",
+      "Previous Billing Data Report - Multiple costcenter selection added for report generation",
     ],
   },
+   // {
+  //   version: "v1.7.0",
+  //   date: "2026-07-27",
+  //   changes: [
+  //     "Billing Planner - Library and CAM hrs added to their respective category worked on nonlib,noncam jobs.Accordingly deducted values from other respective categories.",
+  //     "Previous Billing Data Report - Multiple costcenter selection added for report generation",
+  //   ],
+  // },
+  // {
+  //   version: "v1.6.0",
+  //   date: "2026-07-01",
+  //   changes: [
+  //     "Billing Planner - Library and CAM hrs added to their respective category worked on nonlib,noncam jobs.Accordingly deducted values from other respective categories.",
+  //     "Previous Billing Data Report -Multiple costcenter selection added for report generation",
+  //   ],
+  // },
   // {
   //   version: "v1.5.0",
   //   date: "2026-06-10",
