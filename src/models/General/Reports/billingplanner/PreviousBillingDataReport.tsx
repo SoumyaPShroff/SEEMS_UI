@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { Box, Button } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
 import { toast } from "react-toastify";
 import CustomDataGrid2 from "../../../../components/resusablecontrols/CustomDataGrid2";
@@ -90,16 +90,20 @@ const PreviousBillingDataReport = () => {
     fetchData();
   }, [fetchData]);
 
+  const totalWipAmount = useMemo(
+    () =>
+      rows.reduce((sum, row) => {
+        const value = Number(row.wipamount ?? 0);
+        return sum + (Number.isFinite(value) ? value : 0);
+      }, 0),
+    [rows]
+  );
+
   const handleExport = useCallback(() => {
     if (rows.length === 0) {
       toast.warning("No data available to export", { position: "top-right" });
       return;
     }
-
-    const totalWipAmount = rows.reduce((sum, row) => {
-      const value = Number(row.wipamount ?? 0);
-      return sum + (Number.isFinite(value) ? value : 0);
-    }, 0);
 
     const exportRows = [
       ...rows,
@@ -125,10 +129,23 @@ const PreviousBillingDataReport = () => {
       })),
     });
     toast.success("Previous Billing Data exported", { position: "top-right" });
-  }, [columns, rows]);
+  }, [columns, rows, totalWipAmount]);
 
   return (
     <Box sx={{ padding: "20px", mt: "85px", ml: "10px" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-end",
+          mb: 1,
+          p: 1,
+          pr: 2,
+        }}
+      >
+        <Typography sx={{ fontWeight: 700, color: "#0f3f7f", fontSize: "0.9rem" }}>
+          Total WipAmount: {totalWipAmount.toFixed(2)}
+        </Typography>
+      </Box>
       <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
         <Button variant="contained" size="small" onClick={fetchData}>
           Load Data

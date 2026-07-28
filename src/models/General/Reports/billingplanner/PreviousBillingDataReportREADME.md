@@ -22,9 +22,13 @@ Same `billingplanner` access key as `RptBillingPlanner.tsx`/its sibling report s
 
 Job Number, Hourly Rate, Bil PrevDay Hrs (`bilPrevDayHrs`), WipAmount, Costcenter, Name, Working Day (`considered_working_day`). Rendered via the shared `CustomDataGrid2`.
 
+## Total WipAmount
+
+`totalWipAmount` is derived via `useMemo` by summing `wipamount` across all `rows` (non-finite values coerced to 0). It's displayed unformatted, right-aligned, above the grid ("Total WipAmount: {value}"), and reused (rather than recomputed) in the Excel export's synthetic total row.
+
 ## Export
 
-`handleExport` builds an Excel export via `exporttoexcel`: it appends a synthetic "Total" row summing `wipamount` across all rows (non-finite values coerced to 0), then exports all current grid columns. Does nothing but a warning toast if `rows` is empty.
+`handleExport` builds an Excel export via `exporttoexcel`: it appends a synthetic "Total" row using `totalWipAmount` for `wipamount`, then exports all current grid columns. Does nothing but a warning toast if `rows` is empty.
 
 ## API endpoints used
 
