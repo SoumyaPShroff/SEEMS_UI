@@ -41,6 +41,7 @@ import PurchaseOrder from './models/Sales/PurchaseOrder';
 import JobCreationForm from './models/Sales/JobCreationForm';
 import ViewAllJobs from './models/Sales/ViewAllJobs';
 import TransferJob from './models/Sales/TransferJob';
+import AddScopeRevisionJob from './models/Sales/AddScopeRevisionJob';
 import OrderInvoiceRegister from './models/Sales/OrderInvoiceRegister';
 
 const App: React.FC = () => {
@@ -105,6 +106,7 @@ const App: React.FC = () => {
           <Route path="JobCreationForm" element={<JobCreationForm />} />
           <Route path="ViewAllJobs" element={<ViewAllJobs />} />
           <Route path="TransferJob" element={<TransferJob />} />
+          <Route path="AddScopeRevisionJob" element={<AddScopeRevisionJob />} />
           <Route path="OrderInvoiceRegister" element={<OrderInvoiceRegister />} />
           
         </Route>

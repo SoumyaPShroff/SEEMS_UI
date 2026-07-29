@@ -3,6 +3,7 @@ import "./styles/JobCreationForm.css";
 import axios from "axios";
 import { Box, Grid, Card, CardContent, Typography, Button as MuiButton,  Divider, Paper, Chip} from "@mui/material";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import SelectControl from "../../components/resusablecontrols/SelectControl";
 import TextControl from "../../components/resusablecontrols/TextControl";
 import Button from "../../components/resusablecontrols/Button";
@@ -35,6 +36,7 @@ interface PODetails {
 }
 
 const JobCreationForm: React.FC = () => {
+  const navigate = useNavigate();
   const lastErrorRef = useRef<string | null>(null);
 
   const [formState, setFormState] = useState<FormState>({
@@ -347,19 +349,36 @@ const JobCreationForm: React.FC = () => {
       >
         {/* Header Section */}
         <Box sx={{ mb: 3 }}>
-          <Typography
-            variant="h4"
+          <Box
             sx={{
-              fontWeight: 700,
-              color: "#0f4ea6",
-              mb: 0.5,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+              gap: 2,
             }}
           >
-            Create New Project Job
-          </Typography>
-          <Typography color="text.secondary" sx={{ mb: 2 }}>
-            Select billing type, enquiry, and PO details to create a new project job
-          </Typography>
+            <Box>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 700,
+                  color: "#0f4ea6",
+                  mb: 0.5,
+                }}
+              >
+                Create New Project Job
+              </Typography>
+              <Typography color="text.secondary" sx={{ mb: 2 }}>
+                Select billing type, enquiry, and PO details to create a new project job
+              </Typography>
+            </Box>
+            <Button
+              label="Add New Scope and Revision Job"
+              onClick={() => navigate("/Home/AddScopeRevisionJob")}
+              variant="outlined"
+            />
+          </Box>
           <Chip
             label={`Billing Type: ${formState.billingType === 'Fixed-Cost' ? 'Fixed-Cost' : 'Time & Material'}`}
             color={formState.billingType === 'Fixed-Cost' ? 'primary' : 'info'}
