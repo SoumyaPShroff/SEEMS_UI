@@ -41,7 +41,7 @@ import PurchaseOrder from './models/Sales/PurchaseOrder';
 import JobCreationForm from './models/Sales/JobCreationForm';
 import ViewAllJobs from './models/Sales/ViewAllJobs';
 import TransferJob from './models/Sales/TransferJob';
-import AddScopeRevisionJob from './models/Sales/AddScopeRevisionJob';
+import AddScopeRevisionJob from './models/Sales/AddNewScopeRevisionJob';
 import OrderInvoiceRegister from './models/Sales/OrderInvoiceRegister';
 
 const App: React.FC = () => {

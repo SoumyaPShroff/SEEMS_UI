@@ -189,7 +189,7 @@ const AddScopeRevisionJob = () => {
 
     setSaving(true);
     try {
-      const res = await axios.post(`${baseUrl}/api/Sales/AddScopeRevisionJob`, {
+      const res = await axios.post(`${baseUrl}/api/Sales/AddNewScopeRevisionJob`, {
         sourceJobNumber: selectedJobNumber,
         newJobNumber: newJobNumber.trim(),
         sessionLoginName: loginUserName,
