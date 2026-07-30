@@ -204,6 +204,20 @@ const ViewAllJobs = () => {
           >
             Create Job
           </Button>
+          <Button
+            variant="outlined"
+            onClick={() => navigate("/Home/AllocatePOtoJob")}
+            sx={{
+              textTransform: "none",
+              fontWeight: 700,
+              borderRadius: 1.5,
+              px: 1.5,
+              py: 0.5,
+              height: 32,
+            }}
+          >
+            Allocate PO to Job
+          </Button>
           </Box>
         </Box>
       </Paper>
