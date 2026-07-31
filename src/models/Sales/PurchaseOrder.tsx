@@ -11,6 +11,7 @@ import { useForm } from "react-hook-form";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { baseUrl } from "../../const/BaseUrl";
+import { useRoleAccess } from "../../utils/useRoleAccess";
 
 interface PurchaseOrderData {
   id?: number | string;
@@ -62,6 +63,9 @@ const PurchaseOrder: React.FC = () => {
   const [pendingDeleteId, setPendingDeleteId] = useState<number | string | null>(null);
   const [loading, setLoading] = useState(false);
   //const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  const loginId = sessionStorage.getItem("SessionUserID") || "guest";
+  const { hasAccess: isAdminUser } = useRoleAccess(loginId, "adminuser");
 
   const loadData = async () => {
     setLoading(true);
@@ -163,9 +167,11 @@ const PurchaseOrder: React.FC = () => {
           <IconButton color="primary" onClick={() => handleEdit(params.row)}>
             <EditIcon fontSize="small" />
           </IconButton>
-          <IconButton color="error" onClick={() => params.row.id && openDeleteDialog(params.row.id)}>
-            <DeleteIcon fontSize="small" />
-          </IconButton>
+          {isAdminUser && (
+            <IconButton color="error" onClick={() => params.row.id && openDeleteDialog(params.row.id)}>
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          )}
         </Box>
       )
     }
