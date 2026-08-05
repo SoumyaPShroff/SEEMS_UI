@@ -85,6 +85,7 @@ const selectedOption =
        // options={options}
        options={options || []}
         getOptionLabel={(opt) => opt.label?.toString() ?? ""}
+        getOptionKey={(opt) => opt.value}
         isOptionEqualToValue={(option, val) => option.value === val.value}
         disablePortal={disablePortal}
         disabled={disabled}

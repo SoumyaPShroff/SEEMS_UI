@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Box,  Button, IconButton,  Dialog,  DialogTitle,  DialogContent,  DialogActions,
-  Grid,  TextField,  Typography,  Paper} from "@mui/material";
+  Grid,  TextField,  Typography,  Paper,  Checkbox,  FormControlLabel} from "@mui/material";
 import {   type GridColDef, type GridRenderCellParams } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -8,7 +8,7 @@ import axios from "axios";
 import SelectControl from "../../components/resusablecontrols/SelectControl";
 import CustomDataGrid2 from "../../components/resusablecontrols/CustomDataGrid2";
 import { useForm } from "react-hook-form";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { baseUrl } from "../../const/BaseUrl";
 import { useRoleAccess } from "../../utils/useRoleAccess";
@@ -40,6 +40,7 @@ interface PurchaseOrderData {
   pcomments?: string;
   pcreatedby?: string;
   pupdatedby?: string;
+  sez?: string;
 
   onsite?: string | number;
   onsiteQty?: string | number;
@@ -234,7 +235,6 @@ const PurchaseOrder: React.FC = () => {
         onSave={() => { setOpen(false); loadData(); }}
         onClose={() => setOpen(false)}
       />
-      <ToastContainer />
     </Box>
   );
 };
@@ -259,8 +259,48 @@ interface ScopeConfig {
   isOnsite: boolean;
 }
 
+const MAX_QTY_DIGITS = 6;
+const MAX_QTY_VALUE = 999999;
+
+// Strips negative signs/exponent notation and caps the integer part to MAX_QTY_DIGITS digits
+const sanitizeQtyInput = (raw: string): string => {
+  let value = raw.replace(/[^0-9.]/g, ""); // drop "-", "+", "e"/"E" and any other non-numeric chars
+
+  const firstDot = value.indexOf(".");
+  if (firstDot !== -1) {
+    value = value.slice(0, firstDot + 1) + value.slice(firstDot + 1).replace(/\./g, "");
+  }
+
+  const [intPart, decPart] = value.split(".");
+  const trimmedInt = intPart.slice(0, MAX_QTY_DIGITS);
+  return decPart !== undefined ? `${trimmedInt}.${decPart}` : trimmedInt;
+};
+
+// Blocks the "-", "+", "e"/"E" keystrokes that native <input type="number"> would otherwise accept
+const blockNegativeAndExponentKeys = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (["-", "+", "e", "E"].includes(e.key)) {
+    e.preventDefault();
+  }
+};
+
 const PoModal: React.FC<PoModalProps> = ({ open, po, onSave, onClose, existingPos }) => {
   const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<PurchaseOrderData>();
+
+  // Wraps register() for Qty fields: enforces non-negative, max-6-digit values live as the user types
+  const registerQty = (name: "layQty" | "analyQty" | "vaQty" | "npiQty" | "dfmQty" | "libQty") => {
+    const field = register(name, {
+      valueAsNumber: true,
+      min: { value: 0, message: "Qty cannot be negative" },
+      max: { value: MAX_QTY_VALUE, message: `Qty cannot exceed ${MAX_QTY_DIGITS} digits` },
+    });
+    return {
+      ...field,
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+        e.target.value = sanitizeQtyInput(e.target.value);
+        return field.onChange(e);
+      },
+    };
+  };
 
   // Watch specific fields for calculation - Defined at the top to avoid TDZ ReferenceError
   const layQty = Number(watch("layQty") || 0);
@@ -541,6 +581,8 @@ useEffect(() => {
 
   ppoamount: Number(po.ppoamount || 0),
   pbalanceamt: Number(po.pbalanceamt || 0),
+
+  sez: po.sez === "YES" ? "YES" : "NO",
 };
 
 reset(mappedData);
@@ -565,7 +607,8 @@ setValue("penquiryno", po.penquiryno || "");
           vaQty: 0, vaRateperhr: 0, npiQty: 0, npiRateperhr: 0,
           dfmQty: 0, dfmRateperhr: 0, libQty: 0, libRateperhr: 0,
           ppoamount: 0, pbalanceamt: 0, pcurrency_id: 1, pconvrate: 0,
-          ppaymentterm: "", podate: new Date().toISOString().split("T")[0], pcomments: ""
+          ppaymentterm: "", podate: new Date().toISOString().split("T")[0], pcomments: "",
+          sez: "NO"
         });
         setScopeLoaded(true);
       }
@@ -691,6 +734,7 @@ if (!po) {
       }
 
       // Ensure fields are strings in the payload to satisfy strict backend JSON parsing
+      finalPayload.sez = data.sez === "YES" ? "YES" : "NO";
       finalPayload.ppoamount = String(data.ppoamount || 0);
       finalPayload.pbalanceamt = String(data.pbalanceamt || 0);
       finalPayload.layQty = String(data.layQty || 0);
@@ -749,7 +793,6 @@ if (!po) {
     } catch (err: any) { // Catch the error as 'any' to access response data
       console.error("Save error:", err);
       console.error(err.response?.data?.message || JSON.stringify(err.response?.data));
-     // toast.error( err.response?.data?.message || JSON.stringify(err.response?.data) || "Error saving Purchase Order"
       toast.error( err.response?.data?.message || "Error saving Purchase Order");
     } finally {
       setSaving(false);
@@ -885,8 +928,26 @@ if (!po) {
               />
               {errors.ppaymentterm && <Typography variant="caption" color="error" sx={{ fontWeight: "bold" }}>{errors.ppaymentterm.message}</Typography>}
             </Grid>
-            <Grid size={{ xs: 12, sm: 8 }}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField {...register("pcomments")} label="Comments" fullWidth size="small" InputLabelProps={{ shrink: true }} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 2 }} sx={{ display: "flex", alignItems: "center" }}>
+              <FormControlLabel
+                sx={{
+                  m: 0,
+                  height: 40,
+                  "& .MuiFormControlLabel-label": { fontSize: "0.75rem" },
+                }}
+                control={
+                  <Checkbox
+                    size="small"
+                    sx={{ p: 0.5, "& .MuiSvgIcon-root": { fontSize: "1.1rem" } }}
+                    checked={watch("sez") === "YES"}
+                    onChange={(e) => setValue("sez", e.target.checked ? "YES" : "NO", { shouldValidate: true })}
+                  />
+                }
+                label="SEZ"
+              />
             </Grid>
             <Grid size={12}>
   <Grid container spacing={2}>
@@ -933,7 +994,7 @@ if (!po) {
         </Typography>
       </Paper>
     </Grid>
- 
+
   </Grid>
 </Grid>
 {/* <Grid size={12}>
@@ -955,32 +1016,32 @@ if (!po) {
                 <Grid container spacing={2} alignItems="center">
                   {/* Layout */}
                   <Grid size={4}><Typography variant="body2">Layout</Typography></Grid>
-                  <Grid size={4}><TextField {...register("layQty", { valueAsNumber: true })} disabled={!scopeConfig.layout} type="number" inputProps={{ step: "any" }} label="Qty" fullWidth size="small" /></Grid>
+                  <Grid size={4}><TextField {...registerQty("layQty")} onKeyDown={blockNegativeAndExponentKeys} disabled={!scopeConfig.layout} type="number" inputProps={{ step: "any", min: 0, maxLength: MAX_QTY_DIGITS }} label="Qty" fullWidth size="small" /></Grid>
                   <Grid size={4}><TextField {...register("layRateperhr", { valueAsNumber: true })} disabled={!scopeConfig.layout} type="number" inputProps={{ step: "any" }} label="Rate" fullWidth size="small" /></Grid>
 
                   {/* Analysis */}
                   <Grid size={4}><Typography variant="body2">Analysis</Typography></Grid>
-                  <Grid size={4}><TextField {...register("analyQty", { valueAsNumber: true })} disabled={!scopeConfig.analysis} type="number" inputProps={{ step: "any" }} label="Qty" fullWidth size="small" /></Grid>
+                  <Grid size={4}><TextField {...registerQty("analyQty")} onKeyDown={blockNegativeAndExponentKeys} disabled={!scopeConfig.analysis} type="number" inputProps={{ step: "any", min: 0, maxLength: MAX_QTY_DIGITS }} label="Qty" fullWidth size="small" /></Grid>
                   <Grid size={4}><TextField {...register("analyRateperhr", { valueAsNumber: true })} disabled={!scopeConfig.analysis} type="number" inputProps={{ step: "any" }} label="Rate" fullWidth size="small" /></Grid>
 
                   {/* VA */}
                   <Grid size={4}><Typography variant="body2">VA</Typography></Grid>
-                  <Grid size={4}><TextField {...register("vaQty", { valueAsNumber: true })} disabled={!scopeConfig.va} type="number" inputProps={{ step: "any" }} label="Qty" fullWidth size="small" /></Grid>
+                  <Grid size={4}><TextField {...registerQty("vaQty")} onKeyDown={blockNegativeAndExponentKeys} disabled={!scopeConfig.va} type="number" inputProps={{ step: "any", min: 0, maxLength: MAX_QTY_DIGITS }} label="Qty" fullWidth size="small" /></Grid>
                   <Grid size={4}><TextField {...register("vaRateperhr", { valueAsNumber: true })} disabled={!scopeConfig.va} type="number" inputProps={{ step: "any" }} label="Rate" fullWidth size="small" /></Grid>
 
                   {/* NPI */}
                   <Grid size={4}><Typography variant="body2">NPI</Typography></Grid>
-                  <Grid size={4}><TextField {...register("npiQty", { valueAsNumber: true })} disabled={!scopeConfig.npi} type="number" inputProps={{ step: "any" }} label="Qty" fullWidth size="small" /></Grid>
+                  <Grid size={4}><TextField {...registerQty("npiQty")} onKeyDown={blockNegativeAndExponentKeys} disabled={!scopeConfig.npi} type="number" inputProps={{ step: "any", min: 0, maxLength: MAX_QTY_DIGITS }} label="Qty" fullWidth size="small" /></Grid>
                   <Grid size={4}><TextField {...register("npiRateperhr", { valueAsNumber: true })} disabled={!scopeConfig.npi} type="number" inputProps={{ step: "any" }} label="Rate" fullWidth size="small" /></Grid>
 
                   {/* DFM */}
                   <Grid size={4}><Typography variant="body2">DFM</Typography></Grid>
-                  <Grid size={4}><TextField {...register("dfmQty", { valueAsNumber: true })} disabled={!scopeConfig.dfm} type="number" inputProps={{ step: "any" }} label="Qty" fullWidth size="small" /></Grid>
+                  <Grid size={4}><TextField {...registerQty("dfmQty")} onKeyDown={blockNegativeAndExponentKeys} disabled={!scopeConfig.dfm} type="number" inputProps={{ step: "any", min: 0, maxLength: MAX_QTY_DIGITS }} label="Qty" fullWidth size="small" /></Grid>
                   <Grid size={4}><TextField {...register("dfmRateperhr", { valueAsNumber: true })} disabled={!scopeConfig.dfm} type="number" inputProps={{ step: "any" }} label="Rate" fullWidth size="small" /></Grid>
 
                   {/* Library */}
                   <Grid size={4}><Typography variant="body2">Library</Typography></Grid>
-                  <Grid size={4}><TextField {...register("libQty", { valueAsNumber: true })} disabled={!scopeConfig.library} type="number" inputProps={{ step: "any" }} label="Qty" fullWidth size="small" /></Grid>
+                  <Grid size={4}><TextField {...registerQty("libQty")} onKeyDown={blockNegativeAndExponentKeys} disabled={!scopeConfig.library} type="number" inputProps={{ step: "any", min: 0, maxLength: MAX_QTY_DIGITS }} label="Qty" fullWidth size="small" /></Grid>
                   <Grid size={4}><TextField {...register("libRateperhr", { valueAsNumber: true })} disabled={!scopeConfig.library} type="number" inputProps={{ step: "any" }} label="Rate" fullWidth size="small" /></Grid>
                 </Grid>
               </Box>

@@ -81,6 +81,7 @@ const AddEditPOtoJob = () => {
   const [selectedPoNumber, setSelectedPoNumber] = useState("");
   const [details, setDetails] = useState<AllocationDetails | null>(null);
   const [loadingPoOptions, setLoadingPoOptions] = useState(false);
+  const [useAllPoOptions, setUseAllPoOptions] = useState(false);
   const [loadingDetails, setLoadingDetails] = useState(false);
 
   // ---- Edit mode state ----
@@ -154,6 +155,7 @@ const AddEditPOtoJob = () => {
     setSelectedPoNumber("");
     setPoOptions([]);
     setDetails(null);
+    setUseAllPoOptions(false);
     resetSharedFields();
   };
 
@@ -207,6 +209,7 @@ const AddEditPOtoJob = () => {
     setSelectedPoNumber("");
     setDetails(null);
     setPoOptions([]);
+    setUseAllPoOptions(false);
     resetSharedFields();
 
     if (!jobNumber) return;
@@ -229,6 +232,43 @@ const AddEditPOtoJob = () => {
     }
   };
 
+  // Overrides the job-filtered PO list with every PO in the system, newest podate first
+  const handleSelectDifferentPo = async () => {
+    setSelectedPoNumber("");
+    setDetails(null);
+    resetSharedFields();
+
+    setLoadingPoOptions(true);
+    try {
+      // Cache-bust: a GET to this URL may have previously 404'd through to the SPA's
+      // index.html fallback (e.g. before this endpoint existed on the backend), and
+      // browsers can heuristically cache that static-file response against this exact
+      // URL. The timestamp param plus no-cache headers force a real network hit.
+      const res = await axios.get(`${baseUrl}/api/Job/AllPONumbers`, {
+        params: { _: Date.now() },
+        headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
+      });
+      // const res = await axios.get(`${baseUrl}/api/Job/AllPONumbers`); // this is not working
+      if (!Array.isArray(res.data)) {
+        console.error("Unexpected /api/Job/AllPONumbers response (not an array):", res.data);
+        toast.error("Unexpected response while loading the full PO list. The backend may need to be restarted.");
+        return;
+      }
+      setPoOptions(
+        res.data.map((p: any) => ({
+          value: p.poNumber,
+          label: `${p.poNumber} ---- ${p.balanceAmount} (${p.enquiryNo})`,
+        }))
+      );
+      setUseAllPoOptions(true);
+    } catch (error) {
+      console.error("Failed to load all PO numbers:", error);
+      toast.error("Unable to load the full PO list.");
+    } finally {
+      setLoadingPoOptions(false);
+    }
+  };
+
   const handlePoChange = async (e: any) => {
     const poNumber = e.target.value;
     setSelectedPoNumber(poNumber);
@@ -239,8 +279,13 @@ const AddEditPOtoJob = () => {
 
     setLoadingDetails(true);
     try {
+      // jobNumber is passed so the backend can pick the correct scope-specific rate column
+      // (e.g. _DFX/_Analysis/_NPI) and billing type for this job. It no longer restricts which
+      // PO the balance/hours are computed from - the server scopes that by PO number alone - so
+      // this stays safe even for a PO picked via "select a different PO" outside the job's enquiry.
       const res = await axios.get(
-        `${baseUrl}/api/Job/POJobAllocationDetails/${encodeURIComponent(selectedJobNumber)}/${encodeURIComponent(poNumber)}`
+        `${baseUrl}/api/Job/POJobAllocationDetails/${encodeURIComponent(poNumber)}`,
+        { params: { jobNumber: selectedJobNumber } }
       );
       setDetails(res.data);
     } catch (error) {
@@ -300,7 +345,7 @@ const AddEditPOtoJob = () => {
       }));
 
       setLastLoadedRows(rows);
-      setAllocationOptions(rows.map((r) => ({ value: r.sno, label: `${r.poNumber} (Allocation #${r.sno})` })));
+      setAllocationOptions(rows.map((r) => ({ value: r.sno, label: `${r.poNumber} (sino #${r.sno})` })));
 
       if (rows.length === 1) {
         await selectAllocation(rows[0]);
@@ -324,10 +369,12 @@ const AddEditPOtoJob = () => {
     setComments(row.comments || "");
 
     // Fetch fresh total/allocated hours for this PO so the live balance preview matches
-    // exactly what the server will recompute on save.
+    // exactly what the server will recompute on save. Edit mode passes both params since the
+    // allocation's job is already known and confirmed (unlike Add mode's "any PO" picker).
     try {
       const res = await axios.get(
-        `${baseUrl}/api/Job/POJobAllocationDetails/${encodeURIComponent(row.jobNumber)}/${encodeURIComponent(row.poNumber)}`
+        `${baseUrl}/api/Job/POJobAllocationDetails/${encodeURIComponent(row.poNumber)}`,
+        { params: { jobNumber: row.jobNumber } }
       );
       const d: AllocationDetails = res.data;
       const otherAllocated = d.alreadyAllocatedHours - (row.allocatedHours ?? 0);
@@ -386,6 +433,10 @@ const AddEditPOtoJob = () => {
           sessionLoginId: loginId,
         });
         toast.success(res.data?.message || "PO allocated to job successfully.");
+        // navigate() to this same route doesn't remount the component, so stale Add-mode
+        // selections/dropdown data would otherwise linger. Reload after the toast to let it show.
+        setTimeout(() => window.location.reload(), 800);
+        return;
       } else {
         if (!selectedSno) {
           toast.error("Please select which allocation to edit.");
@@ -404,8 +455,11 @@ const AddEditPOtoJob = () => {
           sessionLoginId: loginId,
         });
         toast.success(res.data?.message || "PO allocation updated successfully.");
+        // navigate() to this same route doesn't remount the component, so stale Edit-mode
+        // selections/dropdown data would otherwise linger. Reload after the toast to let it show.
+        setTimeout(() => window.location.reload(), 800);
+        return;
       }
-      navigate("/Home/ViewAllJobs");
     } catch (error) {
       console.error("Failed to save PO-to-job allocation:", error);
       const message =
@@ -422,6 +476,11 @@ const AddEditPOtoJob = () => {
 
   const currentBillingType = actionType === "Add" ? details?.billingType : selectedAllocation?.billingType;
   const currentBalance = actionType === "Add" ? addModeBalance : editModeBalance;
+  const rateMismatch =
+    actionType === "Edit" &&
+    selectedAllocation?.ratePerHour != null &&
+    details?.ratePerHour != null &&
+    selectedAllocation.ratePerHour !== details.ratePerHour;
   const showDetailsCard = actionType === "Add" ? !!details : !!selectedAllocation;
   const canEditFields = actionType === "Add" ? !!selectedPoNumber : !!selectedSno;
 
@@ -531,8 +590,25 @@ const AddEditPOtoJob = () => {
                     fontSize="0.85rem"
                     labelFontWeight={600}
                     shrinkLabel={false}
-                    disabled={!selectedJobNumber || loadingPoOptions}
+                    disabled={(!selectedJobNumber && !useAllPoOptions) || loadingPoOptions}
                   />
+                  <Typography
+                    component="span"
+                    onClick={() => {
+                      if (!loadingPoOptions) void handleSelectDifferentPo();
+                    }}
+                    sx={{
+                      display: "inline-block",
+                      mt: 0.4,
+                      fontSize: 11,
+                      color: loadingPoOptions ? "#9aa7ba" : "#0f4ea6",
+                      textDecoration: "underline",
+                      cursor: loadingPoOptions ? "default" : "pointer",
+                      pointerEvents: loadingPoOptions ? "none" : "auto",
+                    }}
+                  >
+                    Click to select different PO
+                  </Typography>
                 </Box>
               </Box>
             ) : (
@@ -561,10 +637,10 @@ const AddEditPOtoJob = () => {
                     shrinkLabel={false}
                   />
                 </Box>
-                {allocationOptions.length > 1 && (
+                {allocationOptions.length > 0 && (
                   <Box>
                     <Typography sx={fieldLabelStyle}>
-                      Allocation <span style={{ color: "#d32f2f" }}>*</span>
+                      Allocated POs <span style={{ color: "#d32f2f" }}>*</span>
                     </Typography>
                     <SelectControl
                       name="allocation"
@@ -599,6 +675,14 @@ const AddEditPOtoJob = () => {
                 <Typography color="text.secondary" sx={{ fontSize: "0.85rem" }}>Loading PO details...</Typography>
               ) : (
                 <>
+                  {rateMismatch && (
+                    <Box sx={{ background: "#fdecea", border: "1px solid #f5c6cb", borderRadius: 2, p: 0.75, mb: 1 }}>
+                      <Typography sx={{ fontSize: 12, fontWeight: 600, color: "#a13a2f" }}>
+                        This PO's actual rate/hour has changed since it was allocated. Click Save to re-update the
+                        allocated rate for this PO-to-job entry.
+                      </Typography>
+                    </Box>
+                  )}
                   <Box
                     sx={{
                       display: "grid",
@@ -642,8 +726,14 @@ const AddEditPOtoJob = () => {
                           <Typography sx={readOnlyValueStyle}>{selectedAllocation.poNumber}</Typography>
                         </Box>
                         <Box>
-                          <Typography sx={readOnlyLabelStyle}>Rate / Hour</Typography>
+                          <Typography sx={readOnlyLabelStyle}>Rate / Hour (Allocated)</Typography>
                           <Typography sx={readOnlyValueStyle}>{selectedAllocation.ratePerHour ?? "-"}</Typography>
+                        </Box>
+                        <Box>
+                          <Typography sx={readOnlyLabelStyle}>Rate / Hour (Actual - PO)</Typography>
+                          <Typography sx={{ ...readOnlyValueStyle, color: rateMismatch ? "#d32f2f" : undefined }}>
+                            {details?.ratePerHour ?? "-"}
+                          </Typography>
                         </Box>
                         <Box>
                           <Typography sx={readOnlyLabelStyle}>PO Amount</Typography>
@@ -668,7 +758,12 @@ const AddEditPOtoJob = () => {
                       </>
                     )}
                     <Box sx={{ background: "#f0f4ff", borderRadius: 2, p: 0.75 }}>
-                      <Typography sx={readOnlyLabelStyle}>Balance PO Hrs</Typography>
+                      <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.5 }}>
+                        <Typography sx={readOnlyLabelStyle}>Balance PO Hrs</Typography>
+                        <Typography sx={{ fontSize: 10, color: "#6b7c93", fontStyle: "italic" }}>
+                          (Total PO Qty − Total Allocated Hrs)
+                        </Typography>
+                      </Box>
                       <Typography sx={{ ...readOnlyValueStyle, color: "#2e7d32" }}>
                         {currentBalance != null ? currentBalance.toFixed(2) : "-"}
                       </Typography>
