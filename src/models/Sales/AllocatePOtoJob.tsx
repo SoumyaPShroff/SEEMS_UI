@@ -178,7 +178,7 @@ const AddEditPOtoJob = () => {
   useEffect(() => {
     const loadOpenJobs = async () => {
       try {
-        const res = await axios.get(`${baseUrl}/api/Job/OpenJobNumbers`);
+        const res = await axios.get(`${baseUrl}/api/Sales/OpenJobNumbers`);
         const rows = Array.isArray(res.data) ? res.data : [];
         setOpenJobOptions(rows.map((j: any) => ({ value: j.number, label: j.number })));
       } catch (error) {
@@ -189,7 +189,7 @@ const AddEditPOtoJob = () => {
 
     const loadAllocJobs = async () => {
       try {
-        const res = await axios.get(`${baseUrl}/api/Job/JobNumbersWithAllocations`);
+        const res = await axios.get(`${baseUrl}/api/Sales/JobNumbersWithAllocations`);
         const rows = Array.isArray(res.data) ? res.data : [];
         setAllocJobOptions(rows.map((j: any) => ({ value: j.number, label: j.number })));
       } catch (error) {
@@ -216,7 +216,7 @@ const AddEditPOtoJob = () => {
 
     setLoadingPoOptions(true);
     try {
-      const res = await axios.get(`${baseUrl}/api/Job/AllocatablePONumbers/${encodeURIComponent(jobNumber)}`);
+      const res = await axios.get(`${baseUrl}/api/Sales/AllocatablePONumbers/${encodeURIComponent(jobNumber)}`);
       const rows = Array.isArray(res.data) ? res.data : [];
       setPoOptions(
         rows.map((p: any) => ({
@@ -244,13 +244,13 @@ const AddEditPOtoJob = () => {
       // index.html fallback (e.g. before this endpoint existed on the backend), and
       // browsers can heuristically cache that static-file response against this exact
       // URL. The timestamp param plus no-cache headers force a real network hit.
-      const res = await axios.get(`${baseUrl}/api/Job/AllPONumbers`, {
+      const res = await axios.get(`${baseUrl}/api/Sales/AllPONumbers`, {
         params: { _: Date.now() },
         headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
       });
-      // const res = await axios.get(`${baseUrl}/api/Job/AllPONumbers`); // this is not working
+      // const res = await axios.get(`${baseUrl}/api/Sales/AllPONumbers`); // this is not working
       if (!Array.isArray(res.data)) {
-        console.error("Unexpected /api/Job/AllPONumbers response (not an array):", res.data);
+        console.error("Unexpected /api/Sales/AllPONumbers response (not an array):", res.data);
         toast.error("Unexpected response while loading the full PO list. The backend may need to be restarted.");
         return;
       }
@@ -284,7 +284,7 @@ const AddEditPOtoJob = () => {
       // PO the balance/hours are computed from - the server scopes that by PO number alone - so
       // this stays safe even for a PO picked via "select a different PO" outside the job's enquiry.
       const res = await axios.get(
-        `${baseUrl}/api/Job/POJobAllocationDetails/${encodeURIComponent(poNumber)}`,
+        `${baseUrl}/api/Sales/POJobAllocationDetails/${encodeURIComponent(poNumber)}`,
         { params: { jobNumber: selectedJobNumber } }
       );
       setDetails(res.data);
@@ -323,7 +323,7 @@ const AddEditPOtoJob = () => {
 
     setLoadingAllocations(true);
     try {
-      const res = await axios.get(`${baseUrl}/api/Job/AllocationsByJob/${encodeURIComponent(jobNumber)}`);
+      const res = await axios.get(`${baseUrl}/api/Sales/AllocationsByJob/${encodeURIComponent(jobNumber)}`);
       const rows: AllocationRow[] = (Array.isArray(res.data) ? res.data : []).map((r: any) => ({
         sno: r.sno,
         jobNumber: r.jobNumber,
@@ -373,7 +373,7 @@ const AddEditPOtoJob = () => {
     // allocation's job is already known and confirmed (unlike Add mode's "any PO" picker).
     try {
       const res = await axios.get(
-        `${baseUrl}/api/Job/POJobAllocationDetails/${encodeURIComponent(row.poNumber)}`,
+        `${baseUrl}/api/Sales/POJobAllocationDetails/${encodeURIComponent(row.poNumber)}`,
         { params: { jobNumber: row.jobNumber } }
       );
       const d: AllocationDetails = res.data;
@@ -419,7 +419,7 @@ const AddEditPOtoJob = () => {
           setSaving(false);
           return;
         }
-        const res = await axios.post(`${baseUrl}/api/Job/AddPOJobAllocation`, {
+        const res = await axios.post(`${baseUrl}/api/Sales/AddPOJobAllocation`, {
           jobNumber: selectedJobNumber,
           poNumber: selectedPoNumber,
           poReceived,
@@ -443,7 +443,7 @@ const AddEditPOtoJob = () => {
           setSaving(false);
           return;
         }
-        const res = await axios.post(`${baseUrl}/api/Job/EditPOJobAllocation`, {
+        const res = await axios.post(`${baseUrl}/api/Sales/EditPOJobAllocation`, {
           sno: selectedSno,
           poReceived,
           allocatedHours: Number(allocatedHours),

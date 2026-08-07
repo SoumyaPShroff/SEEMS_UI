@@ -71,8 +71,8 @@ const AddScopeRevisionJob = () => {
     display: "flex",
     alignItems: "center",
     gap: 1,
-    px: 2,
-    py: 1.5,
+    px: 1.5,
+    py: 0.75,
     background: "linear-gradient(90deg,#0f4ea6,#3c78d8)",
     color: "white",
   };
@@ -95,11 +95,11 @@ const AddScopeRevisionJob = () => {
 
   const inputStyle = {
     fontFamily: "'Inter', sans-serif",
-    fontSize: "0.9rem",
-    borderRadius: 8,
+    fontSize: "0.85rem",
+    borderRadius: 6,
     border: "1px solid #cfd9ea",
-    padding: "9px 12px",
-    minHeight: 40,
+    padding: "6px 10px",
+    minHeight: 32,
     boxSizing: "border-box" as const,
     width: "100%",
     backgroundColor: "#fff",
@@ -215,7 +215,7 @@ const AddScopeRevisionJob = () => {
   return (
     <Box
       sx={{
-        p: 8,
+        p: 3,
         background: "#f4f7fb",
         fontFamily: "'Inter', sans-serif",
       }}
@@ -223,63 +223,65 @@ const AddScopeRevisionJob = () => {
       <Paper
         elevation={0}
         sx={{
-          p: 2,
+          p: 1.5,
           borderRadius: 3,
           border: "1px solid #557ec6",
           boxShadow: "0 14px 30px rgba(24, 71, 153, 0.16)",
           background: "linear-gradient(145deg, #f7fbff 0%, #e8f2ff 52%, #dbeaff 100%)",
-          maxWidth: 1000,
+          maxWidth: 720,
           mx: "auto",
         }}
       >
-        <Box sx={{ mb: 1.5 }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: "#0f4ea6", mb: 0.3 }}>
+        <Box sx={{ mb: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "#0f4ea6", mb: 0.2 }}>
             Add New Scope and Revision Job
           </Typography>
-          <Typography color="text.secondary" sx={{ fontSize: "0.9rem" }}>
+          <Typography color="text.secondary" sx={{ fontSize: "0.8rem" }}>
             Select an existing job and create an exact copy of it under a new job number
           </Typography>
         </Box>
 
-        <Box sx={{ mb: 1.5 }}>
+        <Box sx={{ mb: 1 }}>
           <Typography sx={fieldLabelStyle}>
             Action <span style={{ color: "#d32f2f" }}>*</span>
           </Typography>
-          <Box sx={{ display: "flex", gap: 2 }}>
+          <Box sx={{ display: "flex", gap: 1 }}>
             <MuiButton
+              size="small"
               variant={actionType === "Scope" ? "contained" : "outlined"}
               onClick={() => setActionType("Scope")}
               disabled={saving}
-              sx={{ borderRadius: 3, flex: 1, textTransform: "none" }}
+              sx={{ borderRadius: 2, flex: 1, textTransform: "none", py: 0.5 }}
             >
               Add Scope to Job
             </MuiButton>
             <MuiButton
+              size="small"
               variant={actionType === "Revision" ? "contained" : "outlined"}
               onClick={() => setActionType("Revision")}
               disabled={saving}
-              sx={{ borderRadius: 3, flex: 1, textTransform: "none" }}
+              sx={{ borderRadius: 2, flex: 1, textTransform: "none", py: 0.5 }}
             >
               Revision Job
             </MuiButton>
           </Box>
         </Box>
 
-        <Divider sx={{ my: 1.5 }} />
+        <Divider sx={{ my: 1 }} />
 
         <Card sx={sectionCardStyle}>
           <Box sx={sectionHeaderStyle}>
-            <ContentCopy />
-            <Typography variant="h6" fontWeight={600}>
+            <ContentCopy fontSize="small" />
+            <Typography variant="subtitle1" fontWeight={600}>
               Select Job to Copy
             </Typography>
           </Box>
-          <CardContent sx={{ ...sectionContentStyle, p: 1.5, "&:last-child": { pb: 1.5 } }}>
+          <CardContent sx={{ ...sectionContentStyle, p: 1, "&:last-child": { pb: 1 } }}>
             <Box
               sx={{
                 display: "grid",
                 gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" },
-                gap: 1.5,
+                gap: 1,
               }}
             >
               <Box>
@@ -294,8 +296,8 @@ const AddScopeRevisionJob = () => {
                   options={enquiryOptions}
                   required
                   width="100%"
-                  height={40}
-                  fontSize="0.9rem"
+                  height={32}
+                  fontSize="0.85rem"
                   labelFontWeight={600}
                   shrinkLabel={false}
                   disabled={loadingEnquiries}
@@ -314,8 +316,8 @@ const AddScopeRevisionJob = () => {
                   options={jobOptions}
                   required
                   width="100%"
-                  height={40}
-                  fontSize="0.9rem"
+                  height={32}
+                  fontSize="0.85rem"
                   labelFontWeight={600}
                   shrinkLabel={false}
                   disabled={!selectedEnquiry || loadingJobs}
@@ -326,21 +328,23 @@ const AddScopeRevisionJob = () => {
         </Card>
 
         {selectedJobNumber && (
-          <Card sx={{ ...sectionCardStyle, mt: 1.5 }}>
+          <Card sx={{ ...sectionCardStyle, mt: 1 }}>
             <Box sx={sectionHeaderStyle}>
-              <Typography variant="h6" fontWeight={600}>
+              <Typography variant="subtitle1" fontWeight={600}>
                 Selected Job Details
               </Typography>
             </Box>
-            <CardContent sx={{ ...sectionContentStyle, p: 1.5, "&:last-child": { pb: 1.5 } }}>
+            <CardContent sx={{ ...sectionContentStyle, p: 1, "&:last-child": { pb: 1 } }}>
               {loadingJobDetails ? (
-                <Typography color="text.secondary">Loading job details...</Typography>
+                <Typography color="text.secondary" sx={{ fontSize: "0.85rem" }}>
+                  Loading job details...
+                </Typography>
               ) : (
                 <Box
                   sx={{
                     display: "grid",
                     gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" },
-                    gap: 1,
+                    gap: 0.75,
                   }}
                 >
                   <Box>
@@ -362,9 +366,9 @@ const AddScopeRevisionJob = () => {
                 </Box>
               )}
 
-              <Divider sx={{ my: 1.5 }} />
+              <Divider sx={{ my: 1 }} />
 
-              <Box sx={{ maxWidth: 420 }}>
+              <Box sx={{ maxWidth: 320 }}>
                 <Typography sx={fieldLabelStyle}>
                   New Job Number
                   <span style={{ color: "#d32f2f" }}> *</span>
@@ -377,7 +381,7 @@ const AddScopeRevisionJob = () => {
                   fullWidth
                   style={inputStyle}
                 />
-                <Typography sx={{ mt: 1, fontSize: 12, color: "#5f6f86" }}>
+                <Typography sx={{ mt: 0.75, fontSize: 11, color: "#5f6f86" }}>
                   Edit the job number to reflect the new {actionType === "Revision" ? "revision" : "scope"}{" "}
                   (for example, append a suffix). Saving will create a new job that is a copy of the
                   selected job's details, stored under this new job number.{" "}
@@ -390,7 +394,7 @@ const AddScopeRevisionJob = () => {
           </Card>
         )}
 
-        <Divider sx={{ my: 1.5 }} />
+        <Divider sx={{ my: 1 }} />
 
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
           <Button

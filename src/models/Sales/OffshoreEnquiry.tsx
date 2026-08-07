@@ -67,10 +67,14 @@ interface EnquiryForm {
    analysis: string[];
    va: string[];
    npi: string[];
+   library: string[];
+   dfx: string[];
    layoutbyid: string;
    analysisbyid: string;
    npibyid: string;    //referring va only but tbale field is npibyid
    npiNewbyid: string;
+   librarybyid: string;
+   dfxbyid: string;
    locationId: string;
    createdBy: string;
    status: string;
@@ -115,7 +119,7 @@ const OffshoreEnquiry: React.FC = () => {
    const navigate = useNavigate();
    const { enquiryNo } = useParams();
    const isEditMode = Boolean(enquiryNo);
-   const layoutHideForAdd = ["QA/CAM", "DFA", "Fabrication", "Testing"];
+   const layoutHideForAdd = ["QA/CAM", "Fabrication", "Testing"];
 
    const [form, setForm] = useState<EnquiryForm>({
       enquirytype: "OFFSHORE",
@@ -138,10 +142,14 @@ const OffshoreEnquiry: React.FC = () => {
       analysis: [],
       va: [],
       npi: [],
+      library: [],
+      dfx: [],
       layoutbyid: "",
       analysisbyid: "",
       npibyid: "",
       npiNewbyid: "",
+      librarybyid: "",
+      dfxbyid: "",
       locationId: "",
       createdBy: loginUser,
       status: "Open",
@@ -171,8 +179,8 @@ const OffshoreEnquiry: React.FC = () => {
    const [loading, setLoading] = useState(false);
    // fields backend requires, but UI does not collect
    const dtoBlankDefaults = {
-      layoutbyid: "", npibyid: "", analysisbyid: "", npiNewbyid: "",
-      pi: "NO", si: "NO", dfa: "NO", dfm: "NO", fpg: "NO", asmb: "NO", pcba: "NO", qacam: "NO",
+      layoutbyid: "", npibyid: "", analysisbyid: "", npiNewbyid: "", librarybyid: "", dfxbyid: "",
+      pi: "NO", si: "NO", dfa: "NO", dfm: "NO", fpg: "NO", asmb: "NO", pcba: "NO", cam: "NO", qa: "NO",
       design: "NO", library: "NO", layout_fab: "NO", layout_testing: "NO", layout_others: "NO",
       emi_net_level: "NO", emi_system_level: "NO", thermal_board_level: "NO", thermal_system_level: "NO",
       hardware: "NO", VA_Assembly: "NO", DesignOutSource: "NO", npi_fab: "NO", npi_testing: "NO", npi_others: "NO", vaMech: "NO",
@@ -246,18 +254,20 @@ const OffshoreEnquiry: React.FC = () => {
 
             if (!enquiry) return;
 
-            // Fetch dependent lookups first
-            await fetchCustomerLocations(enquiry.customer_id);
-            await fetchCustomerContacts(enquiry.customer_id, enquiry.location_id);
+            // Fetch dependent lookups first (use the returned data directly —
+            // lookups state from setLookups above is not guaranteed to be
+            // updated yet when read from this closure)
+            const locationsData = await fetchCustomerLocations(enquiry.customer_id);
+            const contactsData = await fetchCustomerContacts(enquiry.customer_id, enquiry.location_id);
 
             // Find contact to get emailaddress
-            const selectedContact = lookups.Contacts.find(
-               (c) => c.contact_id.toString() === enquiry.contact_id.toString()
+            const selectedContact = contactsData.find(
+               (c: Contact) => String(c.contact_id) === String(enquiry.contact_id)
             );
 
             //based on location, address filled
-            const selectedLoc = lookups.Locations.find(
-               (l) => l.location_id.toString() === enquiry.location_id.toString()
+            const selectedLoc = locationsData.find(
+               (l: Location) => String(l.location_id) === String(enquiry.location_id)
             );
 
             // 🔹 THEN set your form
@@ -286,10 +296,14 @@ const OffshoreEnquiry: React.FC = () => {
                analysis: getCheckedArrayFromAPI(enquiry, "analysis"),
                va: getCheckedArrayFromAPI(enquiry, "va"),
                npi: getCheckedArrayFromAPI(enquiry, "npi"),
+               library: getCheckedArrayFromAPI(enquiry, "library"),
+               dfx: getCheckedArrayFromAPI(enquiry, "dfx"),
                layoutbyid: enquiry.layoutbyid || "",
                analysisbyid: enquiry.analysisbyid || "",
                npibyid: enquiry.npibyid || "",
                npiNewbyid: enquiry.npiNewbyid || "",
+               librarybyid: enquiry.librarybyid || "",
+               dfxbyid: enquiry.dfxbyid || "",
                uploadedfilename: enquiry.uploadedfilename,
             }));
 
@@ -334,26 +348,30 @@ const OffshoreEnquiry: React.FC = () => {
          form.analysisbyid,
          form.npibyid,
          form.npiNewbyid,
+         form.librarybyid,
+         form.dfxbyid,
       ]
          .filter(Boolean)
          .join(", ");
 
       setForm((prev) => ({ ...prev, completeResp: combined }));
-   }, [form.layoutbyid, form.analysisbyid, form.npibyid, form.npiNewbyid]);
+   }, [form.layoutbyid, form.analysisbyid, form.npibyid, form.npiNewbyid, form.librarybyid, form.dfxbyid]);
 
-   const fetchCustomerLocations = async (customerId: string) => {
+   const fetchCustomerLocations = async (customerId: string): Promise<Location[]> => {
       try {
          const res = await fetch(`${baseUrl}/api/Sales/customerlocations?customerId=${customerId}`);
          const data = await res.json();
          //edit mode contact was not appearing in first load
          setLookups((prev) => ({ ...prev, Locations: data, Contacts: isEditMode ? prev.Contacts : [] }));  // 👈 keep contacts while editing
+         return data;
       } catch (err) {
          console.error(err);
          setLookups((prev) => ({ ...prev, Locations: [], Contacts: [] }));
+         return [];
       }
    };
 
-   const fetchCustomerContacts = async (customerId: string, locationId: string) => {
+   const fetchCustomerContacts = async (customerId: string, locationId: string): Promise<Contact[]> => {
       try {
          const res = await fetch(`${baseUrl}/api/Sales/customercontacts?customerId=${customerId}&locationId=${locationId}`);
          const data = await res.json();
@@ -370,9 +388,11 @@ const OffshoreEnquiry: React.FC = () => {
                address: prev.address,   // keep location address ALWAYS
             }));
          }
+         return data;
       } catch (err) {
          console.error(err);
          setLookups((prev) => ({ ...prev, Contacts: [] }));
+         return [];
       }
    };
 
@@ -382,6 +402,8 @@ const OffshoreEnquiry: React.FC = () => {
          form.analysisbyid,
          form.npibyid,
          form.npiNewbyid,
+         form.librarybyid,
+         form.dfxbyid,
       ].filter((id) => id && id.trim() !== "");
 
       if (selectedIds.length === 0) return [];
@@ -427,13 +449,18 @@ const OffshoreEnquiry: React.FC = () => {
       const mapSection: any = {
          layout: {
             design: "Design",
-            library: "Library",
-            qacam: "QA/CAM",
-            dfa: "DFA",
-            dfm: "DFX",
+            qa: "QA",
+            cam: "QA/CAM",
             layout_fab: "Fabrication",
             layout_testing: "Testing",
             layout_others: "Others",
+         },
+         library: {
+            library: "Library",
+         },
+         dfx: {
+            dfa: "DFX",
+            dfm: "DFX",
          },
          analysis: {
             si: "SI",
@@ -457,9 +484,9 @@ const OffshoreEnquiry: React.FC = () => {
          },
          npi: {
             npiNew_BOMProc: "BOM Procurement",
-            npiNew_Fab: "ATS-Fabrication",
-            npiNew_Assbly: "ATS-Assembly",
-            npiNew_Testing: "ATS-Testing",
+            npiNew_Fab: "Fabrication",
+            npiNew_Assbly: "Assembly",
+            npiNew_Testing: "Testing",
             npinew_jobwork: "Job Work",
          }
       };
@@ -471,7 +498,7 @@ const OffshoreEnquiry: React.FC = () => {
          if (data[apiField] === "YES") arr.push(label as string);
       });
 
-      return arr;
+      return [...new Set(arr)];
    };
 
    const handleChange = async (e: any) => {
@@ -545,7 +572,7 @@ const OffshoreEnquiry: React.FC = () => {
          return;
       }
 
-      const responsibilityFields = ["layoutbyid", "analysisbyid", "npibyid", "npiNewbyid"];
+      const responsibilityFields = ["layoutbyid", "analysisbyid", "npibyid", "npiNewbyid", "librarybyid", "dfxbyid"];
       //auto update completeresp when any responsibility field changes
       if (responsibilityFields.includes(name)) {
          // Collect all selected responsibilities (excluding empty ones)
@@ -612,6 +639,12 @@ const OffshoreEnquiry: React.FC = () => {
                case "npi":
                   updated.npiNewbyid = "";
                   break;
+               case "library":
+                  updated.librarybyid = "";
+                  break;
+               case "dfx":
+                  updated.dfxbyid = "";
+                  break;
             }
          }
          return updated;
@@ -624,9 +657,25 @@ const OffshoreEnquiry: React.FC = () => {
          section: "Layout",
          field: "layout",
          responsibilityField: "layoutbyid",
-         checkboxes: ["Design", "Library", "QA/CAM", "DFA", "DFX", "Fabrication", "Testing", "Others"],
+         checkboxes: ["Design", "QA", "QA/CAM", "Fabrication", "Testing", "Others"],
          responsibilityOptions: lookups.designMngrs,
          isManager: true, // use hopC1ID/hopC1NAME
+      },
+      {
+         section: "Library",
+         field: "library",
+         responsibilityField: "librarybyid",
+         checkboxes: ["Library"],
+         responsibilityOptions: lookups.designMngrs,
+         isManager: true,
+      },
+      {
+         section: "DFX",
+         field: "dfx",
+         responsibilityField: "dfxbyid",
+         checkboxes: ["DFX"],
+         responsibilityOptions: lookups.designMngrs,
+         isManager: true,
       },
       {
          section: "Analysis",
@@ -648,13 +697,13 @@ const OffshoreEnquiry: React.FC = () => {
          section: "ATS",
          field: "npi",
          responsibilityField: "npiNewbyid",
-         checkboxes: ["BOM Procurement", "ATS-Fabrication", "ATS-Assembly", "Job Work", "ATS-Testing"],
+         checkboxes: ["BOM Procurement", "Fabrication", "Assembly", "Job Work", "Testing"],
          responsibilityOptions: lookups.salesnpiusers,
          isManager: false,
       },
    ];
 
-   const isResponsibilitySelected = !!(form.layoutbyid || form.analysisbyid || form.npibyid || form.npiNewbyid);
+   const isResponsibilitySelected = !!(form.layoutbyid || form.analysisbyid || form.npibyid || form.npiNewbyid || form.librarybyid || form.dfxbyid);
    // Utility: normalize email safely without modifying interfaces
    const getUserEmail = (
       u: Employee | Manager | SalesManager | NPIManager
@@ -678,6 +727,8 @@ const OffshoreEnquiry: React.FC = () => {
          form.analysisbyid,
          form.npibyid,
          form.npiNewbyid,
+         form.librarybyid,
+         form.dfxbyid,
       ].filter(Boolean);
 
       const allUsers: (Employee | Manager | SalesManager | NPIManager)[] = [
@@ -760,6 +811,16 @@ const OffshoreEnquiry: React.FC = () => {
             setLoading(false);
             return;
          }
+         if (form.library.length > 0 && !form.librarybyid) {
+            toast.error("Please select Library Responsibility");
+            setLoading(false);
+            return;
+         }
+         if (form.dfx.length > 0 && !form.dfxbyid) {
+            toast.error("Please select DFX Responsibility");
+            setLoading(false);
+            return;
+         }
 
          // 3️⃣ Merge defaults with current form
          const postPayload: any = {
@@ -773,17 +834,28 @@ const OffshoreEnquiry: React.FC = () => {
          // Layout
          const layoutMap: Record<string, string> = {
             Design: "design",
-            Library: "library",
+            QA: "qa",
             "QA/CAM": "qacam",
-            DFA: "dfa",
-            DFX: "dfm",
-            Fabrication: "asmb",
+            Fabrication: "layout_fab",
             Testing: "layout_testing",
             Others: "layout_others",
          };
          Object.entries(layoutMap).forEach(([label, field]) => {
             postPayload[field] = form.layout.includes(label) ? "YES" : "NO";
          });
+
+         // Library
+         const libraryMap: Record<string, string> = {
+            Library: "library",
+         };
+         Object.entries(libraryMap).forEach(([label, field]) => {
+            postPayload[field] = form.library.includes(label) ? "YES" : "NO";
+         });
+
+         // DFX (single checkbox drives both backend fields: dfa and dfm)
+         const dfxChecked = form.dfx.includes("DFX") ? "YES" : "NO";
+         postPayload.dfa = dfxChecked;
+         postPayload.dfm = dfxChecked;
 
          // Analysis
          const analysisMap: Record<string, string> = {
@@ -818,9 +890,9 @@ const OffshoreEnquiry: React.FC = () => {
          // NPI
          const npiMap: Record<string, string> = {
             "BOM Procurement": "NPINew_BOMProc",
-            "ATS-Fabrication": "NPINew_Fab",
-            "ATS-Assembly": "NPINew_Assbly",
-            "ATS-Testing": "NPINew_Testing",
+            "Fabrication": "NPINew_Fab",
+            "Assembly": "NPINew_Assbly",
+            "Testing": "NPINew_Testing",
             "Job Work": "npinew_jobwork",
          };
          Object.entries(npiMap).forEach(([label, field]) => {
@@ -839,6 +911,8 @@ const OffshoreEnquiry: React.FC = () => {
 
             // Add selected items from each scope
             if (form.layout.length) selectedItems.push(...form.layout);
+            if (form.library.length) selectedItems.push(...form.library);
+            if (form.dfx.length) selectedItems.push(...form.dfx);
             if (form.analysis.length) selectedItems.push(...form.analysis);
             if (form.va.length) selectedItems.push(...form.va);
             if (form.npi.length) selectedItems.push(...form.npi);
@@ -946,13 +1020,17 @@ const OffshoreEnquiry: React.FC = () => {
                { autoClose: false }   // 🔥 toast stays until user closes or clicks button
             );
          } else {
-            const err = await res.text();
-            console.error(err);
-            if (data.emailSent === false) {
-               toast.warning("⚠️ Enquiry added successfully, but email notification failed.");
-            } else {
-               toast.success("✅ Enquiry added successfully.");
-            }
+            // `data` is already the parsed JSON body (res.body can only be read once).
+            // Our controller's catch block returns { success, message, error }; a 400
+            // from ASP.NET's own model validation (before the action even runs) returns
+            // { title, errors: { fieldName: [...] } } instead — surface whichever applies.
+            console.error(data);
+            const validationDetail = data?.errors
+               ? Object.entries(data.errors as Record<string, string[]>)
+                    .map(([field, msgs]) => `${field}: ${msgs.join(" ")}`)
+                    .join(" | ")
+               : null;
+            toast.error(`❌ ${validationDetail || data?.error || data?.message || data?.title || "Failed to save enquiry"}`);
          }
       } catch (err) {
          console.error(err);
@@ -965,7 +1043,7 @@ const OffshoreEnquiry: React.FC = () => {
    return (
       <Box
          sx={{
-            maxWidth: 850, width: "100%", mx: "auto", mt: isEditMode ? 18 : 0.9, px: { xs: 2, md: 0 },
+            maxWidth: 900, width: "100%", mx: "auto", mt: isEditMode ? 18 : 0.9, px: { xs: 2, md: 0 },
             //  fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
             fontFamily: "Arial",
          }}
@@ -978,8 +1056,6 @@ const OffshoreEnquiry: React.FC = () => {
                borderRadius: 3,
                border: "1px solid  #557ec6",
                boxShadow: "0 14px 30px  rgba(24, 71, 153, 0.16)",
-               //       background:
-               //          "linear-gradient(180deg, #f9fbff 0%, #f3f7ff 100%)",
                background: "linear-gradient(145deg, #f7fbff 0%, #e8f2ff 52%, #dbeaff 100%)",
                "& .MuiTypography-root, & .MuiInputBase-input, & .MuiFormControlLabel-label, & .MuiInputLabel-root": {
                   fontFamily: "Arial",
@@ -1134,9 +1210,6 @@ const OffshoreEnquiry: React.FC = () => {
                                        { value: "Other", label: "Other" },
                                     ]}
                                     required
-                                    fullWidth
-                                    height={34}
-
                                  />
                               </Box>
                               <Box >

@@ -91,6 +91,13 @@ interface LibWorkedJobsSummary {
 
 type SummaryColumnKey = Exclude<keyof TotalsRow, "GrandTotal" | "ECO">;
 
+// Display-only overrides for the summary table header — underlying TotalsRow keys stay unchanged
+// since they're used throughout the summary calculation logic.
+const summaryHeaderLabels: Partial<Record<keyof TotalsRow, string>> = {
+  NPI: "NPI/ATS",
+  DFM: "DFM/DFX",
+};
+
 type SummaryCategoryKey =
   | "At Office Export"
   | "At Office Domestic"
@@ -268,6 +275,23 @@ const LegendSwatch = styled.div<{ $color: string }>`
   border: 1px solid #333;
 `;
 
+const LegendItem = styled.button<{ $active?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: ${({ $active }) => ($active ? "rgba(57, 93, 194, 0.12)" : "none")};
+  border: 1px solid ${({ $active }) => ($active ? "#395dc2" : "transparent")};
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+
+  &:hover {
+    background: rgba(57, 93, 194, 0.08);
+  }
+`;
+
 const DataGridWrapper = styled.div`
   position: relative;
   width: 100%;
@@ -331,7 +355,7 @@ const SummarySection: React.FC<{
                 key={key}
                 $isGrandTotal={key === "GrandTotal"}
               >
-                {key}
+                {summaryHeaderLabels[key as keyof TotalsRow] ?? key}
               </SummaryHeadCell>
             ))}
           </SummaryHeadRow>
@@ -441,7 +465,9 @@ const FiltersSection: React.FC<{
   searchText: string;
   onSearch: (val: string) => void;
   onExport: () => void;
-}> = ({ searchText, onSearch, onExport }) => (
+  activeColorFilter: RowColorClass | null;
+  onLegendClick: (key: RowColorClass) => void;
+}> = ({ searchText, onSearch, onExport, activeColorFilter, onLegendClick }) => (
   <FilterBar>
     <FilterGroup>
       <Box sx={{ width: 400, marginLeft: "2px" }}>
@@ -450,14 +476,18 @@ const FiltersSection: React.FC<{
       <ExportButton label="Export to Excel" onClick={onExport} />
     </FilterGroup>
     <LegendGroup>
-      <LegendSwatch $color="blue" />
-      <span>Flag raised for current month</span>
-      <LegendSwatch $color="#d517f2c2" />
-      <span>Job without PO</span>
-      <LegendSwatch $color="green" />
-      <span>Invoiced</span>
-      <LegendSwatch $color="red" />
-      <span>PO Overdue</span>
+      {LEGEND_ITEMS.map((item) => (
+        <LegendItem
+          key={item.key}
+          type="button"
+          $active={activeColorFilter === item.key}
+          onClick={() => onLegendClick(item.key)}
+          title={`Sort "${item.label}" rows to the top`}
+        >
+          <LegendSwatch $color={item.color} />
+          <span>{item.label}</span>
+        </LegendItem>
+      ))}
     </LegendGroup>
   </FilterBar>
 );
@@ -565,8 +595,8 @@ const mainCategoryFor = (enqType: string, typ: string): SummaryCategoryKey => {
 const columnFor = (job: string, govtTender?: string): SummaryColumnKey => {
   const isGovt = govtTender === "YES";
   if (job.endsWith("_VA")) return "VA";
-  if (job.endsWith("_NPI")) return "NPI";
-  if (job.endsWith("_DFM") || job.endsWith("_CAM") || job.endsWith("_CEG") || job.endsWith("_DFA")) return "DFM";
+  if (job.endsWith("_NPI") || job.endsWith("_ATS")) return "NPI";
+  if (job.endsWith("_DFM") || job.endsWith("_CAM") || job.endsWith("_CEG") || job.endsWith("_DFA") || job.endsWith("_DFX")) return "DFM";
   if (job.endsWith("_Lib")) return "Library";
   if (job.endsWith("_Analysis")) return isGovt ? "GovtAnalysis" : "Analysis";
   return isGovt ? "GovtLayout" : "Layout";
@@ -748,6 +778,68 @@ const buildSummaryFromData = (
 
   return { buckets, total };
 };
+type RowColorClass = "row-detail" | "row-red" | "row-purple" | "row-green" | "row-blue" | "row-black";
+
+// Shared with getRowClassName (grid styling) and rowsWithExpansion (legend-driven sort)
+const classifyRow = (
+  row: any,
+  invoiceDict: Set<string>,
+  enddate: string
+): RowColorClass => {
+  if (row?.isDetail) return "row-detail";
+
+  const jobNo: string = row.jobNumber || "";
+  const poRcvd: string = row.poRcvd || "";
+  const dtStr: string = row.flagRaisedOn || "";
+  const requestDateStr: string = row.realisedDate;
+  const flagDate = new Date(dtStr);
+  const key = `${jobNo}_${flagDate.getMonth() + 1}_${flagDate.getFullYear()}`;
+
+  // 🟥 Case 1 — PO not received
+  if (poRcvd === "NO" || poRcvd === "") {
+    if (requestDateStr) {
+      const currentDate = new Date();
+      const requestDate = new Date(requestDateStr);
+      const diffDays = Math.floor((currentDate.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
+      // 🟠 PO delay > 7 days
+      if (diffDays > 7) {
+        return "row-red";
+      }
+    }
+    return "row-purple";
+  }
+
+  // 🟦 Case 2 — Flag date present
+  if (dtStr) {
+    // 🟩 Case 2a — Invoice exists
+    if (invoiceDict.has(key)) {
+      return "row-green";
+    }
+
+    // 🟦 Case 2b — Flag raised in current month/year
+    const end = new Date(enddate);
+    if (
+      flagDate.getMonth() === end.getMonth() &&
+      flagDate.getFullYear() === end.getFullYear()
+    ) {
+      return "row-blue";
+    }
+
+    // ⚫ Case 2c — None of the above
+    return "row-black";
+  }
+
+  // ⚫ Default fallback if no date and PO received
+  return "row-black";
+};
+
+const LEGEND_ITEMS: Array<{ key: RowColorClass; color: string; label: string }> = [
+  { key: "row-blue", color: "blue", label: "Flag raised for current month" },
+  { key: "row-purple", color: "#d517f2c2", label: "Job without PO" },
+  { key: "row-green", color: "green", label: "Invoiced" },
+  { key: "row-red", color: "red", label: "PO Overdue" },
+];
+
 const MONTHS = [
   { value: 1, label: "January" },
   { value: 2, label: "February" },
@@ -777,6 +869,7 @@ const RptBillingPlanner: React.FC = () => {
   const [summary, setSummary] = useState<SummaryResult | null>(null);
   const [invoiceDict, setInvoiceDict] = useState<Set<string>>(new Set());
   const [searchText, setSearchText] = useState("");
+  const [activeColorFilter, setActiveColorFilter] = useState<RowColorClass | null>(null);
   const [showResults, setShowResults] = useState(false); // New state to control rendering
   const [wipSumData, setWipSumData] = useState(0);
   const [totalDesignVA, setTotalDesignVA] = useState(0);
@@ -931,26 +1024,40 @@ const RptBillingPlanner: React.FC = () => {
     );
   }, [data, searchText]);
   const rowsWithExpansion = useMemo(() => {
-  const newRows: any[] = [];
-
-  filteredData.forEach((row: BillingData) => {
-    newRows.push(row);
-
+  const groups = filteredData.map((row: BillingData) => {
+    const detailRows: any[] = [];
     if (expandedRows.has(row.id)) {
       const jobScopeValue = (row as any).jobScopes || "-";
       const enquiryNoValue = (row as any).enquiryno || "-";
       const poNumberValue = (row as any).poNumber || "-";
-      newRows.push({
+      detailRows.push({
         id: `${row.id}-detail`,
         isDetail: true,
         parentId: row.id,
         jobNumber: `TaskType : ${jobScopeValue} | EnquiryNo : ${enquiryNoValue} | PONumber : ${poNumberValue}`,
       });
     }
+    return { row, detailRows };
+  });
+
+  // Legend click: bring rows matching the clicked color category to the top,
+  // keeping every other row visible (stable sort preserves original relative order).
+  if (activeColorFilter) {
+    groups.sort((a, b) => {
+      const aMatch = classifyRow(a.row, invoiceDict, enddate) === activeColorFilter ? 0 : 1;
+      const bMatch = classifyRow(b.row, invoiceDict, enddate) === activeColorFilter ? 0 : 1;
+      return aMatch - bMatch;
+    });
+  }
+
+  const newRows: any[] = [];
+  groups.forEach(({ row, detailRows }) => {
+    newRows.push(row);
+    newRows.push(...detailRows);
   });
 
   return newRows;
-}, [filteredData, expandedRows]);
+}, [filteredData, expandedRows, activeColorFilter, invoiceDict, enddate]);
 
   // ✅ Compute summary grouped by main categories (for pending invoices)
   const buildPendingSummary = (pendingData: BillingData[]) => {
@@ -1185,57 +1292,11 @@ const RptBillingPlanner: React.FC = () => {
     { field: "ndaValidity", headerName: "NDA Validity", flex: 1, minWidth: 140 },
   ], [expandedRows]);
 
-  const getRowClassName = (params: any): string => {
-    const jobNo: string = params.row.jobNumber || "";
-    const poRcvd: string = params.row.poRcvd || "";
-    const dtStr: string = params.row.flagRaisedOn || "";
-    const requestDateStr: string = params.row.realisedDate;
-    const flagDate = new Date(dtStr);
-    const key = `${jobNo}_${flagDate.getMonth() + 1}_${flagDate.getFullYear()}`;
+  const getRowClassName = (params: any): string => classifyRow(params.row, invoiceDict, enddate);
 
-     if (params.row.isDetail) return "row-detail";
-    // 🟥 Case 1 — PO not received
-    if (poRcvd === "NO" || poRcvd === "") {
-      //new logic
-      if (requestDateStr) {
-        const currentDate = new Date();
-        const requestDate = new Date(requestDateStr);
-        const diffDays = Math.floor((currentDate.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
-        // 🟠 PO delay > 7 days
-        if (diffDays > 7) {
-          //   return "row-purple";
-          return "row-red";
-        }
-      }
-
-      // 🟥 Default PO not received
-      //  return "row-red";
-      return "row-purple";
-    }
-
-    // 🟦 Case 2 — Flag date present
-    if (dtStr) {
-      // 🟩 Case 2a — Invoice exists
-      if (invoiceDict.has(key)) {
-        return "row-green";
-      }
-
-      // 🟦 Case 2b — Flag raised in current month/year
-      const end = new Date(enddate);
-      if (
-        flagDate.getMonth() === end.getMonth() &&
-        flagDate.getFullYear() === end.getFullYear()
-      ) {
-        return "row-blue";
-      }
-
-      // ⚫ Case 2c — None of the above
-      return "row-black";
-    }
-
-    // ⚫ Default fallback if no date and PO received
-    return "row-black";
-  };
+  const handleLegendClick = useCallback((key: RowColorClass) => {
+    setActiveColorFilter((prev) => (prev === key ? null : key));
+  }, []);
 
   const pendingInvoiceColumns: GridColDef[] = useMemo(() => [
     { field: "jobNumber", headerName: "Job Number", flex: 1, minWidth: 400 },
@@ -1373,6 +1434,8 @@ const RptBillingPlanner: React.FC = () => {
             searchText={searchText}
             onSearch={setSearchText}
             onExport={handleBillExport}
+            activeColorFilter={activeColorFilter}
+            onLegendClick={handleLegendClick}
           />
         )}
 

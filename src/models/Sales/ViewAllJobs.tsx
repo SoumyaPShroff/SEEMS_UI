@@ -26,13 +26,15 @@ const ViewAllJobs = () => {
       flex: 1,
       minWidth: 130,
       sortable: false,
-      renderCell: (params) => (
+     // renderCell: (params) => (
+     renderCell: () => (
         <a
           href="#"
           style={{ color: "#1976d2", cursor: "pointer" }}
           onClick={(e) => {
             e.preventDefault();
-            handleTransferJob(params.row);
+         //   handleTransferJob(params.row);
+         handleTransferJob();
           }}
         >
           Transfer Job
@@ -75,9 +77,11 @@ const ViewAllJobs = () => {
     loadData();
   }, []);
 
-  const handleTransferJob = (row: any) => {
-    navigate(`/Home/TransferJob?jobnumber=${encodeURIComponent(row.jobnumber)}`);
-  };
+//  const handleTransferJob = (row: any) => {
+   // navigate(`/Home/TransferJob?jobnumber=${encodeURIComponent(row.jobnumber)}`);
+ // };
+const handleTransferJob = () => {
+};
 
   const handleClearFilter = () => {
     setFromDate("");

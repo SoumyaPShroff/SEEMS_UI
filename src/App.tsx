@@ -38,12 +38,16 @@ import EstimationDocUpload from './models/Sales/EstimationDocUpload';
 import EstimationDocList from './models/Sales/EstimationDocList';
 import POJobAllocation from './models/Sales/POJobAllocation';
 import PurchaseOrder from './models/Sales/PurchaseOrder';
+import AddEditPO from './models/Sales/AddEditPO';
 import JobCreationForm from './models/Sales/JobCreationForm';
 import ViewAllJobs from './models/Sales/ViewAllJobs';
 import TransferJob from './models/Sales/TransferJob';
 import AddScopeRevisionJob from './models/Sales/AddNewScopeRevisionJob';
 import AllocatePOtoJob from './models/Sales/AllocatePOtoJob';
+import AddEditInvoice from './models/Sales/AddEditInvoice';
+import RaiseFlagRegister from './models/Sales/RaiseFlagRegister';
 import OrderInvoiceRegister from './models/Sales/OrderInvoiceRegister';
+import SalesMeetingRecorder from './models/Sales/SalesMeetingRecorder';
 
 const App: React.FC = () => {
   const [userId, setUserId] = useState(sessionStorage.getItem('SessionUserID'));
@@ -81,6 +85,8 @@ const App: React.FC = () => {
           <Route path="ViewAllEnquiries" element={<ViewAllEnquiries />} />
           <Route path="AddEnquiry" element={<AddEnquiry />} />
           <Route path="PurchaseOrder" element={<PurchaseOrder />} />
+          <Route path="AddEditPO" element={<AddEditPO />} />
+          <Route path="AddEditPO/:id" element={<AddEditPO />} />
           <Route path="support" element={<Support />} />
 
           {/* Absolute routes */}
@@ -109,8 +115,11 @@ const App: React.FC = () => {
           <Route path="TransferJob" element={<TransferJob />} />
           <Route path="AddScopeRevisionJob" element={<AddScopeRevisionJob />} />
           <Route path="AllocatePOtoJob" element={<AllocatePOtoJob />} />
+          <Route path="AddEditInvoice" element={<AddEditInvoice />} />
+          <Route path="RaiseFlagRegister" element={<RaiseFlagRegister />} />
           <Route path="OrderInvoiceRegister" element={<OrderInvoiceRegister />} />
-          
+          <Route path="SalesMeetingRecorder" element={<SalesMeetingRecorder />} />
+
         </Route>
         {/* Password + Blank */}
         <Route path="/ResetPassword" element={<ResetPassword />} />

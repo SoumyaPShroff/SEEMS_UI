@@ -287,19 +287,19 @@ const JobCreationForm: React.FC = () => {
 
   // Styling constants (following AddEditCustContLocReg pattern)
   const fieldLabelStyle = {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: 600,
     color: "#243a5a",
-    mb: 0.6,
+    mb: 0.4,
   };
 
   const inputStyle = {
     fontFamily: "'Inter', sans-serif",
-    fontSize: "0.9rem",
+    fontSize: "0.85rem",
     borderRadius: 8,
     border: "1px solid #cfd9ea",
-    padding: "9px 12px",
-    minHeight: 40,
+    padding: "5px 12px",
+    minHeight: 30,
     boxSizing: "border-box" as const,
     width: "100%",
     backgroundColor: "#fff",
@@ -324,7 +324,7 @@ const JobCreationForm: React.FC = () => {
     alignItems: "center",
     gap: 1,
     px: 2,
-    py: 1.5,
+    py: 0.75,
     background: "linear-gradient(90deg,#0f4ea6,#3c78d8)",
     color: "white",
   };
@@ -332,23 +332,24 @@ const JobCreationForm: React.FC = () => {
   return (
     <Box
       sx={{
-        p: 3,
+        p: 2,
         background: "#f4f7fb",
-        minHeight: "100vh",
         fontFamily: "'Inter', sans-serif",
       }}
     >
       <Paper
         elevation={0}
         sx={{
-          p: 3,
+          p: 2.5,
+          maxWidth: 900,
+          mx: "auto",
           borderRadius: 5,
           background: "linear-gradient(180deg,#ffffff,#f8fbff)",
           border: "1px solid #dce6f5",
         }}
       >
         {/* Header Section */}
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: 2 }}>
           <Box
             sx={{
               display: "flex",
@@ -360,16 +361,16 @@ const JobCreationForm: React.FC = () => {
           >
             <Box>
               <Typography
-                variant="h4"
+                variant="h5"
                 sx={{
                   fontWeight: 700,
                   color: "#0f4ea6",
-                  mb: 0.5,
+                  mb: 0.25,
                 }}
               >
                 Create New Project Job
               </Typography>
-              <Typography color="text.secondary" sx={{ mb: 2 }}>
+              <Typography color="text.secondary" sx={{ mb: 1, fontSize: "0.85rem" }}>
                 Select billing type, enquiry, and PO details to create a new project job
               </Typography>
             </Box>
@@ -386,11 +387,11 @@ const JobCreationForm: React.FC = () => {
           />
         </Box>
 
-        <Divider sx={{ my: 3 }} />
+        <Divider sx={{ my: 2 }} />
 
         {/* Billing Type Selector */}
-        <Box sx={{ mb: 3 }}>
-          <Typography sx={{ ...fieldLabelStyle, mb: 1.5 }}>
+        <Box sx={{ mb: 2 }}>
+          <Typography sx={{ ...fieldLabelStyle, mb: 1 }}>
             Select Billing Type <span style={{ color: "#d32f2f" }}>*</span>
           </Typography>
           <Box sx={{ display: "flex", gap: 2 }}>
@@ -398,7 +399,7 @@ const JobCreationForm: React.FC = () => {
               variant={formState.billingType === 'Fixed-Cost' ? 'contained' : 'outlined'}
               onClick={() => handleBillingTypeChange('Fixed-Cost')}
               disabled={loading}
-              sx={{ borderRadius: 3, flex: 1 }}
+              sx={{ borderRadius: 3, flex: 1, py: 0.5 }}
             >
               💼 Fixed-Cost
             </MuiButton>
@@ -406,7 +407,7 @@ const JobCreationForm: React.FC = () => {
               variant={formState.billingType === 'Time and Material' ? 'contained' : 'outlined'}
               onClick={() => handleBillingTypeChange('Time and Material')}
               disabled={loading}
-              sx={{ borderRadius: 3, flex: 1 }}
+              sx={{ borderRadius: 3, flex: 1, py: 0.5 }}
             >
               ⏱️ Time & Material
             </MuiButton>
@@ -423,13 +424,13 @@ const JobCreationForm: React.FC = () => {
         {/* Main Form Card */}
         <Card sx={sectionCardStyle}>
           <Box sx={sectionHeaderStyle}>
-            <Typography variant="h6" fontWeight={600}>
+            <Typography variant="subtitle1" fontWeight={600}>
               Job Details
             </Typography>
           </Box>
 
-          <CardContent>
-            <Grid container spacing={2} sx={{ mb: 3 }}>
+          <CardContent sx={{ py: 1.25, "&:last-child": { pb: 1.25 } }}>
+            <Grid container spacing={1} sx={{ mb: 0.5 }}>
               {/* Enquiry Number */}
               <Grid size={{ xs: 12, md: 6 }}>
                 <Box sx={fieldShellStyle}>
@@ -444,8 +445,8 @@ const JobCreationForm: React.FC = () => {
                     required
                     fullWidth
                     disabled={loading}
-                    height={40}
-                    fontSize="0.9rem"
+                    height={30}
+                    fontSize="0.85rem"
                     labelFontWeight={600}
                     shrinkLabel={false}
                   />
@@ -466,8 +467,8 @@ const JobCreationForm: React.FC = () => {
                     required
                     fullWidth
                     disabled={!formState.enquiry || loading}
-                    height={40}
-                    fontSize="0.9rem"
+                    height={30}
+                    fontSize="0.85rem"
                     labelFontWeight={600}
                     shrinkLabel={false}
                   />
@@ -517,30 +518,30 @@ const JobCreationForm: React.FC = () => {
 
         {/* PO Details Summary Card */}
         {formState.poNumber && (
-          <Card sx={{ ...sectionCardStyle, mt: 3 }}>
+          <Card sx={{ ...sectionCardStyle, mt: 2 }}>
             <Box sx={sectionHeaderStyle}>
-              <Typography variant="h6" fontWeight={600}>
+              <Typography variant="subtitle1" fontWeight={600}>
                 Purchase Order Summary
               </Typography>
             </Box>
 
-            <CardContent>
-              <Grid container spacing={3}>
+            <CardContent sx={{ py: 1, "&:last-child": { pb: 1 } }}>
+              <Grid container spacing={1.5}>
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                  <Box sx={{ textAlign: "center", p: 2 }}>
+                  <Box sx={{ textAlign: "center", p: 0.75 }}>
                     <Typography
                       sx={{
-                        fontSize: 12,
+                        fontSize: 11,
                         fontWeight: 600,
                         color: "#5f6f86",
-                        mb: 0.5,
+                        mb: 0.15,
                       }}
                     >
                       Total PO Amount
                     </Typography>
                     <Typography
                       sx={{
-                        fontSize: 20,
+                        fontSize: 16,
                         fontWeight: 700,
                         color: "#0f4ea6",
                       }}
@@ -551,20 +552,20 @@ const JobCreationForm: React.FC = () => {
                 </Grid>
 
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                  <Box sx={{ textAlign: "center", p: 2 }}>
+                  <Box sx={{ textAlign: "center", p: 0.75 }}>
                     <Typography
                       sx={{
-                        fontSize: 12,
+                        fontSize: 11,
                         fontWeight: 600,
                         color: "#5f6f86",
-                        mb: 0.5,
+                        mb: 0.15,
                       }}
                     >
                       Total PO Hours
                     </Typography>
                     <Typography
                       sx={{
-                        fontSize: 20,
+                        fontSize: 16,
                         fontWeight: 700,
                         color: "#0f4ea6",
                       }}
@@ -575,20 +576,20 @@ const JobCreationForm: React.FC = () => {
                 </Grid>
 
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                  <Box sx={{ textAlign: "center", p: 2, background: "#f0f4ff", borderRadius: 2 }}>
+                  <Box sx={{ textAlign: "center", p: 0.75, background: "#f0f4ff", borderRadius: 2 }}>
                     <Typography
                       sx={{
-                        fontSize: 12,
+                        fontSize: 11,
                         fontWeight: 600,
                         color: "#5f6f86",
-                        mb: 0.5,
+                        mb: 0.15,
                       }}
                     >
                       Balance Hours
                     </Typography>
                     <Typography
                       sx={{
-                        fontSize: 20,
+                        fontSize: 16,
                         fontWeight: 700,
                         color: "#2e7d32",
                       }}
@@ -602,7 +603,7 @@ const JobCreationForm: React.FC = () => {
           </Card>
         )}
 
-        <Divider sx={{ my: 3 }} />
+        <Divider sx={{ my: 2 }} />
 
         {/* Action Buttons */}
         <Box
@@ -614,7 +615,7 @@ const JobCreationForm: React.FC = () => {
             flexWrap: "wrap",
           }}
         >
-          <Typography color="text.secondary" sx={{ flex: 1, minWidth: 200 }}>
+          <Typography color="text.secondary" sx={{ flex: 1, minWidth: 200, fontSize: "0.85rem" }}>
             Review all details before creating the job
           </Typography>
 

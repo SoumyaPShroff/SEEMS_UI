@@ -9,6 +9,7 @@ import type {
   GridRowIdGetter,
   GridValidRowModel,
   GridRowParams,
+  GridRowClassNameParams,
 } from "@mui/x-data-grid";
 
 interface CustomDataGrid2Props<TRow extends GridValidRowModel = GridValidRowModel> {
@@ -24,6 +25,7 @@ interface CustomDataGrid2Props<TRow extends GridValidRowModel = GridValidRowMode
   columnVisibilityModel?: GridColumnVisibilityModel;
   onColumnVisibilityModelChange?: (model: GridColumnVisibilityModel) => void;
   onRowClick?: (row: TRow) => void;
+  getRowClassName?: (params: GridRowClassNameParams<TRow>) => string;
 }
 
 const CustomDataGrid2 = <TRow extends GridValidRowModel = GridValidRowModel>({
@@ -39,6 +41,7 @@ const CustomDataGrid2 = <TRow extends GridValidRowModel = GridValidRowModel>({
   columnVisibilityModel,
   onColumnVisibilityModelChange,
   onRowClick,
+  getRowClassName,
 }: CustomDataGrid2Props<TRow>) => {
   const [searchInput, setSearchInput] = useState("");
   const searchTerm = searchInput.trim().toLowerCase();
@@ -135,10 +138,12 @@ const CustomDataGrid2 = <TRow extends GridValidRowModel = GridValidRowModel>({
           columnVisibilityModel={columnVisibilityModel}
           onColumnVisibilityModelChange={onColumnVisibilityModelChange}
           onRowClick={(params: GridRowParams<TRow>) => onRowClick?.(params.row)}
+          getRowClassName={getRowClassName}
           disableRowSelectionOnClick
           density="compact"
           showCellVerticalBorder
           showColumnVerticalBorder
+          columnHeaderHeight={72}
           sx={{
             border: "1px solid #d6e1f2",
             borderRadius: "10px",
@@ -156,6 +161,13 @@ const CustomDataGrid2 = <TRow extends GridValidRowModel = GridValidRowModel>({
               fontWeight: 700,
               color: "#ffffff",
               fontSize: "0.86rem",
+              whiteSpace: "normal",
+              lineHeight: 1.2,
+              overflow: "visible",
+              textOverflow: "clip",
+            },
+            "& .MuiDataGrid-columnHeaderTitleContainer": {
+              whiteSpace: "normal",
             },
             "& .MuiDataGrid-menuIcon": {
               visibility: "visible",
@@ -181,6 +193,16 @@ const CustomDataGrid2 = <TRow extends GridValidRowModel = GridValidRowModel>({
             },
             "& .MuiDataGrid-row:hover": {
               backgroundColor: "#eef5ff",
+            },
+            "& .row-not-approved": {
+              color: "#c62828",
+              backgroundColor: "#fdecea",
+            },
+            "& .row-not-approved:hover": {
+              backgroundColor: "#f8cfcf",
+            },
+            "& .row-not-approved .MuiDataGrid-cell": {
+              color: "#c62828",
             },
             "& .MuiDataGrid-footerContainer": {
               borderTop: "1px solid #dbe6f8",
