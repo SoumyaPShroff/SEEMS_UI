@@ -457,7 +457,7 @@ const JobCreationForm: React.FC = () => {
               <Grid size={{ xs: 12, md: 6 }}>
                 <Box sx={fieldShellStyle}>
                   <Typography sx={fieldLabelStyle}>
-                    PO Number <span style={{ color: "#d32f2f" }}>*</span>
+                    Approved PO Number <span style={{ color: "#d32f2f" }}>*</span>
                   </Typography>
                   <SelectControl
                     name="poNumber"
