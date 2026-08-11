@@ -34,14 +34,13 @@ type InvoiceJobContext = {
   wipHrs: number | null;
   lastTimesheetClosedDate: string | null;
   timesheetNotYetClosed: boolean;
-  address: string;
   ratePerHour: number | null;
   poNumber: string | null;
 };
 
 const toDateInput = (value: string | null | undefined) => (value ? value.substring(0, 10) : "");
 
-// Strips "-", "+", "e"/"E" and any other non-numeric characters so Invoice Hours can never go negative
+// Strips "-", "+", "e"/"E" and any other non-numeric characters so a field can never go negative
 const sanitizeNonNegativeNumber = (raw: string): string => {
   let value = raw.replace(/[^0-9.]/g, "");
   const firstDot = value.indexOf(".");
@@ -77,7 +76,6 @@ const AddEditInvoice = () => {
   const [invoiceAmount, setInvoiceAmount] = useState("");
   const [poNumber, setPoNumber] = useState("");
   const [isCreditNote, setIsCreditNote] = useState(false);
-  const [customerAddress, setCustomerAddress] = useState("");
   const [invoiceNo, setInvoiceNo] = useState(""); // Edit mode only - display only, backend-generated
 
   // Deep-link entry (mirrors invoicing.aspx's ?jobnumber=<job> TotalHrs=<n> Click=<True|False>,
@@ -124,7 +122,6 @@ const AddEditInvoice = () => {
     setRatePerHour("");
     setInvoiceAmount("");
     setPoNumber("");
-    setCustomerAddress("");
     setIsCreditNote(false);
     setInvoiceNo("");
   };
@@ -213,7 +210,6 @@ const AddEditInvoice = () => {
       const res = await axios.get(`${baseUrl}/api/Sales/InvoiceJobContext/${encodeURIComponent(jobNumber)}`);
       const d: InvoiceJobContext = res.data;
       setContext(d);
-      setCustomerAddress(d.address || "");
       setRatePerHour(d.ratePerHour != null ? String(d.ratePerHour) : "");
       setPoNumber(d.poNumber || "");
     } catch (error) {
@@ -268,7 +264,6 @@ const AddEditInvoice = () => {
       setInvoiceAmount(d.poAmount != null ? String(d.poAmount) : "");
       setInvoiceDate(toDateInput(d.invoiceDate));
       setRatePerHour(d.ratePerHour != null ? String(d.ratePerHour) : "");
-      setCustomerAddress(d.customerAddress || "");
       setInvoiceNo(d.invoiceNo || "");
       setInvoiceHours(d.invoiceHours != null ? String(d.invoiceHours) : "");
       setPoNumber(d.poNumber || "");
@@ -325,11 +320,6 @@ const AddEditInvoice = () => {
       toast.error("Please enter a valid Invoice Amount.");
       return;
     }
-    if (!customerAddress.trim()) {
-      toast.error("Please enter the Customer Address.");
-      return;
-    }
-
     setSaving(true);
     try {
       if (actionType === "Add") {
@@ -348,7 +338,6 @@ const AddEditInvoice = () => {
           ratePerHour: Number(ratePerHour),
           invoiceAmount: Number(invoiceAmount),
           poNumber: poNumber || null,
-          customerAddress: customerAddress.trim(),
         });
         toast.success(res.data?.message || "Invoice added successfully.");
       } else {
@@ -364,7 +353,6 @@ const AddEditInvoice = () => {
           poAmount: Number(invoiceAmount),
           invoiceDate,
           ratePerHour: Number(ratePerHour),
-         // customerAddress: customerAddress.trim(),
           invoiceHours: Number(invoiceHours),
           poNumber: poNumber || null,
           isCreditNote,
@@ -576,7 +564,7 @@ const AddEditInvoice = () => {
                         name="invoiceAmount"
                         type="number"
                         value={invoiceAmount}
-                        onChange={(e: any) => setInvoiceAmount(e.target.value)}
+                        onChange={(e: any) => setInvoiceAmount(sanitizeNonNegativeNumber(e.target.value))}
                         disabled={saving}
                         fullWidth
                         style={inputStyle}
@@ -611,19 +599,6 @@ const AddEditInvoice = () => {
                         />
                       </Box>
                     )}
-                    <Box sx={{ gridColumn: { xs: "auto", sm: "span 2" } }}>
-                      <Typography sx={fieldLabelStyle}>
-                        Customer Address <span style={{ color: "#d32f2f" }}>*</span>
-                      </Typography>
-                      <TextControl
-                        name="customerAddress"
-                        value={customerAddress}
-                        onChange={(e: any) => setCustomerAddress(e.target.value)}
-                        disabled={saving}
-                        fullWidth
-                        style={{ ...inputStyle, minHeight: 60 }}
-                      />
-                    </Box>
                   </Box>
                 )
               )}

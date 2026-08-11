@@ -8,7 +8,10 @@ import SelectControl from "../../components/resusablecontrols/SelectControl";
 import TextControl from "../../components/resusablecontrols/TextControl";
 import Button from "../../components/resusablecontrols/Button";
 import CustomDataGrid2 from "../../components/resusablecontrols/CustomDataGrid2";
+import ExportButton from "../../components/resusablecontrols/ExportButton";
+import { exporttoexcel } from "../../utils/exporttoexcel";
 import { baseUrl } from "../../const/BaseUrl";
+import { formatDateYYYYMMDD } from "../../utils/DateUtils";
 
 type Option = {
   value: string | number;
@@ -198,14 +201,58 @@ const SalesMeetingRecorder = () => {
     await loadHistory();
   };
 
+  const handleExportHistory = () => {
+    if (!historyRows || historyRows.length === 0) {
+      toast.warning("No data available to export.");
+      return;
+    }
+
+    const exportRows = historyRows.map((row) => ({
+      ...row,
+      calledDate: formatDateYYYYMMDD(row.calledDate),
+      followupDate: formatDateYYYYMMDD(row.followupDate),
+    }));
+
+    exporttoexcel(
+      {
+        data: exportRows,
+        sheetName: "Sales Meeting Recorder",
+        fileName: "SalesMeetingHistory.xlsx",
+        columns: [
+          { field: "companyName", headerName: "Company Name" },
+          { field: "contactPerson", headerName: "Contact Person" },
+          { field: "calledDate", headerName: "Called Date" },
+          { field: "reachedBy", headerName: "Reached By" },
+          { field: "modeOfMeeting", headerName: "Mode of Meeting" },
+          { field: "remarks", headerName: "Remarks" },
+          { field: "followupDate", headerName: "Next Followup Date" },
+          { field: "seqNo", headerName: "SI No" },
+        ],
+      }
+    );
+    toast.success("Meeting history exported!");
+  };
+
   const historyColumns: GridColDef<HistoryRow>[] = [
     { field: "companyName", headerName: "Company Name", flex: 1, minWidth: 180 },
     { field: "contactPerson", headerName: "Contact Person", flex: 1, minWidth: 150 },
-    { field: "calledDate", headerName: "Called Date", flex: 1, minWidth: 120 },
+    {
+      field: "calledDate",
+      headerName: "Called Date",
+      flex: 1,
+      minWidth: 120,
+      valueFormatter: (value: string) => formatDateYYYYMMDD(value),
+    },
     { field: "reachedBy", headerName: "Reached By", flex: 1, minWidth: 140 },
     { field: "modeOfMeeting", headerName: "Mode of Meeting", flex: 1, minWidth: 150 },
     { field: "remarks", headerName: "Remarks", flex: 1.5, minWidth: 200 },
-    { field: "followupDate", headerName: "Next Followup Date", flex: 1, minWidth: 150 },
+    {
+      field: "followupDate",
+      headerName: "Next Followup Date",
+      flex: 1,
+      minWidth: 150,
+      valueFormatter: (value: string) => formatDateYYYYMMDD(value),
+    },
     { field: "seqNo", headerName: "SI No", flex:1, minWidth: 100 }
   ];
 
@@ -375,6 +422,13 @@ const SalesMeetingRecorder = () => {
         {showHistory && (
           <Box sx={{ mt: 1.5 }}>
             <Divider sx={{ my: 1 }} />
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 0.5 }}>
+              <ExportButton
+                label="Export to Excel"
+                onClick={handleExportHistory}
+                disabled={loadingHistory || historyRows.length === 0}
+              />
+            </Box>
             <Box
               sx={{
                 p: 0.7,

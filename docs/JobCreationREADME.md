@@ -8,7 +8,7 @@ Route: `/Home/JobCreationForm` (registered in `App.tsx`).
 
 1. User picks a billing type (`Fixed-Cost` / `Time and Material`) via `handleBillingTypeChange`. This resets `enquiry`/`poNumber`/`billingDate`/`boardRef` and clears `enquiries`/`poDetails`.
 2. An effect (`[formState.billingType]`) calls `fetchEnquiries(billingType)` → `GET /api/Sales/RealisedEnquiries?billingType=`, populating the Enquiry Number dropdown.
-3. Selecting an enquiry triggers an effect (`[formState.enquiry]`) that calls `fetchPONumbers` → `GET /api/Sales/PONumbersByEnquiry/{enquiryNo}`, populating the PO Number dropdown, and resets `poNumber`/`billingDate`/`boardRef`.
+3. Selecting an enquiry triggers an effect (`[formState.enquiry]`) that calls `fetchPONumbers` → `GET /api/Sales/PONumbersByEnquiry/{enquiryNo}`, populating the **Approved PO Number** dropdown, and resets `poNumber`/`billingDate`/`boardRef`. The endpoint only returns POs with `poenquiries.Approvalstatus == "YES"` (server-side filter — see [PO Approval](./POApprovalREADME.md)), so a PO that hasn't been approved yet simply won't appear as an option here; the field label was changed from "PO Number" to "**Approved PO Number**" to make that explicit.
 4. Selecting a PO triggers an effect (`[formState.poNumber]`) that calls `fetchPODetails` → `GET /api/Sales/PODetailsAsync/{poNumber}`, populating the Purchase Order Summary card (Total Amount, Total Hours, Balance Hours).
 5. **Time and Material** additionally requires a Billing Date field; **Fixed-Cost** shows an optional Board Reference field instead (mutually exclusive, `formState.billingType` gated in the JSX).
 6. Submit (`handleSubmit`) validates (`validateForm`), then `POST /api/Sales/CreateJob` with the assembled payload.
@@ -73,7 +73,7 @@ For each required scope (Layout, Analysis, Value Analysis, NPI, Library, CAM —
 | Method | Endpoint | Purpose |
 |---|---|---|
 | GET | `/api/Sales/RealisedEnquiries?billingType=` | Enquiry dropdown options |
-| GET | `/api/Sales/PONumbersByEnquiry/{enquiryNo}` | PO Number dropdown options |
+| GET | `/api/Sales/PONumbersByEnquiry/{enquiryNo}` | Approved PO Number dropdown options (`Approvalstatus == "YES"` only) |
 | GET | `/api/Sales/PODetailsAsync/{poNumber}` | PO summary (amount/hours/balance) |
 | POST | `/api/Sales/CreateJob` | Create the job (see above) |
 
@@ -82,3 +82,4 @@ For each required scope (Layout, Analysis, Value Analysis, NPI, Library, CAM —
 - `createScopeBasedJobs` (a separate `POST /api/Sales/CreateScopeBasedJobs` call) is commented out in this component; scope-based job creation happens server-side as part of `CreateJob` instead.
 - The commented-out `{error && <Alert>...}` block means inline error display is disabled in favor of toasts only; `error` state is still tracked (used for dedupe via `lastErrorRef`) but never rendered.
 - No client-side check for estimation-completed / quotation-exists before submit — those are enforced server-side only, so the user finds out via the error toast after clicking Create Job rather than via disabled controls up front.
+- If an enquiry has POs but none are yet approved, the Approved PO Number dropdown renders empty (no explicit "no approved POs" messaging) rather than showing unapproved POs with a warning — the user has to know to check [PO Approval](./POApprovalREADME.md) first.

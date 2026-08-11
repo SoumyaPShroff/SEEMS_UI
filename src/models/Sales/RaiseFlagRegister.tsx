@@ -17,6 +17,10 @@ type RaiseFlagRow = {
   projectmanager: string;
   invoiceDate: string | null;
   isInvoiced: boolean;
+  emailId: string | null;
+  phoneNo: string | null;
+  poComments: string | null;
+  paymentTerms: string | null;
 };
 
 const monthStart = () => {
@@ -90,10 +94,11 @@ const RaiseFlagRegister = () => {
     { field: "flagRaiseOn", headerName: "Flag Raised On", flex: 1, minWidth: 120 },
     { field: "projectApprovedHrs", headerName: "Project Approved Hrs", flex: 1, minWidth: 140 },
     { field: "ecoApprovedHrs", headerName: "ECO Approved Hrs", flex: 1, minWidth: 140 },
-    { field: "invoiceAmount", headerName: "Invoice Amt", flex: 1, minWidth: 150 },
-    { field: "projectmanager", headerName: "Project Manager", flex: 1, minWidth: 190 },
-    { field: "flagStatus", headerName: "Flag Status", flex: 1, minWidth: 180 },
-    {
+    { field: "invoiceAmount", headerName: "Invoice Amt", flex: 1, minWidth: 120 },
+    { field: "projectmanager", headerName: "Project Manager", flex: 1, minWidth: 150 },
+
+    { field: "paymentTerms", headerName: "Payment Terms", flex: 1, minWidth: 160 },
+     {
       field: "addInvoice",
       headerName: "Add Invoice",
       flex: 1,
@@ -113,6 +118,11 @@ const RaiseFlagRegister = () => {
         </a>
       ),
     },
+        { field: "flagStatus", headerName: "Flag Status", flex: 1, minWidth: 160 },
+    { field: "emailId", headerName: "Email Id", flex: 1, minWidth: 180 },
+    { field: "phoneNo", headerName: "Phone No", flex: 1, minWidth: 140 },
+    { field: "poComments", headerName: "Comments", flex: 1, minWidth: 180 }
+
   ];
 
   const invoicedColumns: GridColDef[] = [
@@ -122,8 +132,10 @@ const RaiseFlagRegister = () => {
     { field: "ecoApprovedHrs", headerName: "ECO Approved Hrs", flex: 1, minWidth: 140 },
     { field: "invoiceAmount", headerName: "Invoice Amt", flex: 1, minWidth: 120 },
     { field: "projectmanager", headerName: "Project Manager", flex: 1, minWidth: 190 },
-    { field: "invoiceDate", headerName: "Invoice Date", flex: 1, minWidth: 130 },
-    {
+    { field: "invoiceDate", headerName: "Invoice Date", flex: 1, minWidth: 120 },
+        { field: "paymentTerms", headerName: "Payment Terms", flex: 1, minWidth: 130 },
+  
+      {
       field: "editInvoice",
       headerName: "Edit Invoice",
       flex: 1,
@@ -143,6 +155,10 @@ const RaiseFlagRegister = () => {
       ),
     },
         { field: "flagStatus", headerName: "Flag Status", flex: 1, minWidth: 150 },
+    { field: "emailId", headerName: "Email Id", flex: 1, minWidth: 180 },
+    { field: "phoneNo", headerName: "Phone No", flex: 1, minWidth: 140 },
+    { field: "poComments", headerName: "Comments", flex: 1, minWidth: 180 },
+
   ];
 
   return (
