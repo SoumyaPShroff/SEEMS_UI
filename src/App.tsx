@@ -41,6 +41,8 @@ import PurchaseOrder from './models/Sales/PurchaseOrder';
 import POApproval from './models/Sales/POApproval';
 import POApprovalDetails from './models/Sales/POApprovalDetails';
 import AddEditPO from './models/Sales/AddEditPO';
+import InvoiceApproval from './models/Sales/InvoiceApproval';
+import InvoiceApprovalDetails from './models/Sales/InvoiceApprovalDetails';
 import JobCreationForm from './models/Sales/JobCreationForm';
 import ViewAllJobs from './models/Sales/ViewAllJobs';
 import TransferJob from './models/Sales/TransferJob';
@@ -91,6 +93,8 @@ const App: React.FC = () => {
           <Route path="AddEditPO/:id" element={<AddEditPO />} />
           <Route path="POApproval" element={<POApproval />} />
           <Route path="POApprovalDetails/:id" element={<POApprovalDetails />} />
+          <Route path="InvoiceApproval" element={<InvoiceApproval />} />
+          <Route path="InvoiceApprovalDetails/:id" element={<InvoiceApprovalDetails />} />
           <Route path="support" element={<Support />} />
 
           {/* Absolute routes */}

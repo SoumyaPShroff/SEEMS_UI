@@ -20,11 +20,13 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import BuildIcon from "@mui/icons-material/Build";
 import CloudSyncIcon from "@mui/icons-material/CloudSync";
+import DescriptionIcon from "@mui/icons-material/Description";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { baseUrl } from "../../const/BaseUrl";
+import TextControl from "../../components/resusablecontrols/TextControl";
 
 interface SapPoLine {
   customerName?: string;
@@ -53,6 +55,8 @@ interface PoApprovalDetails {
   sez?: string;
   approvalStatus?: string;
   comments?: string;
+  approverComments?: string;
+  hasDocument?: boolean;
 
   layQty?: string;
   layRatePerHr?: string;
@@ -124,12 +128,14 @@ const POApprovalDetails: React.FC = () => {
   const [details, setDetails] = useState<PoApprovalDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [approving, setApproving] = useState(false);
+  const [comments, setComments] = useState("");
 
   const loadData = async () => {
     setLoading(true);
     try {
       const response = await axios.get<PoApprovalDetails>(`${baseUrl}/api/Sales/PoApprovalDetails/${id}`);
       setDetails(response.data);
+      setComments(response.data.approverComments || "");
     } catch (error) {
       console.error("Error loading PO approval details:", error);
       toast.error("Failed to load PO details");
@@ -145,7 +151,9 @@ const POApprovalDetails: React.FC = () => {
   const handleApprove = async () => {
     setApproving(true);
     try {
-      await axios.post(`${baseUrl}/api/Sales/ApprovePO/${id}/${encodeURIComponent(loginId)}`);
+      await axios.post(`${baseUrl}/api/Sales/ApprovePO/${id}/${encodeURIComponent(loginId)}`, null, {
+        params: { comments },
+      });
       toast.success("PO approved successfully");
       loadData();
     } catch (error) {
@@ -196,7 +204,7 @@ const POApprovalDetails: React.FC = () => {
           border: "1px solid #557ec6",
           boxShadow: "0 14px 30px rgba(24, 71, 153, 0.16)",
           background: "linear-gradient(145deg, #f7fbff 0%, #e8f2ff 52%, #dbeaff 100%)",
-          maxWidth: 1100,
+          maxWidth: 1200,
           mx: "auto",
         }}
       >
@@ -303,6 +311,7 @@ const POApprovalDetails: React.FC = () => {
                 <Table size="small">
                   <TableHead>
                     <TableRow>
+                      <TableCell sx={tableHeadCellStyle}>Sales Order Number</TableCell>
                       <TableCell sx={tableHeadCellStyle}>Customer Name</TableCell>
                       <TableCell sx={tableHeadCellStyle}>PO Number</TableCell>
                       <TableCell sx={tableHeadCellStyle}>PO Date</TableCell>
@@ -317,6 +326,7 @@ const POApprovalDetails: React.FC = () => {
                   <TableBody>
                     {details.sapPoData.map((line, index) => (
                       <TableRow key={index}>
+                        <TableCell sx={tableBodyCellStyle}>{line.salesOrder}</TableCell>
                         <TableCell sx={tableBodyCellStyle}>{line.customerName}</TableCell>
                         <TableCell sx={tableBodyCellStyle}>{line.purchaseOrderNumber}</TableCell>
                         <TableCell sx={tableBodyCellStyle}>{line.poDate}</TableCell>
@@ -339,7 +349,43 @@ const POApprovalDetails: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 1.5 }}>
+        <Card sx={{ ...sectionCardStyle, mt: 1.25 }}>
+          <CardContent sx={{ ...sectionContentStyle, p: 1.25, "&:last-child": { pb: 1.25 } }}>
+            <Typography sx={{ fontSize: 11.5, fontWeight: 400, color: "#243a5a", mb: 0.5 }}>
+              Approver Comments
+            </Typography>
+            <TextControl
+              name="approverComments"
+              value={comments}
+              onChange={(e) => setComments(e.target.value)}
+              placeholder="Add your comments before approving..."
+              disabled={isApproved || approving}
+              multiline
+              rows={2}
+              fullWidth
+            />
+          </CardContent>
+        </Card>
+
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 1.5 }}>
+          {details.hasDocument ? (
+            <Button
+              component="a"
+              href={`${baseUrl}/api/Sales/DownloadPOFile/${id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              startIcon={<DescriptionIcon />}
+              size="small"
+              sx={{ textTransform: "none" }}
+            >
+              View PO Document
+            </Button>
+          ) : (
+            <Typography sx={{ fontSize: "0.78rem", color: "text.secondary" }}>
+              No PO document uploaded
+            </Typography>
+          )}
+
           <Button
             variant="contained"
             color="success"

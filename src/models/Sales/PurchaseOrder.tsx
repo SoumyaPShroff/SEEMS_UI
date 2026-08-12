@@ -204,7 +204,6 @@ const PurchaseOrder: React.FC = () => {
         rowHeight={42}
         searchableFields={['pponumber', 'penquiryno', 'pquoteno']}
         placeholder="Search POs (Number, Enquiry, Quote)"
-        onRowClick={handleEdit}
         getRowClassName={(params) => (params.row.approvalstatus === "NO" ? "row-not-approved" : "")}
       />
 

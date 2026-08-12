@@ -338,6 +338,7 @@ const AddEditInvoice = () => {
           ratePerHour: Number(ratePerHour),
           invoiceAmount: Number(invoiceAmount),
           poNumber: poNumber || null,
+          sessionUserId: sessionStorage.getItem("SessionUserID") || null,
         });
         toast.success(res.data?.message || "Invoice added successfully.");
       } else {
@@ -421,7 +422,7 @@ const AddEditInvoice = () => {
               size="small"
               sx={{ borderRadius: 2, flex: 1, textTransform: "none", py: 0.5 }}
             >
-              Update Invoice Details
+              Edit Invoice Details
             </MuiButton>
           </Box>
         </Box>
