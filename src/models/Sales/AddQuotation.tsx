@@ -418,6 +418,10 @@ const AddQuotation: React.FC = () => {
         0
     );
 
+    // Blocks characters like ' and @ that have caused issues downstream (e.g. SQL-sensitive quoting).
+    const INVALID_TERMS_CHARS_REGEX = /['@]/;
+    const hasInvalidTermsCharacters = (text: string) => INVALID_TERMS_CHARS_REGEX.test(text);
+
     const buildQuoteItemsPayload = (forceNewSlNo = false) => {
         let missingDescription = false;
         let missingLocation = false;
@@ -461,6 +465,12 @@ const AddQuotation: React.FC = () => {
 
     const handleSaveQuotation = async () => {
         console.log("handleSaveQuotation triggered", { selectedQuoteNo, items });
+
+        if (hasInvalidTermsCharacters(terms)) {
+            toast.error("Terms and Conditions cannot contain special characters like ' or @. Please remove them before saving.");
+            return;
+        }
+
         try {
             const { items: quoteItems, missingDescription, missingLocation } = buildQuoteItemsPayload();
             if (!quoteItems || quoteItems.length === 0) {
@@ -512,6 +522,11 @@ const AddQuotation: React.FC = () => {
     };
 
     const handleSaveNewVersion = async () => {
+        if (hasInvalidTermsCharacters(terms)) {
+            toast.error("Terms and Conditions cannot contain special characters like ' or @. Please remove them before saving.");
+            return;
+        }
+
         try {
             const newVersion = selectedVersionNo + 1;
             const { items: quoteItems, missingDescription, missingLocation } = buildQuoteItemsPayload(true);
@@ -706,7 +721,7 @@ const AddQuotation: React.FC = () => {
                                 label="Qty"
                                 type="number"
                                 fullWidth
-                                value={item.qty}
+                                value={item.qty === 0 ? "" : item.qty}
                                 onChange={(e) => {
                                     const raw = e.target.value;
                                     if (raw.length > 5) return;
@@ -806,6 +821,8 @@ const AddQuotation: React.FC = () => {
                         multiline
                         rows={12}
                         fullWidth
+                        error={hasInvalidTermsCharacters(terms)}
+                        helperText={hasInvalidTermsCharacters(terms) ? "Special characters like ' or @ are not allowed." : ""}
                     />
                 </Box>
                 {/* Save */}

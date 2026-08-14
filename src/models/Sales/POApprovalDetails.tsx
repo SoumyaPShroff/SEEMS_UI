@@ -29,6 +29,7 @@ import { baseUrl } from "../../const/BaseUrl";
 import TextControl from "../../components/resusablecontrols/TextControl";
 
 interface SapPoLine {
+  salesOrder?: string;
   customerName?: string;
   purchaseOrderNumber?: string;
   poDate?: string;
@@ -38,6 +39,7 @@ interface SapPoLine {
   paymentTerm?: string;
   docCurrency?: string;
   netPrice?: string;
+  netValueInDocCurrency?: string;
 }
 
 interface PoApprovalDetails {
@@ -113,12 +115,30 @@ const sectionContentStyle = { background: "linear-gradient(180deg,#ffffff 0%,#f2
 const tableHeadCellStyle = { fontSize: 11.5, fontWeight: 700, color: "#243a5a", py: 0.75 };
 const tableBodyCellStyle = { fontSize: "0.8rem", fontWeight: 700, color: "#0f2d55", py: 0.5 };
 
-const InfoField = ({ label, value }: { label: string; value?: React.ReactNode }) => (
+const mismatchValueStyle = { color: "#d32f2f", fontWeight: 800 };
+
+const InfoField = ({
+  label,
+  value,
+  highlight,
+}: {
+  label: string;
+  value?: React.ReactNode;
+  highlight?: boolean;
+}) => (
   <Box>
     <Typography sx={readOnlyLabelStyle}>{label}</Typography>
-    <Typography sx={readOnlyValueStyle}>{value ?? "-"}</Typography>
+    <Typography sx={highlight ? { ...readOnlyValueStyle, ...mismatchValueStyle } : readOnlyValueStyle}>
+      {value ?? "-"}
+    </Typography>
   </Box>
 );
+
+const parseAmount = (value?: string): number => {
+  if (!value) return NaN;
+  const parsed = Number(value.replace(/,/g, "").trim());
+  return Number.isNaN(parsed) ? NaN : parsed;
+};
 
 const POApprovalDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -194,6 +214,19 @@ const POApprovalDetails: React.FC = () => {
 
   const isApproved = details.approvalStatus === "YES";
 
+  const sapCustomerName = details.sapPoData.find((line) => line.customerName)?.customerName;
+
+  const poAmountNum = parseAmount(details.poAmount);
+  const hasSapNetPrice = details.sapPoData.some((line) => !Number.isNaN(parseAmount(line.netPrice)));
+  const sapNetPriceTotal = details.sapPoData.reduce((sum, line) => {
+    const val = parseAmount(line.netPrice);
+    return sum + (Number.isNaN(val) ? 0 : val);
+  }, 0);
+  const amountMismatch =
+    hasSapNetPrice && !Number.isNaN(poAmountNum) && Math.abs(poAmountNum - sapNetPriceTotal) > 0.01;
+
+  const noSapData = !details.sapPoData || details.sapPoData.length === 0;
+
   return (
     <Box sx={{ p: 2.5, mt: 10, background: "#f4f7fb", fontFamily: "'Inter', sans-serif" }}>
       <Paper
@@ -253,7 +286,8 @@ const POApprovalDetails: React.FC = () => {
               <InfoField label="Quote No" value={details.quoteNo} />
               <InfoField label="PO Date" value={details.poDate} />
 
-              <InfoField label="PO Amount" value={details.poAmount} />
+              <InfoField label="Customer Name" value={sapCustomerName} />
+              <InfoField label="PO Amount" value={details.poAmount} highlight={amountMismatch} />
               <InfoField label="Balance Amount" value={details.balanceAmount} />
               <InfoField label="Currency" value={details.currencyName} />
               <InfoField label="Conversion Rate" value={details.convRate} />
@@ -321,6 +355,7 @@ const POApprovalDetails: React.FC = () => {
                       <TableCell sx={tableHeadCellStyle}>Payment Term</TableCell>
                       <TableCell sx={tableHeadCellStyle}>Currency</TableCell>
                       <TableCell sx={tableHeadCellStyle} align="right">Net Price</TableCell>
+                      <TableCell sx={tableHeadCellStyle} align="right">Net Value (Doc Currency)</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -335,7 +370,13 @@ const POApprovalDetails: React.FC = () => {
                         <TableCell sx={tableBodyCellStyle} align="right">{line.openQuantity}</TableCell>
                         <TableCell sx={tableBodyCellStyle}>{line.paymentTerm}</TableCell>
                         <TableCell sx={tableBodyCellStyle}>{line.docCurrency}</TableCell>
-                        <TableCell sx={tableBodyCellStyle} align="right">{line.netPrice}</TableCell>
+                        <TableCell
+                          sx={amountMismatch ? { ...tableBodyCellStyle, ...mismatchValueStyle } : tableBodyCellStyle}
+                          align="right"
+                        >
+                          {line.netPrice}
+                        </TableCell>
+                        <TableCell sx={tableBodyCellStyle} align="right">{line.netValueInDocCurrency}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -386,17 +427,24 @@ const POApprovalDetails: React.FC = () => {
             </Typography>
           )}
 
-          <Button
-            variant="contained"
-            color="success"
-            size="small"
-            startIcon={<CheckCircleIcon />}
-            disabled={isApproved || approving}
-            onClick={handleApprove}
-            sx={{ textTransform: "none", borderRadius: 2, px: 2.5 }}
-          >
-            {isApproved ? "Approved" : approving ? "Approving..." : "Approve PO"}
-          </Button>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            {!isApproved && noSapData && (
+              <Typography sx={{ fontSize: "0.78rem", color: "#d32f2f", fontWeight: 600 }}>
+                No SAP data found for this PO - approval is blocked until SAP data is available.
+              </Typography>
+            )}
+            <Button
+              variant="contained"
+              color="success"
+              size="small"
+              startIcon={<CheckCircleIcon />}
+              disabled={isApproved || approving || amountMismatch || noSapData}
+              onClick={handleApprove}
+              sx={{ textTransform: "none", borderRadius: 2, px: 2.5 }}
+            >
+              {isApproved ? "Approved" : approving ? "Approving..." : "Approve PO"}
+            </Button>
+          </Box>
         </Box>
       </Paper>
     </Box>

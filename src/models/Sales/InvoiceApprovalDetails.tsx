@@ -19,7 +19,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { baseUrl } from "../../const/BaseUrl";
 
 interface InvoiceApprovalDetails {
-  sino: number;
+  invoiceCount: number;
   invoiceNo?: string;
   jobNumber?: string;
   customerName?: string;

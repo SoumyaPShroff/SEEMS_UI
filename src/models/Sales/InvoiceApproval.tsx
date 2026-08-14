@@ -12,7 +12,7 @@ import { baseUrl } from "../../const/BaseUrl";
 
 interface PendingInvoiceRow {
   id: number | string;
-  sino: number | string;
+  invoiceCount: number | string;
   invoiceNo?: string;
   jobNumber?: string;
   customerName?: string;
@@ -38,7 +38,7 @@ const InvoiceApproval: React.FC = () => {
         params: { sessionUserId },
       });
       const data = Array.isArray(response.data) ? response.data : [];
-      setRows(data.map((row: any, index: number) => ({ ...row, id: row.sino ?? index + 1 })));
+      setRows(data.map((row: any, index: number) => ({ ...row, id: row.invoiceCount ?? index + 1 })));
     } catch (error) {
       console.error("Error loading pending invoice approvals:", error);
       toast.error("Failed to load pending invoice approvals");
@@ -99,7 +99,7 @@ const InvoiceApproval: React.FC = () => {
             size="small"
             onClick={(e) => {
               e.stopPropagation();
-              if (isPending) navigate(`/Home/InvoiceApprovalDetails/${params.row.sino}`);
+              if (isPending) navigate(`/Home/InvoiceApprovalDetails/${params.row.invoiceCount}`);
             }}
             sx={{ cursor: isPending ? "pointer" : "default" }}
           />

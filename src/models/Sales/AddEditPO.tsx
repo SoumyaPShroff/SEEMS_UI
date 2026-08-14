@@ -5,7 +5,7 @@ import axios from "axios";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams, useLocation, useSearchParams } from "react-router-dom";
 import SelectControl from "../../components/resusablecontrols/SelectControl";
 import { baseUrl } from "../../const/BaseUrl";
 import type { PurchaseOrderData } from "./PurchaseOrder";
@@ -55,6 +55,8 @@ const AddEditPO: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const prefillEnquiryNo = (searchParams.get("enquiryno") || "").trim();
 
   const statePo = (location.state as { po?: PurchaseOrderData } | null)?.po ?? null;
 
@@ -246,8 +248,7 @@ const AddEditPO: React.FC = () => {
     if (e.target.files?.length) setFile(e.target.files[0]);
   };
 
-  const onEnquiryChange = async (e: any) => {
-    const enqNo = e.target.value;
+  const applyEnquirySelection = async (enqNo: string) => {
     setValue("penquiryno", enqNo, { shouldValidate: true });
     setValue("pquoteno", "");
     setQuoteOptions([]);
@@ -262,6 +263,10 @@ const AddEditPO: React.FC = () => {
       setEnquiryCategory("");
       setScopeConfig({ layout: false, analysis: false, va: false, npi: false, library: false, dfm: false, isOnsite: false });
     }
+  };
+
+  const onEnquiryChange = async (e: any) => {
+    await applyEnquirySelection(e.target.value);
   };
 
   // Consolidated initialization for metadata and form values
@@ -367,6 +372,12 @@ const AddEditPO: React.FC = () => {
           sez: "NO"
         });
         setScopeLoaded(true);
+
+        // Arrived via "Add PO" link for a specific (Realised) enquiry - preselect it instead of
+        // making the user pick it again from the dropdown.
+        if (prefillEnquiryNo) {
+          await applyEnquirySelection(prefillEnquiryNo);
+        }
       }
     };
     initialize();

@@ -36,6 +36,8 @@ const modeOfMeetingOptions: Option[] = [
   { value: "Conference Call", label: "Conference Call" },
   { value: "At Office", label: "At Office" },
   { value: "At Customer Place", label: "At Customer Place" },
+  { value: "Teams Call", label: "Teams Call" },
+  {value: "At Expo", label: "At Expo" },
   { value: "Others", label: "Others" },
 ];
 

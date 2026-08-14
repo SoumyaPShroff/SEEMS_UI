@@ -7,6 +7,7 @@ import { FavouritesProvider } from "./components/FavouritesContext";
 import axios from "axios";
 import { baseUrl } from "./const/BaseUrl";
 import SelectControl from "./components/resusablecontrols/SelectControl";
+import ChatBot from "./components/ChatBot";
 
 type Option = { value: string; label: string };
 
@@ -213,6 +214,7 @@ const Home: React.FC<HomeProps> = ({ userId, setUserId }) => {
       <PageContent collapsed={collapsed}>
         <Outlet key={`${userId}:${sessionStorage.getItem("SessionDesigID") ?? ""}`} />
       </PageContent>
+      <ChatBot />
       </FavouritesProvider>
     </>
   );

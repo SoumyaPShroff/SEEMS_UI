@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Box, Card, CardContent, Typography, Divider, Paper, Button as MuiButton, Checkbox, FormControlLabel } from "@mui/material";
+import { Box, Card, CardContent, Typography, Divider, Paper, Button as MuiButton } from "@mui/material";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { ReceiptLong } from "@mui/icons-material";
@@ -75,8 +75,7 @@ const AddEditInvoice = () => {
   const [ratePerHour, setRatePerHour] = useState("");
   const [invoiceAmount, setInvoiceAmount] = useState("");
   const [poNumber, setPoNumber] = useState("");
-  const [isCreditNote, setIsCreditNote] = useState(false);
-  const [invoiceNo, setInvoiceNo] = useState(""); // Edit mode only - display only, backend-generated
+  const [invoiceNo, setInvoiceNo] = useState("");
 
   // Deep-link entry (mirrors invoicing.aspx's ?jobnumber=<job> TotalHrs=<n> Click=<True|False>,
   // from the upstream "Raise Flag Register" page): resolved once the relevant option list has
@@ -122,7 +121,6 @@ const AddEditInvoice = () => {
     setRatePerHour("");
     setInvoiceAmount("");
     setPoNumber("");
-    setIsCreditNote(false);
     setInvoiceNo("");
   };
 
@@ -320,6 +318,10 @@ const AddEditInvoice = () => {
       toast.error("Please enter a valid Invoice Amount.");
       return;
     }
+    if (!invoiceNo.trim()) {
+      toast.error("Please enter the Invoice No.");
+      return;
+    }
     setSaving(true);
     try {
       if (actionType === "Add") {
@@ -337,6 +339,7 @@ const AddEditInvoice = () => {
           invoiceHours: Number(invoiceHours),
           ratePerHour: Number(ratePerHour),
           invoiceAmount: Number(invoiceAmount),
+          invoiceNo: invoiceNo.trim(),
           poNumber: poNumber || null,
           sessionUserId: sessionStorage.getItem("SessionUserID") || null,
         });
@@ -355,8 +358,8 @@ const AddEditInvoice = () => {
           invoiceDate,
           ratePerHour: Number(ratePerHour),
           invoiceHours: Number(invoiceHours),
+          invoiceNo: invoiceNo.trim(),
           poNumber: poNumber || null,
-          isCreditNote,
         });
         toast.success(res.data?.message || "Invoice updated successfully.");
       }
@@ -575,31 +578,20 @@ const AddEditInvoice = () => {
                       <Typography sx={readOnlyLabelStyle}>PO Number</Typography>
                       <Typography sx={readOnlyValueStyle}>{poNumber || "-"}</Typography>
                     </Box>
-                    {actionType === "Edit" && (
-                      <Box>
-                        <Typography sx={readOnlyLabelStyle}>Invoice No</Typography>
-                        <Typography sx={readOnlyValueStyle}>{invoiceNo || "-"}</Typography>
-                      </Box>
-                    )}
-                    {actionType === "Edit" && (
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={isCreditNote}
-                              onChange={(e) => setIsCreditNote(e.target.checked)}
-                              disabled={saving}
-                              size="small"
-                            />
-                          }
-                          label={
-                            <Typography sx={{ fontSize: "0.8rem", color: "#243a5a" }}>
-                              Credit Note (generate next invoice no.)
-                            </Typography>
-                          }
-                        />
-                      </Box>
-                    )}
+                    <Box>
+                      <Typography sx={fieldLabelStyle}>
+                        Invoice No <span style={{ color: "#d32f2f" }}>*</span>
+                      </Typography>
+                      <TextControl
+                        name="invoiceNo"
+                        type="text"
+                        value={invoiceNo}
+                        onChange={(e: any) => setInvoiceNo(e.target.value)}
+                        disabled={saving}
+                        fullWidth
+                        style={inputStyle}
+                      />
+                    </Box>
                   </Box>
                 )
               )}

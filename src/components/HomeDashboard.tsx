@@ -210,8 +210,8 @@ const HelpBotContent = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
-  min-width: 240px;
-  max-width: 280px;
+  min-width: 320px;
+  max-width: 380px;
 `;
 
 const ChatMessages = styled.div`

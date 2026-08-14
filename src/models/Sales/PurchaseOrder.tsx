@@ -204,7 +204,11 @@ const PurchaseOrder: React.FC = () => {
         rowHeight={42}
         searchableFields={['pponumber', 'penquiryno', 'pquoteno']}
         placeholder="Search POs (Number, Enquiry, Quote)"
-        getRowClassName={(params) => (params.row.approvalstatus === "NO" ? "row-not-approved" : "")}
+        getRowClassName={(params) =>
+          params.row.approvalstatus === "NO" && !params.row.pponumber?.trim().toUpperCase().startsWith("TEMP")
+            ? "row-not-approved"
+            : ""
+        }
       />
 
       <Dialog open={deleteDialogOpen} onClose={handleCancelDelete} maxWidth="sm" fullWidth>

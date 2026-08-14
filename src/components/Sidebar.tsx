@@ -9,12 +9,14 @@ import axios from "axios";
 import { baseUrl } from "../const/BaseUrl";
 //import logo from "../const/Images/Sienna-Ecad-logo.jpg";
 import { motion } from "framer-motion";
-import { FaBars, FaTimes, FaStar, FaRegStar, FaUserCircle, FaBell, FaUserCog } from "react-icons/fa";
+import { FaBars, FaTimes, FaStar, FaRegStar, FaUserCircle, FaBell, FaUserCog, FaQuestionCircle } from "react-icons/fa";
 import { RiHome2Line } from "react-icons/ri";
 import { useFavourites } from "./FavouritesContext";
 import MyProfileBanner from "./MyProfileBanner";
 import ReleaseNotesText from "./../components/ReleaseNotesText";
 import ReleaseNotes from "./ReleaseNotes";
+import HelpDocsText from "./HelpDocsText";
+import HelpDocs from "./HelpDocs";
 
 // import Breadcrumbs from "./Breadcrumbs";
 
@@ -191,6 +193,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, 
   const [showProfile, setShowProfile] = useState(false);
   const [showReleaseNotes, setShowReleaseNotes] = useState(false);
   const [showHeaderRight, setShowHeaderRight] = useState(false);
+  const [showHelpDocs, setShowHelpDocs] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const menu = useSideBarData();
@@ -198,6 +201,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sessionUserID, setUserId, collapsed, 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);//Because rerenders may behave inconsistently.
   const releasePopoverRef = useRef<HTMLDivElement | null>(null);
   const headerRightPopoverRef = useRef<HTMLDivElement | null>(null);
+  const helpPopoverRef = useRef<HTMLDivElement | null>(null);
 
   const LATEST_RELEASE_VERSION = ReleaseNotesText[0].version;
   const LAST_SEEN_VERSION_KEY = 'lastSeenReleaseVersion';
@@ -363,16 +367,19 @@ useEffect(() => {
       if (showHeaderRight && headerRightPopoverRef.current && !headerRightPopoverRef.current.contains(target)) {
         setShowHeaderRight(false);
       }
+      if (showHelpDocs && helpPopoverRef.current && !helpPopoverRef.current.contains(target)) {
+        setShowHelpDocs(false);
+      }
     };
 
-    if (showReleaseNotes || showHeaderRight) {
+    if (showReleaseNotes || showHeaderRight || showHelpDocs) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showReleaseNotes, showHeaderRight]);
+  }, [showReleaseNotes, showHeaderRight, showHelpDocs]);
 
   /* ======================================================
      RENDER
@@ -431,6 +438,20 @@ useEffect(() => {
               {isActiveFav ? <FaStar color="#FFD700" /> : <FaRegStar color="#ffffff" />}
             </span>
           )}
+          <div ref={helpPopoverRef} style={{ position: "relative", display: "flex", alignItems: "center" }}>
+            <span
+              onClick={() => setShowHelpDocs(prev => !prev)}
+              style={{ cursor: "pointer", marginRight: "15px", fontSize: "1.2rem", display: "flex", alignItems: "center" }}
+              title="Help"
+            >
+              <FaQuestionCircle color="#ffffff" />
+            </span>
+            {showHelpDocs && (
+              <ReleaseNotesPopover style={{ width: 480 }}>
+                <HelpDocs docs={HelpDocsText} onLinkClick={() => setShowHelpDocs(false)} />
+              </ReleaseNotesPopover>
+            )}
+          </div>
           <div ref={releasePopoverRef} style={{ position: "relative", display: "flex", alignItems: "center" }}>
             <span
               onClick={handleReleaseNotesClick}

@@ -22,10 +22,15 @@ const allowedStatuses = [
   "All",
 ];
 
+const STATUS_STORAGE_KEY = "ViewAllEnquiries.status";
+
 const ViewAllEnquiries = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState("Open");
+  const [status, setStatus] = useState(() => {
+    const stored = sessionStorage.getItem(STATUS_STORAGE_KEY);
+    return stored && allowedStatuses.includes(stored) ? stored : "Open";
+  });
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const latestRequestRef = useRef(0);
@@ -67,6 +72,12 @@ const [toDate, setToDate] = useState(getLastDayOfMonth());
     }
   }, [searchParams, navigate]);
 
+  // Remember the selected status filter across navigation (e.g. leaving to EnquiryStatus and
+  // coming back via the browser Back button, which remounts this page with fresh state).
+  useEffect(() => {
+    sessionStorage.setItem(STATUS_STORAGE_KEY, status);
+  }, [status]);
+
   //check for access to edit - own enquiry of sesion user
   const canEditRow = (row: any) => {
     const isOwn = row.salesResponsibility === loginUserName;
@@ -75,11 +86,11 @@ const [toDate, setToDate] = useState(getLastDayOfMonth());
 
   // ✅ Correct column typing
   const columns: GridColDef[] = [
-    { field: "enquiryno", headerName: "Enquiry No", flex: 1, minWidth: 150 },
+    { field: "enquiryno", headerName: "Enquiry No" , width: 130 },
     { field: "customer", headerName: "Customer", flex: 1, minWidth: 250 },
     { field: "createdon", headerName: "Createdon", flex: 1, minWidth: 150 },
     { field: "endDate", headerName: "EndDate", flex: 1, minWidth: 130 },
-    { field: "salesResponsibility", headerName: "Sales Resp", flex: 1, minWidth: 150 },
+    { field: "salesResponsibility", headerName: "Sales Resp", flex: 1, minWidth: 145 },
 
     // 🟢 Add link columns like in your screenshot
     {
@@ -146,8 +157,24 @@ const [toDate, setToDate] = useState(getLastDayOfMonth());
       sortable: false,
       renderCell: (params) => {
         const statusValue = params.value?.toString() || "";
+
+        if (statusValue === "Realised") {
+          return (
+            <a
+              href="#"
+              style={{ color: "#1976d2", textDecoration: "underline", cursor: "pointer" }}
+              onClick={(e) => {
+                e.preventDefault();
+                const enqNo = params.row.enquiryno;
+                navigate(`/Home/AddEditPO?enquiryno=${encodeURIComponent(enqNo)}`);
+              }}
+            >
+              Add PO
+            </a>
+          );
+        }
+
         const isDisabled =
-          statusValue === "Realised" ||
           statusValue === "Cancelled" ||
           statusValue === "Rejected By Customer" ||
           statusValue === "Rejected By Sienna";
@@ -179,7 +206,7 @@ const [toDate, setToDate] = useState(getLastDayOfMonth());
       field: "addEstimate",
       headerName: "Add Estimate",
       flex: 1,
-      minWidth: 140,
+      minWidth: 120,
       sortable: false,
       renderCell: (params) => {
         const estiValue = params.row.esti?.toUpperCase() || "";
@@ -211,7 +238,7 @@ const [toDate, setToDate] = useState(getLastDayOfMonth());
         );
       },
     },
-    { field: "esti", headerName: "Esti", flex: 1, minWidth: 100 },
+    { field: "esti", headerName: "Esti" },
     { field: "completeResponsibility", headerName: "PM Resp", flex: 1, minWidth: 150 },
     { field: "enquiryType", headerName: "EnqType", flex: 1, minWidth: 150 },
     { field: "boardRef", headerName: "Board Ref", flex: 1, minWidth: 200 },
@@ -346,8 +373,7 @@ url += `?${params.toString()}`;
       sx={{
         p: { xs: 1, md: 1.5 },
         mt: 15,
-        width: "100%",
-        maxWidth: 1350,
+        width: "97%",
         mx: "auto",
         background: "radial-gradient(circle at top right, #ecf4ff 0%, #f7fbff 42%, #eef6ff 100%)",
         borderRadius: 2,
@@ -476,7 +502,7 @@ url += `?${params.toString()}`;
             border: "1px solid #d5e3f8",
             background: "linear-gradient(180deg, #f8fbff 0%, #f2f8ff 100%)",
             boxShadow: "0 14px 28px rgba(39, 95, 169, 0.08)",
-            maxWidth: 1400,
+         //   maxWidth: 1800,
             mx: "auto",
           }}
         >
