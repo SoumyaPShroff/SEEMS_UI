@@ -527,15 +527,15 @@ url += `?${params.toString()}`;
             // ]}
             searchableFields={[
               "enquiryno",
-              //   "customer",
+              "customer",
               //   "createdon",
               //   "endDate",
               "salesResponsibility",
               //   "status",
               //   "completeResponsibility",
-              //   "enquiryType",
+                 "enquiryType",
               //   "boardRef",
-              //   "referenceBy",
+                  "referenceBy",
             ]}
             placeholder="Search enquiries..."
           />

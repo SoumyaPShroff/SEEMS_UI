@@ -184,6 +184,7 @@ const OffshoreEnquiry: React.FC = () => {
       design: "NO", library: "NO", layout_fab: "NO", layout_testing: "NO", layout_others: "NO",
       emi_net_level: "NO", emi_system_level: "NO", thermal_board_level: "NO", thermal_system_level: "NO",
       hardware: "NO", VA_Assembly: "NO", DesignOutSource: "NO", npi_fab: "NO", npi_testing: "NO", npi_others: "NO", vaMech: "NO",
+      vaBOMProc: "NO", vaJobWork: "NO",
       NPINew_Fab: "NO", NPINew_Testing: "NO", NPINew_Assbly: "NO", NPINew_BOMProc: "NO",
       npinew_jobwork: "NO", tool: "", software: "NO", analysis_others: "NO", status: "Open",
       quotation_request_lastdate: new Date().toISOString(), createdOn: new Date().toISOString(), enquiryno: "AUTO",
@@ -481,6 +482,8 @@ const OffshoreEnquiry: React.FC = () => {
             npi_others: "Others",
             DesignOutSource: "Design Outsourced",
             vaMech: "Mechanical",
+            vaBOMProc: "BOM Procurement",
+            vaJobWork: "Job Work",
          },
          npi: {
             npiNew_BOMProc: "BOM Procurement",
@@ -689,7 +692,7 @@ const OffshoreEnquiry: React.FC = () => {
          section: "VA",
          field: "va",
          responsibilityField: "npibyid",
-         checkboxes: ["Fabrication", "Assembly", "Hardware", "Software", "FPGA", "Testing", "Others", "Design Outsourced", "Mechanical"],
+         checkboxes: ["Fabrication", "Assembly", "Hardware", "Software", "FPGA", "Testing", "Others", "Design Outsourced", "Mechanical", "BOM Procurement", "Job Work"],
          responsibilityOptions: lookups.designMngrs,     //use designmanagers for VA responsibility
          isManager: true,
       },
@@ -882,6 +885,8 @@ const OffshoreEnquiry: React.FC = () => {
             FPGA: "fpg",
             Testing: "npi_testing",
             Mechanical: "vaMech",
+            "BOM Procurement": "vaBOMProc",
+            "Job Work": "vaJobWork",
          };
          Object.entries(vaMap).forEach(([label, field]) => {
             postPayload[field] = form.va.includes(label) ? "YES" : "NO";

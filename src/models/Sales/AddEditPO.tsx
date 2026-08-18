@@ -736,7 +736,8 @@ const AddEditPO: React.FC = () => {
                       message: "Enter a valid email address",
                     },
                   })}
-                  label="Email ID"
+                  label="Invoice To"
+                  placeholder="Enter Email Id"
                   fullWidth
                   size="small"
                   required
@@ -898,8 +899,8 @@ const AddEditPO: React.FC = () => {
                     <Grid size={4}><TextField {...registerQty("vaQty")} onKeyDown={blockNegativeAndExponentKeys} disabled={!scopeConfig.va} type="number" inputProps={{ step: "any", min: 0, maxLength: MAX_QTY_DIGITS }} label="Qty" fullWidth size="small" InputLabelProps={{ shrink: true }} /></Grid>
                     <Grid size={4}><TextField {...register("vaRateperhr", { valueAsNumber: true })} disabled={!scopeConfig.va} type="number" inputProps={{ step: "any" }} label="Rate" fullWidth size="small" InputLabelProps={{ shrink: true }} /></Grid>
 
-                    {/* NPI */}
-                    <Grid size={4}><Typography variant="body2">NPI</Typography></Grid>
+                    {/*  NPI is replaced with ATS heading - ATS */} 
+                    <Grid size={4}><Typography variant="body2">ATS</Typography></Grid>
                     <Grid size={4}><TextField {...registerQty("npiQty")} onKeyDown={blockNegativeAndExponentKeys} disabled={!scopeConfig.npi} type="number" inputProps={{ step: "any", min: 0, maxLength: MAX_QTY_DIGITS }} label="Qty" fullWidth size="small" InputLabelProps={{ shrink: true }} /></Grid>
                     <Grid size={4}><TextField {...register("npiRateperhr", { valueAsNumber: true })} disabled={!scopeConfig.npi} type="number" inputProps={{ step: "any" }} label="Rate" fullWidth size="small" InputLabelProps={{ shrink: true }} /></Grid>
 

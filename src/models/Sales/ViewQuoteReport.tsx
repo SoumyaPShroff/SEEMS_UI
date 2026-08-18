@@ -83,11 +83,10 @@ const ViewQuoteReport: React.FC = () => {
             <p><b>SIENNA ECAD Technologies Private Ltd.</b></p>
             <p>#683, 1st Floor, 15th Cross</p>
             <p>J.P. Nagar 2nd Phase,</p>
-            <p>Bengaluru – 560 078,</p>
-            <p>India</p>
+            <p>Bengaluru – 560 078,India</p>
             <p>Tel : 080 68190700</p>
             <p>Email : sales@siennaecad.com</p>
-            <p><b>GST NO :</b> 29AAACE4885A1ZP</p>
+            <p><b>GST NO :29AAACE4885A1ZP</b></p>
           </div>
         </div>
 
@@ -99,14 +98,14 @@ const ViewQuoteReport: React.FC = () => {
             <p><b>To:</b></p>
             <p><b>{header.customerName}</b></p>
             <p style={{ wordBreak: "break-word" }}>{header.customerAddress}</p>
-            <p><i>Attn: {header.customerContactPerson}</i></p>
+            <p><b><i>Attn: {header.customerContactPerson}</i></b></p>
             <p>{header.rfxNo}</p>
           </div>
 
           <div className="doc-section">
-            <p><b>Form No:</b> R/PP – 02/03/02</p>
-            <p><b>Ref No:</b> QTE251111_25-26</p>
-            <p><b>Date:</b>   {new Date().toLocaleDateString("en-GB").replace(/\//g, "-")}</p>
+            <p>Form No:R/PP – 02/03/02</p>
+            <p>Ref No:QTE251111_25-26</p>
+            <p>Date:{new Date().toLocaleDateString("en-GB").replace(/\//g, "-")}</p>
           </div>
         </div>
 

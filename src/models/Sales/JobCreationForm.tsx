@@ -234,10 +234,7 @@ const JobCreationForm: React.FC = () => {
       const response = await axios.post(`${baseUrl}/api/Sales/CreateJob`, payload);
       toast.success(`Job created successfully! Job Number: ${response.data.jobNumber}`);
 
-      handleClearForm();
-      setPoNumbers([]);
-      setPoDetails({ totalAmount: 0, totalHours: 0, balanceHours: 0 });
-      await fetchEnquiries('Fixed-Cost');
+      window.location.reload();
     } catch (err: any) {
 
   let errorMsg = "Error creating job";
@@ -428,7 +425,7 @@ const JobCreationForm: React.FC = () => {
               Job Details
             </Typography>
           </Box>
-
+                   
           <CardContent sx={{ py: 1.25, "&:last-child": { pb: 1.25 } }}>
             <Grid container spacing={1} sx={{ mb: 0.5 }}>
               {/* Enquiry Number */}
@@ -436,6 +433,9 @@ const JobCreationForm: React.FC = () => {
                 <Box sx={fieldShellStyle}>
                   <Typography sx={fieldLabelStyle}>
                     Enquiry Number <span style={{ color: "#d32f2f" }}>*</span>
+                    <Typography component="span" color="text.secondary" sx={{ ml: 1, fontSize: "0.75rem", fontWeight: 400 }}>
+                      (Only enquiries with an added PO are listed)
+                    </Typography>
                   </Typography>
                   <SelectControl
                     name="enquiry"
