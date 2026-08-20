@@ -44,7 +44,13 @@ const EstimationDocUpload: React.FC = () => {
   const [hours, setHours] = useState("");
 
   const [managers, setManagers] = useState<ManagerCostCenter[]>([]);
-  const [selectedManagerId, setSelectedManagerId] = useState("");
+  // hopc1id alone isn't unique - the same manager name/id can appear under more
+  // than one cost center, so the select's value (and key) has to be the
+  // hopc1id+costcenter pair, not hopc1id on its own.
+  const managerKey = (m: { hopc1id: string; costcenter: string }) => `${m.hopc1id}::${m.costcenter}`;
+  const [selectedManagerKey, setSelectedManagerKey] = useState("");
+  const selectedManager = managers.find((m) => managerKey(m) === selectedManagerKey);
+  const selectedManagerId = selectedManager?.hopc1id || "";
   const [engineers, setEngineers] = useState<EngineerOption[]>([]);
   const [selectedEngineerId, setSelectedEngineerId] = useState("");
 
@@ -56,7 +62,7 @@ const EstimationDocUpload: React.FC = () => {
 
   useEffect(() => {
     if (enquiryType === "ONSITE") return;
-    setSelectedManagerId("");
+    setSelectedManagerKey("");
   }, [enquiryType]);
 
   useEffect(() => {
@@ -76,16 +82,20 @@ const EstimationDocUpload: React.FC = () => {
     setEngineers([]);
     setSelectedEngineerId("");
 
-    if (!selectedManagerId) return;
+    if (!selectedManager) return;
+
+    const costcenter = selectedManager.costcenter || "";
 
     axios
-      .get<EngineerOption[]>(`${baseUrl}/api/Home/EngineersByManager/${encodeURIComponent(selectedManagerId)}`)
+      .get<EngineerOption[]>(
+        `${baseUrl}/api/Home/EngineersByManager/${encodeURIComponent(selectedManager.hopc1id)}?costcenter=${encodeURIComponent(costcenter)}`
+      )
       .then((res) => setEngineers(res.data || []))
       .catch((err) => {
         console.error("Failed to load engineers for selected manager", err);
         setEngineers([]);
       });
-  }, [selectedManagerId]);
+  }, [selectedManagerKey, managers]);
 
   useEffect(() => {
     if (lockedEnquiryType) {
@@ -264,12 +274,12 @@ const EstimationDocUpload: React.FC = () => {
                   <SelectControl
                     name="completeResponsibilityId"
                     label="Complete Responsibility"
-                    value={selectedManagerId}
+                    value={selectedManagerKey}
                     options={managers.map((m) => ({
-                      value: m.hopc1id,
+                      value: managerKey(m),
                       label: `${m.hopc1name} (${m.costcenter})`,
                     }))}
-                    onChange={(e) => setSelectedManagerId(e.target.value)}
+                    onChange={(e) => setSelectedManagerKey(e.target.value)}
                     required
                   />
                   <SelectControl

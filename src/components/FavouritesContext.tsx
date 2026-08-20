@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { baseUrl } from '../const/BaseUrl';
 import { addFavourite as apiAdd, removeFavourite as apiRemove } from '../components/Favourites';
@@ -20,6 +20,11 @@ export const FavouritesProvider: React.FC<{ children: React.ReactNode; sessionUs
   const [favourites, setFavourites] = useState<number[]>([]);
   const [favouriteLinks, setFavouriteLinks] = useState<FavouriteDto[]>([]);
   const [loading, setLoading] = useState(true);
+  // Synchronous guard against duplicate cards from rapid/double clicks on the
+  // favourite star: favourites/favouriteLinks only update after apiAdd resolves,
+  // so a second click before that response lands would otherwise still see the
+  // stale (not-yet-favourited) state and fire a second add.
+  const pendingAddIds = useRef<Set<number>>(new Set());
 
   const fetchFavourites = useCallback(async () => {
     if (!sessionUserID) {
@@ -54,17 +59,21 @@ export const FavouritesProvider: React.FC<{ children: React.ReactNode; sessionUs
   }, [fetchFavourites]);
 
   const addFavourite = useCallback(async (pageId: number, title: string, route: string) => {
-    if (!sessionUserID || favourites.includes(pageId)) return;
+    if (!sessionUserID || favourites.includes(pageId) || pendingAddIds.current.has(pageId)) return;
+    pendingAddIds.current.add(pageId);
     try {
       await apiAdd(sessionUserID, pageId);
-      setFavourites(prev => [...prev, pageId]);
+      setFavourites(prev => (prev.includes(pageId) ? prev : [...prev, pageId]));
       setFavouriteLinks(prev => {
+        if (prev.some(f => f.pageid === pageId)) return prev;
         const updated = [...prev, { pageid: pageId, pagename: title, route }];
         writeFavouritesCache(sessionUserID, updated);
         return updated;
       });
     } catch (err) {
       console.error("Failed to add favourite", err);
+    } finally {
+      pendingAddIds.current.delete(pageId);
     }
   }, [sessionUserID, favourites]);
 
