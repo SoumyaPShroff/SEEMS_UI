@@ -175,7 +175,7 @@ const POApprovalDetails: React.FC = () => {
         params: { comments },
       });
       toast.success("PO approved successfully");
-      loadData();
+      navigate("/Home/POApproval");
     } catch (error) {
       console.error("Error approving PO:", error);
       toast.error("Failed to approve PO");

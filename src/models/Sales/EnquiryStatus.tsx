@@ -207,7 +207,7 @@ const [checkingQuote, setCheckingQuote] = useState(true);
       return;
     }
 
-    const returnStatus = (fromStatus || "").trim() || status;
+    const returnStatus = (status || "").trim() || (fromStatus || "").trim();
     toast.success("✅ Enquiry status updated.");
 
     setTimeout(() => {

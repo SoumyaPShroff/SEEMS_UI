@@ -583,7 +583,7 @@ const OnsiteEnquiry: React.FC = () => {
           {data?.emailSent === false ? "Onsite Enquiry Added, but Email Notification Failed" : isEditMode ? "Onsite Enquiry Updated" : "Onsite Enquiry Added"}
           <Button
             style={{ marginLeft: "10px", color: "#273992", textDecoration: "underline" }}
-            onClick={() => navigate("/Home/ViewAllEnquiries")}
+            onClick={() => navigate(isEditMode ? "/Home/ViewAllEnquiries" : "/Home/ViewAllEnquiries?status=Open")}
           >
             Return to ViewAllEnquiries
           </Button>
@@ -592,7 +592,7 @@ const OnsiteEnquiry: React.FC = () => {
       );
      // After showing the toast, redirect user to ViewAllEnquiries
       setTimeout(() => {
-        navigate("/Home/ViewAllEnquiries");
+        navigate(isEditMode ? "/Home/ViewAllEnquiries" : "/Home/ViewAllEnquiries?status=Open");
       }, 500);
 
     } catch (error) {

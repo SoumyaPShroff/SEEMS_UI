@@ -42,6 +42,8 @@ export interface PurchaseOrderData {
   pcreatedby?: string;
   pupdatedby?: string;
   sez?: string;
+  quoteValue?: string;
+  quoteTerms?: string;
 
   onsite?: string | number;
   onsiteQty?: string | number;

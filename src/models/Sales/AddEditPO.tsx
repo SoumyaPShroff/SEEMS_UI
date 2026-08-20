@@ -343,6 +343,8 @@ const AddEditPO: React.FC = () => {
             pbalanceamt: Number(po.pbalanceamt || 0),
 
             sez: po.sez === "YES" ? "YES" : "NO",
+            quoteValue: po.quoteValue === "YES" ? "YES" : "NO",
+            quoteTerms: po.quoteTerms === "YES" ? "YES" : "NO",
           };
 
           reset(mappedData);
@@ -369,7 +371,7 @@ const AddEditPO: React.FC = () => {
           ppoamount: 0, pbalanceamt: 0, pcurrency_id: 1, pconvrate: 1,
           ppaymentterm: "", podate: new Date().toISOString().split("T")[0], pcomments: "",
           pemailid: "", pphoneno: "",
-          sez: "NO"
+          sez: "NO", quoteValue: "NO", quoteTerms: "NO"
         });
         setScopeLoaded(true);
 
@@ -508,6 +510,8 @@ const AddEditPO: React.FC = () => {
       }
 
       finalPayload.sez = data.sez === "YES" ? "YES" : "NO";
+      finalPayload.quoteValue = data.quoteValue === "YES" ? "YES" : "NO";
+      finalPayload.quoteTerms = data.quoteTerms === "YES" ? "YES" : "NO";
       finalPayload.ppoamount = String(data.ppoamount || 0);
       finalPayload.pbalanceamt = String(data.pbalanceamt || 0);
       finalPayload.layQty = String(data.layQty || 0);
@@ -815,23 +819,62 @@ const AddEditPO: React.FC = () => {
                   </Typography>
                 )}
               </Grid>
-              <Grid size={{ xs: 12, sm: 2 }} sx={{ display: "flex", alignItems: "center" }}>
+              <Grid size={{ xs: 12, sm: 1 }} sx={{ display: "flex", alignItems: "center" }}>
                 <FormControlLabel
                   sx={{
                     m: 0,
                     height: 32,
-                    "& .MuiFormControlLabel-label": { fontSize: "0.75rem" },
+                    "& .MuiFormControlLabel-label": { fontSize: "1rem" },
                   }}
                   control={
                     <Checkbox
                       size="small"
-                      sx={{ p: 0.5, "& .MuiSvgIcon-root": { fontSize: "1.1rem" } }}
+                      sx={{ p: 0.5, "& .MuiSvgIcon-root": { fontSize: "1.4rem" } }}
                       checked={watch("sez") === "YES"}
                       onChange={(e) => setValue("sez", e.target.checked ? "YES" : "NO", { shouldValidate: true })}
                     />
                   }
                   label="SEZ"
                 />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 9 }}>
+                <Typography variant="caption" sx={{ display: "block", fontWeight: 800, color: "#1b4f91", mb: 0.25 }}>
+                  PO Validation against Quotation
+                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <FormControlLabel
+                    sx={{
+                      m: 0,
+                      height: 32,
+                      "& .MuiFormControlLabel-label": { fontSize: "1rem" },
+                    }}
+                    control={
+                      <Checkbox
+                        size="small"
+                        sx={{ p: 0.5, "& .MuiSvgIcon-root": { fontSize: "1.4rem" } }}
+                        checked={watch("quoteValue") === "YES"}
+                        onChange={(e) => setValue("quoteValue", e.target.checked ? "YES" : "NO", { shouldValidate: true })}
+                      />
+                    }
+                    label="Value"
+                  />
+                  <FormControlLabel
+                    sx={{
+                      m: 0,
+                      height: 32,
+                      "& .MuiFormControlLabel-label": { fontSize: "1rem" },
+                    }}
+                    control={
+                      <Checkbox
+                        size="small"
+                        sx={{ p: 0.5, "& .MuiSvgIcon-root": { fontSize: "1.4rem" } }}
+                        checked={watch("quoteTerms") === "YES"}
+                        onChange={(e) => setValue("quoteTerms", e.target.checked ? "YES" : "NO", { shouldValidate: true })}
+                      />
+                    }
+                    label="Terms & Conditions"
+                  />
+                </Box>
               </Grid>
               <Grid size={12}>
                 <Grid container spacing={1.5}>
@@ -905,7 +948,7 @@ const AddEditPO: React.FC = () => {
                     <Grid size={4}><TextField {...register("npiRateperhr", { valueAsNumber: true })} disabled={!scopeConfig.npi} type="number" inputProps={{ step: "any" }} label="Rate" fullWidth size="small" InputLabelProps={{ shrink: true }} /></Grid>
 
                     {/* DFM */}
-                    <Grid size={4}><Typography variant="body2">DFM</Typography></Grid>
+                    <Grid size={4}><Typography variant="body2">DFX</Typography></Grid>
                     <Grid size={4}><TextField {...registerQty("dfmQty")} onKeyDown={blockNegativeAndExponentKeys} disabled={!scopeConfig.dfm} type="number" inputProps={{ step: "any", min: 0, maxLength: MAX_QTY_DIGITS }} label="Qty" fullWidth size="small" InputLabelProps={{ shrink: true }} /></Grid>
                     <Grid size={4}><TextField {...register("dfmRateperhr", { valueAsNumber: true })} disabled={!scopeConfig.dfm} type="number" inputProps={{ step: "any" }} label="Rate" fullWidth size="small" InputLabelProps={{ shrink: true }} /></Grid>
 

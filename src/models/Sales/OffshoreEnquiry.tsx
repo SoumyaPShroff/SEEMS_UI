@@ -706,7 +706,20 @@ const OffshoreEnquiry: React.FC = () => {
       },
    ];
 
-   const isResponsibilitySelected = !!(form.layoutbyid || form.analysisbyid || form.npibyid || form.npiNewbyid || form.librarybyid || form.dfxbyid);
+   // At least one scope must be selected, and every scope that has checked
+   // items must also have its own responsibility chosen (e.g. checking
+   // "Job Work"/"BOM Procurement" under VA or ATS without picking that
+   // scope's Responsibility must keep the button disabled, not just rely on
+   // some other scope's responsibility already being filled from edit-mode data).
+   const anyScopeSelected = !!(form.layout.length || form.analysis.length || form.va.length || form.npi.length || form.library.length || form.dfx.length);
+   const allSelectedScopesHaveResponsibility =
+      (form.layout.length === 0 || !!form.layoutbyid) &&
+      (form.analysis.length === 0 || !!form.analysisbyid) &&
+      (form.va.length === 0 || !!form.npibyid) &&
+      (form.npi.length === 0 || !!form.npiNewbyid) &&
+      (form.library.length === 0 || !!form.librarybyid) &&
+      (form.dfx.length === 0 || !!form.dfxbyid);
+   const isResponsibilitySelected = anyScopeSelected && allSelectedScopesHaveResponsibility;
    // Utility: normalize email safely without modifying interfaces
    const getUserEmail = (
       u: Employee | Manager | SalesManager | NPIManager
@@ -810,7 +823,7 @@ const OffshoreEnquiry: React.FC = () => {
             return;
          }
          if (form.npi.length > 0 && !form.npiNewbyid) {
-            toast.error("Please select NPI Responsibility");
+            toast.error("Please select ATS Responsibility");
             setLoading(false);
             return;
          }
@@ -1017,7 +1030,7 @@ const OffshoreEnquiry: React.FC = () => {
                   {data.emailSent === false ? "OFFSHORE Enquiry Added, but Email Notification Failed" : isEditMode ? "OFFSHORE Enquiry Updated" : "OFFSHORE Enquiry Added"}
                   <Button
                      style={{ marginLeft: "10px", color: "#fff", textDecoration: "underline" }}
-                     onClick={() => navigate("/Home/ViewAllEnquiries")}
+                     onClick={() => navigate(isEditMode ? "/Home/ViewAllEnquiries" : "/Home/ViewAllEnquiries?status=Open")}
                   >
                      Return to ViewAllEnquiries
                   </Button>

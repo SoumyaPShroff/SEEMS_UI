@@ -8,6 +8,9 @@ import { baseUrl } from "../../const/BaseUrl";
 import { Add, Delete, Business, ContactPhone, LocationOn, ReceiptLong, LocalShipping, } from "@mui/icons-material";
 import { useRoleAccess } from "../../utils/useRoleAccess";
 
+// Delete mode is hidden from the UI for now; flip to true to bring the button back.
+const SHOW_DELETE_MODE_BUTTON = false;
+
 const customerTypes = ["DOMESTIC", "SEZ", "Export", "Govt", "MNC"];
 const currencies = ["INR", "USD", "EURO"];
 const contactRoles = ["Technical", "Purchase", "Finance"];
@@ -746,7 +749,7 @@ export default function AddEditCustContLocReg() {
         currency: form.currency,
         panNo: form.panNo,
         salesorg: form.salesOrganization,
-        distributionchannel: form.distributionchannel,
+        distributionchannel: form.distributionchannel.trim() ? Number(form.distributionchannel) : undefined,
         cuspaymentterms: form.paymentTerms.trim() ? Number(form.paymentTerms) : undefined,
         taxclassification: form.taxclassification,
         shippingconditions: form.shippingConditions,
@@ -1124,14 +1127,16 @@ export default function AddEditCustContLocReg() {
             >
               Edit
             </Button>
-            <Button
-              variant={formMode === "delete" ? "contained" : "outlined"}
-              color="error"
-              onClick={() => handleModeChange("delete")}
-              sx={{ borderRadius: 3 }}
-            >
-              Delete
-            </Button>
+            {SHOW_DELETE_MODE_BUTTON && (
+              <Button
+                variant={formMode === "delete" ? "contained" : "outlined"}
+                color="error"
+                onClick={() => handleModeChange("delete")}
+                sx={{ borderRadius: 3 }}
+              >
+                Delete
+              </Button>
+            )}
           </Box>
         </Box>
 
