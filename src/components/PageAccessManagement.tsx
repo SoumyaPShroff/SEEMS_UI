@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { Box, Button, Card, CardContent, Checkbox, CircularProgress, FormControlLabel, FormGroup, Typography,} from "@mui/material";
+import { toast } from "react-toastify";
 import { baseUrl } from "../const/BaseUrl";
 import SelectControl from "./resusablecontrols/SelectControl";
 
@@ -321,10 +322,10 @@ const PageAccessManagement = () => {
         payload
       );
       
-      alert("Access rights updated successfully!");
+      toast.success("Access rights updated successfully!");
     } catch (error) {
       console.error(error);
-      alert("Failed to update access rights.");
+      toast.error("Failed to update access rights.");
     }
   };
 

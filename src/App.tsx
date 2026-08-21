@@ -33,6 +33,7 @@ import PageAccessManagement from './components/PageAccessManagement';
 import QueryBuilder from './components/QueryBuilder';
 import AddEditSEEMSRequest from './models/General/AddEditSEEMSRequest';
 import ViewSEEMSRequests from './models/General/ViewSEEMSRequests';
+import ListOfHolidays from './models/General/ListOfHolidays';
 import AddEditCustContLocReg from './models/Sales/AddEditCustContLocReg';
 import EstimationDocUpload from './models/Sales/EstimationDocUpload';
 import EstimationDocList from './models/Sales/EstimationDocList';
@@ -114,6 +115,7 @@ const App: React.FC = () => {
           <Route path="QueryBuilder" element={<QueryBuilder />} />
           <Route path="AddEditSEEMSRequest" element={<AddEditSEEMSRequest />} />
           <Route path="ViewSEEMSRequests" element={<ViewSEEMSRequests />} />
+          <Route path="ListOfHolidays" element={<ListOfHolidays />} />
           <Route path="AddEditCustContLocReg" element={<AddEditCustContLocReg />} /> 
           <Route path="EstimationDocUpload" element={<EstimationDocUpload />} />
           <Route path="EstimationDocList" element={<EstimationDocList />} />

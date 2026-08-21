@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
-import type { ChangeEvent } from "react";
 import axios from "axios";
 import { Box,  Button, Card,  CardContent,  CircularProgress,  Divider,  Link,  Stack,  Typography,} from "@mui/material";
 import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import HourglassEmptyRoundedIcon from "@mui/icons-material/HourglassEmptyRounded";
+import ReportProblemRoundedIcon from "@mui/icons-material/ReportProblemRounded";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { baseUrl } from "../../const/BaseUrl";
+import { useRoleAccess } from "../../utils/useRoleAccess";
 import Label from "../../components/resusablecontrols/Label";
 import SelectControl from "../../components/resusablecontrols/SelectControl";
 import TextControl from "../../components/resusablecontrols/TextControl";
@@ -19,7 +20,6 @@ interface RequestForm {
   Requesttype: string;
   Modulename: string;
   Description: string;
-  filename: string;
 }
 
 interface RequestItem extends RequestForm {
@@ -34,14 +34,12 @@ interface AddRequestPayload {
   Modulename: string;
   Description: string;
   Requestedby: string;
-  filename?: string;
 }
 
 interface EditRequestPayload {
   Modulename: string;
   Description: string;
   Requesttype: string;
-  filename?: string;
 }
 
 interface ApiRequestRecord {
@@ -52,12 +50,12 @@ const createInitialForm = (): RequestForm => ({
   Requesttype: "",
   Modulename: "",
   Description: "",
-  filename: "",
 });
 
 const REQUEST_ENDPOINT = `${baseUrl}/api/Home/SEEMSRequestData`;
 const ADD_REQUEST_ENDPOINT = `${baseUrl}/api/Home/AddSEEMSRequest`;
 const EDIT_REQUEST_ENDPOINT = `${baseUrl}/api/Home/EditSEEMSRequest`;
+const NOT_APPROVED_COUNT_ENDPOINT = `${baseUrl}/api/Home/NotApprovedRequestsCount`;
 
 const asString = (value: unknown): string => (value == null ? "" : String(value).trim());
 
@@ -119,7 +117,6 @@ const mapApiRequest = (record: ApiRequestRecord): RequestItem => ({
   Modulename: asString(record.Modulename ?? record.modulename),
   Description: asString(record.Description ?? record.description),
   Status: normalizeStatus(asString(record.Status ?? record.status)),
-  filename: asString(record.filename ?? record.fileName),
 });
 
 const fetchEmailFromId = async (id: string): Promise<string> => {
@@ -242,11 +239,20 @@ const AddEditSEEMSRequest: React.FC = () => {
   const [form, setForm] = useState<RequestForm>(createInitialForm);
   const [loadingRequests, setLoadingRequests] = useState(false);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [notApprovedCount, setNotApprovedCount] = useState(0);
   const loginId = sessionStorage.getItem("SessionUserID") || "";
+  const { hasAccess: isAdminUser, loading: roleLoading } = useRoleAccess(loginId, "adminuser");
 
   useEffect(() => {
     void loadRequestIds();
   }, []);
+
+  useEffect(() => {
+    if (roleLoading) {
+      return;
+    }
+    void loadNotApprovedCount();
+  }, [roleLoading, isAdminUser]);
 
   const resetForm = () => {
     setForm(createInitialForm());
@@ -282,14 +288,6 @@ const AddEditSEEMSRequest: React.FC = () => {
     return true;
   };
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null;
-    setForm((prev) => ({
-      ...prev,
-      filename: file?.name ?? "",
-    }));
-  };
-
   const loadRequestIds = async () => {
     setLoadingRequests(true);
     try {
@@ -300,6 +298,17 @@ const AddEditSEEMSRequest: React.FC = () => {
       console.warn("Failed to load SEEMS request ids.", error);
     } finally {
       setLoadingRequests(false);
+    }
+  };
+
+  const loadNotApprovedCount = async () => {
+    try {
+      const { data } = await axios.get(NOT_APPROVED_COUNT_ENDPOINT, {
+        params: isAdminUser ? undefined : { requestedBy: loginId },
+      });
+      setNotApprovedCount(Number(data?.count ?? 0));
+    } catch (error) {
+      console.warn("Failed to load not-approved request count.", error);
     }
   };
 
@@ -320,7 +329,6 @@ const AddEditSEEMSRequest: React.FC = () => {
         Requesttype: mappedRequest.Requesttype,
         Modulename: mappedRequest.Modulename,
         Description: mappedRequest.Description,
-        filename: mappedRequest.filename,
       });
     } catch (error) {
       toast.error("Unable to load the selected request.");
@@ -344,13 +352,11 @@ const AddEditSEEMSRequest: React.FC = () => {
               Modulename: form.Modulename.trim(),
               Description: form.Description.trim(),
               Requestedby: loginId,
-              ...(form.filename ? { filename: form.filename } : {}),
             }
           : {
               Modulename: form.Modulename.trim(),
               Description: form.Description.trim(),
               Requesttype: form.Requesttype.trim(),
-              ...(form.filename ? { filename: form.filename } : {}),
             };
 
       await saveSEEMSRequest({
@@ -359,12 +365,12 @@ const AddEditSEEMSRequest: React.FC = () => {
         Reqid: mode === "edit" ? selectedId : undefined,
         emaillist: sessionUserEmail,
       });
-      toast.success(mode === "create" ? "SEEMS request created." : "SEEMS request updated.");
-      window.location.reload();
+      toast.success(mode === "create" ? "SEEMS request added." : "SEEMS request edited.");
+      setTimeout(() => window.location.reload(), 1500);
     } catch (error) {
       const message = getErrorMessage(error);
       toast.error(
-        `${mode === "create" ? "Unable to create SEEMS request." : "Unable to update SEEMS request."}${
+        `${mode === "create" ? "Unable to add SEEMS request." : "Unable to edit SEEMS request."}${
           message ? ` ${message}` : ""
         }`
       );
@@ -389,10 +395,14 @@ const AddEditSEEMSRequest: React.FC = () => {
     }
   };
 
+  const visibleRequests = isAdminUser
+    ? requests
+    : requests.filter((request) => request.Requestedby === loginId);
+
   const counts = {
-    pending: requests.filter((request) => request.Status === "OPEN").length,  //includes APPROVED alone
-    progress: requests.filter((request) => request.Status === "IN-PROCESS").length,
-    done: requests.filter((request) => request.Status === "COMPLETED").length,
+    pending: visibleRequests.filter((request) => request.Status === "OPEN").length,  //includes APPROVED alone
+    progress: visibleRequests.filter((request) => request.Status === "IN-PROCESS").length,
+    done: visibleRequests.filter((request) => request.Status === "COMPLETED").length,
   };
 
   const openStatusView = (status: RequestStatus) => {
@@ -416,7 +426,7 @@ const AddEditSEEMSRequest: React.FC = () => {
             <Box
               sx={{
                 display: "grid",
-                gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
+                gridTemplateColumns: { xs: "1fr", md: "repeat(4, 1fr)" },
                 gap: 1.5,
               }}
             >
@@ -501,6 +511,28 @@ const AddEditSEEMSRequest: React.FC = () => {
                   </Stack>
                 </CardContent>
               </Card>
+              <Card sx={statCardStyle}>
+                <CardContent sx={{ py: 1.7 }}>
+                  <Stack direction="row" alignItems="center" justifyContent="space-between">
+                    <Box>
+                      <Typography
+                        sx={{
+                          fontSize: "0.82rem",
+                          color: "#c62828",
+                          fontWeight: 700,
+                          textAlign: "left",
+                        }}
+                      >
+                        Not Approved
+                      </Typography>
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: "#0f4ea6" }}>
+                        {notApprovedCount}
+                      </Typography>
+                    </Box>
+                    <ReportProblemRoundedIcon sx={{ fontSize: 30, color: "#c62828" }} />
+                  </Stack>
+                </CardContent>
+              </Card>
             </Box>
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.2}>
@@ -536,7 +568,7 @@ const AddEditSEEMSRequest: React.FC = () => {
                     value={selectedId}
                     options={[
                       { value: "", label: "Select" },
-                      ...requests
+                      ...visibleRequests
                         .slice()
                         .filter((request) => request.Status !== "CLOSED")
                         .sort((a, b) => a.Reqid.localeCompare(b.Reqid))
@@ -604,31 +636,6 @@ const AddEditSEEMSRequest: React.FC = () => {
                   rows={4}
                   fullWidth
                 />
-              </Box>
-
-              <Box>
-                <Label text="Attachment" bold />
-                <Box
-                  sx={{
-                    ...standardInputStyle,
-                    height: "auto",
-                    minHeight: 52,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 1,
-                    px: 1.5,
-                    py: 1,
-                  }}
-                >
-                  <Typography sx={{ fontSize: "0.88rem", color: form.filename ? "#1f2f46" : "#6b7a90" }}>
-                    {form.filename || "No file selected"}
-                  </Typography>
-                  <Button component="label" variant="outlined" size="small" sx={{ textTransform: "none" }}>
-                    Upload
-                    <input hidden type="file" onChange={handleFileChange} />
-                  </Button>
-                </Box>
               </Box>
 
             </Box>
